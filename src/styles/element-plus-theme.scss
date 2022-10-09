@@ -1,0 +1,18 @@
+
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+    $colors: (
+        'primary': (
+            'base': #ffad33,
+        )
+    ),
+    $bg-color: (
+        'page': #eee,
+        //'': #ffad33,
+        //'overlay': #444444,
+    )
+);
+
+// If you just import on demand, you can ignore the following content.
+// if you want to import all styles:
+//@use 'element-plus/theme-chalk/src/dark/css-vars.scss';
+@use "element-plus/theme-chalk/src/index.scss" as *;
