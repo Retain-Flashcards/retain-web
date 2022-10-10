@@ -50,15 +50,15 @@ const { userIsLoggedIn, setAuthStateChangedListener } = useAuthUser()
 
 //Vue Router routes
 const routes = [
-    { name: 'Home', path: '/flashcards-app/', component: Home, meta: { requiresAuth: true } },
-    { name: 'Login', path: '/flashcards-app/login', component: Login },
-    { name: 'Register', path: '/flashcards-app/register', component: Register },
-    { name: 'Verify Email', path: '/flashcards-app/verify', component: VerifyEmail },
+    { name: 'Home', path: '/', component: Home, meta: { requiresAuth: true } },
+    { name: 'Login', path: '/login', component: Login },
+    { name: 'Register', path: '/register', component: Register },
+    { name: 'Verify Email', path: '/verify', component: VerifyEmail },
     { name: 'Password Updated Successfully', path: '/passwordupdated', component: PasswordUpdateSuccess },
-    { name: 'View Deck', path: '/flashcards-app/deck/:deckId', component: Deck },
-    { name: 'Create Cards', path: '/flashcards-app/deck/:deckId/cards/add', component: CardBuilder },
-    { name: 'Edit Card', path: '/flashcards-app/deck/:deckId/cards/:noteId/edit', component: CardBuilder},
-    { name: 'Study Deck', path: '/flashcards-app/deck/:deckId/study', component: Study }
+    { name: 'View Deck', path: '/deck/:deckId', component: Deck },
+    { name: 'Create Cards', path: '/deck/:deckId/cards/add', component: CardBuilder },
+    { name: 'Edit Card', path: '/deck/:deckId/cards/:noteId/edit', component: CardBuilder},
+    { name: 'Study Deck', path: '/deck/:deckId/study', component: Study }
 ]
 
 const router = createRouter({
