@@ -114,7 +114,6 @@ export default {
             this.loadingCard = true
             this.flipped = false
             getNextCard(this.deckId).then(result => {
-                console.log(result)
                 if (!result.card) this.done = true
                 
                 this.card = result.card
@@ -123,7 +122,6 @@ export default {
                 this.goodTime = result.goodTime
                 this.reviewsLeft = result.reviewsLeft
                 this.newLeft = result.newLeft
-                console.log(this.card.extraContent.length)
             }).catch(error => {
                 console.log(error)
             }).finally(() => {

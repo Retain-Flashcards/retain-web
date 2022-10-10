@@ -11,9 +11,14 @@ import DeckCard from '../components/basic/DeckCard.vue'
             <el-button :icon='Plus' type='primary' style='margin-right: 20px;' @click='state.isEditingDeck = !state.isEditingDeck'>Create New Deck</el-button>
         </div>
 
-        <div >
+        <el-main v-loading='loadingDecks'>
             <DeckCard @click='() => onDeckSelected(deck)' :title='deck.title' v-for='deck in decks' :img-url='deck.coverImage' :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' :review-count='deck.reviewCount' :new-count='deck.newCount'/>
-        </div>  
+            <div v-if='decks.length == 0' style='width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;'>
+                <el-result icon="info" title="No Decks" subTitle="Create your first one now!">
+                </el-result>
+                <el-button :icon='Plus' type='primary' @click='state.isEditingDeck = !state.isEditingDeck' round>Create New Deck</el-button>
+            </div>
+        </el-main>  
 
         <el-dialog
             title="Create New Deck"
@@ -50,7 +55,8 @@ export default {
             newDeckForm: {
                 title: '',
                 coverImageFiles: []
-            }
+            },
+            loadingDecks: false
         }
     },
     methods: {
@@ -60,9 +66,10 @@ export default {
             this.loadDecks()
         },
         loadDecks() {
+            this.loadingDecks = true
             getDecks().then(result => {
                 this.decks = result
-            })
+            }).catch(console.error).finally(() => this.loadingDecks = false)
         },
         onDeckSelected(deck) {
             this.$router.push({

@@ -47,13 +47,7 @@ export default {
 
             this.formLoading = true
 
-            loginEmailPassword(this.formData.email, this.formData.password).then(() => {
-
-                this.$Notification.success({
-                    title: 'Success!',
-                    text: 'We have successfully logged you in!'
-                })
-
+            loginEmailPassword(this.formData.email, this.formData.password).then((res) => {
                 this.$router.push({ name: 'Home' })
 
             }).catch(console.error).finally(() => this.formLoading = false)

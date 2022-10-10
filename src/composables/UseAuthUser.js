@@ -3,12 +3,19 @@ import useSupabase from '../composables/UseSupabase'
 
 const { supabase } = useSupabase()
 
-const user = ref(null)
+
 
 export default function useAuthUser() {
+    const user = ref(null)
+
+    supabase.auth.onAuthStateChange((e, session) => {
+        user.value = supabase.auth.user()
+    })  
     
     const loginEmailPassword = async (email, password) => {
+        console.log("TEST")
         const data = await supabase.auth.signIn({ email, password })
+        console.log(data)
         return data
     }
 
@@ -30,7 +37,7 @@ export default function useAuthUser() {
     }
 
     const userIsLoggedIn = () => {
-        return supabase.auth.user()
+        return user.value
     }
 
     const setAuthStateChangedListener = (listener) => {
