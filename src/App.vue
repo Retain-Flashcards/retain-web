@@ -9,6 +9,7 @@
             </div>
         </div>
         <div v-else style='height: 100%; flex: 1;'>
+            <Navbar id='navbar'/>
             <el-row align='middle' justify='center' style='flex: 1; height: 100%;'>
                 <el-col :span='8'></el-col>
                 <el-col :span='8'>
