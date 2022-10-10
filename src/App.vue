@@ -37,12 +37,16 @@ export default {
         }
     }, 
     data() {
-
+        return {
+            reloading: false
+        }
     },
     mounted() {
+        this.reloading = true
     },
     computed: {
         isAuthenticated() {
+            this.reloading = false
             return userIsLoggedIn()
         }
     },
