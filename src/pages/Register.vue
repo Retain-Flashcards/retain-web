@@ -14,7 +14,7 @@
             <el-form-item>
                 <el-button type='primary' @click.prevent='onFormSubmit' :loading='formLoading'>Sign Up</el-button>
             </el-form-item>
-            <p>Already have an account? <el-link href='../login' type='primary'>Log In</el-link></p>
+            <p>Already have an account? <el-link @click='goToLogin' type='primary'>Log In</el-link></p>
         </el-form>
     </el-card>
     </template>
@@ -79,6 +79,11 @@
     
                 
     
+            },
+            goToLogin() {
+                this.$router.push({
+                    name: 'Login'
+                })
             }
         }
     }

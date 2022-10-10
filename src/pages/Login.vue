@@ -11,7 +11,7 @@
         <el-form-item>
             <el-button type='primary' @click.prevent='onFormSubmit' :loading='formLoading'>Log In</el-button>
         </el-form-item>
-        <p>Don't have an account? <el-link href='../register' type='primary'>Sign up</el-link></p>
+        <p>Don't have an account? <el-link @click='goToRegister' type='primary'>Sign up</el-link></p>
     </el-form>
 </el-card>
 </template>
@@ -54,10 +54,15 @@ export default {
                     text: 'We have successfully logged you in!'
                 })
 
-                this.$router.push('/')
+                this.$router.push({ name: 'Home' })
 
             }).catch(console.error).finally(() => this.formLoading = false)
 
+        },
+        goToRegister() {
+            this.$router.push({
+                name: 'Register'
+            })
         }
     }
 }
