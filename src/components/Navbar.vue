@@ -6,7 +6,7 @@
             <h3>Retain</h3>
         </div>
         <div class='flex-spacer'></div>
-        <el-button type='danger' style='margin-right: 25px;' :underline='false' @click.prevent='handleLogOut' plain>Log Out</el-button>
+        <el-button v-if='authenticated' type='danger' style='margin-right: 25px;' :underline='false' @click.prevent='handleLogOut' plain>Log Out</el-button>
     </div>
 </template>
 
@@ -16,6 +16,7 @@ import useAuthUser from '../composables/UseAuthUser'
 const { logout } = useAuthUser()
 
 export default {
+    props: ['authenticated'],
     methods: {
         handleLogOut() {
             logout()

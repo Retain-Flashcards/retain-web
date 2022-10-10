@@ -1,7 +1,7 @@
 <template>
     <div style='height: 100%;'>
         <div v-if='isAuthenticated' style='height: 100%;display: flex;flex-direction: column;'>
-            <Navbar id='navbar'/>
+            <Navbar id='navbar' :authenticated='true'/>
             <div id='theloader' style='display: flex; flex: 1; max-width: 100%; padding: 0px;' v-loading='globalLoader'>
                 <div id='page-content'>
                     <router-view />
