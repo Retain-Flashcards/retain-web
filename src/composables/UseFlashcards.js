@@ -13,7 +13,7 @@ export default () => {
         const { data, error } = await supabase.from('decks_with_new_review_counts').select(`*`)
 
         if (error) throw new Error(error)
-
+        console.log(data)
         return data.map(deck => new Deck(deck))
     }
 
@@ -196,6 +196,8 @@ export default () => {
             userJwt: supabase.auth.session().access_token
         })
 
+        console.log(result)
+
         if (!result.card) return result
 
         result.card = new Card(result.card)
@@ -206,9 +208,13 @@ export default () => {
 
     const studyCard = async (cardId, category) => {
 
+        const todayDate = new Date()
+        if (todayDate.getHours() < 3) todayDate.setDate(todayDate.getDate() - 1)
+
         return await makeSupabaseFetch('study-card', {
             cardId,
-            category
+            category,
+            localTimestamp: new Date().toLocaleDateString()
         })
         
     }
