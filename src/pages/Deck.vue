@@ -198,7 +198,7 @@ export default {
 .main-header {
     display: flex;
     flex-direction: column; 
-    height: 25%;
+    height: 200px;
 }
 
 .background-overlay {

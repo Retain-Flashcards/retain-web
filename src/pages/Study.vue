@@ -150,7 +150,7 @@ export default {
 <style>
 
 .preview {
-    text-align: center;
+    text-align: left;
     background: #EEE;
     border-radius: 20px;
     display: flex;
