@@ -50,7 +50,7 @@
                     <div class='flex-spacer'></div>
                 </div>
 
-                <el-table :data='table.notes' v-loading='table.loading' style='width: 100%;' stripe>
+                <el-table :data='table.notes[this.notesPage]' v-loading='table.loading' style='width: 100%;' stripe>
                     <el-table-column label='Note ID' v-slot='scope' width='180'>
                         <p style='color: #AAA;'>{{ scope.row.id }}</p>
                     </el-table-column>
@@ -74,7 +74,7 @@
                     </el-table-column>
                 </el-table>
 
-                <el-pagination background layout='prev, pager, next' :total='table.noteCount' :page-size='20' @next-click='onTableNextClick' style='margin-top: 20px;'>
+                <el-pagination background layout='prev, pager, next' :total='table.noteCount' :page-size='20' @next-click='onTableNextClick' @prev-click='onTablePrevClick' @current-change='onTableCurrentPageChange' style='margin-top: 20px;'>
 
                 </el-pagination>
 
@@ -102,7 +102,7 @@ export default {
             notesPage: 0,
             table: {
                 loading: true,
-                notes: [],
+                notes: {},
                 noteCount: 0
             }
         }
@@ -136,10 +136,12 @@ export default {
             if (!this.deck) return
             
             this.table.loading = true
+            const pagesLoaded = this.notesCount() / 20
+            const pagesToLoad = this.notesPage - pagesLoaded
+
             getDeckNotes(this.deck, this.notesPage).then(result => {
-                console.log(result)
                 const { notes, count } = result
-                this.table.notes.push(...notes.map( item => item.export() ))
+                this.table.notes[this.notesPage] = [...notes.map( item => item.export() )]
                 this.table.noteCount = count
             }).catch(error => {
                 console.log(error)
@@ -148,11 +150,39 @@ export default {
             })
         },
 
+        notesCount() {
+            let count = 0
+            for (const [key, value] of Object.entries(this.table.notes)) {
+                count += value.length
+            }
+            return count
+        },  
+
         onTableNextClick(currentPage) {
-            const pagesLoaded = table.notes.length / 20
+            const pagesLoaded = this.notesCount() / 20
             if (currentPage > pagesLoaded) {
                 this.notesPage = currentPage - 1
                 this.loadNotes()
+            }
+        },
+
+        onTablePrevClick(currentPage) {
+            const pagesLoaded = this.notesCount() / 20
+            if (currentPage > 0) {
+                this.notesPage = currentPage - 1
+            }
+        },
+
+        onTableCurrentPageChange(currentPage) {
+            const pagesLoaded = this.notesCount() / 20
+            console.log(currentPage)
+            if (currentPage > pagesLoaded) {
+                console.log('test')
+                this.notesPage = currentPage - 1
+                this.loadNotes()
+            }
+            else if (currentPage > 0 && currentPage != this.notesPage + 1) {
+                this.notesPage = currentPage - 1
             }
         },
 
@@ -161,7 +191,7 @@ export default {
             deleteNote(noteId).then(() => {
 
                 //Reload current page
-                this.table.notes.splice(index, 1)
+                this.table.notes[this.notesPage].splice(index, 1)
 
             }).catch(error => {
 

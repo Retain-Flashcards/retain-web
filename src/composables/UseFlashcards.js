@@ -60,7 +60,7 @@ export default () => {
 
     const getDeckNotes = async (deck, page) => {
         const PAGE_SIZE = 20
-        const { data, error, count } = await supabase.from('notes').select('*', { count: 'exact' }).range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).eq('deck_id', deck.id).eq('active', true)
+        const { data, error, count } = await supabase.from('notes').select('*', { count: 'exact' }).range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1).eq('deck_id', deck.id).eq('active', true)
         console.log(data)
         if (error) throw new Error('Could not get notes')
 
