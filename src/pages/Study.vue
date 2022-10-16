@@ -18,7 +18,7 @@
             </div>
         </div>
     </el-header>
-    <el-main v-loading='loadingCard' style='display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50%; margin: auto;'>
+    <el-main v-loading='loadingCard' style='display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50%; margin: auto; margin-bottom: 100px;'>
         <div style='text-align: center;' v-if='done'>
             <el-result icon="success" title="You're Finished!" subTitle="No more cards to review today!"></el-result>
             <el-button type="primary" size="medium" @click='goToDeck'>Back to Deck</el-button>
