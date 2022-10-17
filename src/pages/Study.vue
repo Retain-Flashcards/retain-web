@@ -9,11 +9,11 @@
             <div style='font-size: 30px; display: flex;'>
                 <div v-if='newLeft || reviewsLeft' class='count' style='color: var(--el-color-danger); margin-right: 30px; text-align: center;'>
                     <p>{{ newLeft }}</p>
-                    <p style='font-size: 15px;'>New</p>
+                    <p :style="{ textDecoration: !card.lastReviewed ? 'underline':'none', fontSize: '15px' }">New</p>
                 </div>
                 <div v-if='newLeft || reviewsLeft' class='count' style='color: var(--el-color-primary); margin-right: 30px; text-align: center;'>
-                    <p>{{ reviewsLeft }}</p>
-                    <p style='font-size: 15px;'>Review</p>
+                    <p >{{ reviewsLeft }}</p>
+                    <p :style="{ textDecoration: card.lastReviewed ? 'underline':'none', fontSize: '15px' }">Review</p>
                 </div>
             </div>
         </div>
