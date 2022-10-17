@@ -6,7 +6,7 @@
             <el-input placeholder='Email' v-model='formData.email' :disabled='formLoading'/>
         </el-form-item>
         <el-form-item label='Password'>
-            <el-input placeholder='Password' v-model='formData.password' type='password' :disabled='formLoading'/>
+            <el-input @keyup.enter.native='onFormSubmit' placeholder='Password' v-model='formData.password' type='password' :disabled='formLoading'/>
         </el-form-item>
         <el-form-item>
             <el-button type='primary' @click.prevent='onFormSubmit' :loading='formLoading'>Log In</el-button>
