@@ -1,6 +1,12 @@
 <template>
     <div class='card' :style="{ backgroundImage: imgUrl ? `url('` + imgUrl + `')`:'none' }">
         <div :class='`card-container ${imgUrl ? "card-overlay": ""}`'>
+            <div class='edit-container' style='flex: 0.2; display: flex; flex-direction: row; margin-right: 20px; margin-left: 15px; margin-top: 15px; align-items: center;'>
+                <el-button @click.stop='() => setPinned(!pinned)' :type='pinned ? "primary":"plain"'  circle><el-icon><StarFilled v-if='pinned'/><Star v-else/></el-icon></el-button>
+                <div class='flex-spacer'></div> 
+                <el-button @click.stop='onEdit' class='edit-button' type='text' style='color: white; font-size: 25px;'><el-icon><MoreFilled /></el-icon></el-button>
+            </div>
+            <div style='flex: 0.05;'></div>
             <div class='card-header' >
                 <h3>{{ title }}</h3>
             </div>
@@ -26,9 +32,10 @@
 </template>
 
 <script>
+import { MoreFilled, Star, StarFilled } from '@element-plus/icons-vue'
 
 export default {
-    props: ['title', 'imgUrl', 'reviewCount', 'newCount']
+    props: ['onEdit', 'pinned', 'title', 'imgUrl', 'reviewCount', 'newCount', 'setPinned']
 }
 
 </script>
@@ -63,13 +70,18 @@ export default {
         padding-top: 20px;
         padding-left: 20px;
         padding-right: 20px;
+        display: flex;
+        flex-direction: column;
     }
 
     h3 {
-        margin-top: 50px;
+        margin: 0px;
         margin-bottom: 10px;
         color: white;
         font-size: 23px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
 
     .card:hover {
@@ -112,5 +124,10 @@ export default {
         font-size: 40px;
         margin-top: 0px;
         margin-bottom: 0px;
+    }
+
+    .edit-button:hover {
+        transform: scale(1.2);
+        color: #EEE;
     }
 </style>

@@ -6,6 +6,7 @@
             <span style='font-size: 30px;'>Studying:</span>
             <span style='font-size: 30px; margin-left: 5px; color: var(--el-color-primary); font-weight: bold;'>{{ deck.title }}</span>
             <div class='flex-spacer'></div>
+            <el-button v-if='card' type='primary' plain style='margin-right: 30px;' @click='editCard'>Edit Card</el-button>
             <div style='font-size: 30px; display: flex;'>
                 <div v-if='newLeft || reviewsLeft' class='count' style='color: var(--el-color-danger); margin-right: 30px; text-align: center;'>
                     <p>{{ newLeft }}</p>
@@ -141,6 +142,17 @@ export default {
                     deckId: this.deckId
                 }
             })
+        },
+        editCard() {
+            if (this.card) {
+                this.$router.push({
+                    name: 'Edit Card',
+                    params: {
+                        deckId: this.deckId,
+                        noteId: this.card.noteId
+                    }
+                })
+            }
         }
     }
 }

@@ -7,20 +7,34 @@
     </el-form-item>
 
     <el-form-item label='Cover Image' prop='coverImage'>
-        <el-upload drag :file-list="formData.coverImageFiles" thumbnail-mode :auto-upload='false' action='' list-type='picture' :multiple='false' :style='{ display: "flex", flex: 1, width: "100%" }'>
-            <div class='flex-spacer'></div>
-            <div>
-                <el-icon><Upload /></el-icon>
-                <div class="el-upload__text">Drop file here or <em>click to upload</em></div>
-                <div class="el-upload__tip" slot="tip">jpg/png files with a size less than 500kb</div>
-            </div>
-            <div class='flex-spacer'></div>
-        </el-upload>
+        <div style='width: 100%; display: flex; flex-direction: column; align-items: center;'>
+            <img v-if='editingDeck && editingDeck.coverImage' :src='editingDeck.coverImage' style='max-width: 100%; width: 70%; margin: 20px; border-radius: 20px;'/>
+            <el-upload drag :file-list="formData.coverImageFiles" thumbnail-mode :auto-upload='false' action='' list-type='picture' :multiple='false' :style='{ display: "flex", flex: 1, width: "100%" }'>
+                <div class='flex-spacer'></div>
+                <div>
+                    <el-icon><Upload /></el-icon>
+                    <div class="el-upload__text">Drop file here or <em>click to upload</em></div>
+                    <div class="el-upload__tip" slot="tip">jpg/png files with a size less than 500kb</div>
+                </div>
+                <div class='flex-spacer'></div>
+            </el-upload>
+        </div>
     </el-form-item>
 
     <el-form-item>
-        <el-button type='primary' @click='submitNewDeckForm' :loading='isLoading'>Create Deck</el-button>
+        <el-button type='primary' @click='submitNewDeckForm' :loading='isLoading'>{{ editingDeck ? 'Save':'Create' }} Deck</el-button>
+        <el-popconfirm
+            v-if='editingDeck'
+            confirm-button-type='danger'
+            title="Delete this deck?"
+            @confirm='deleteDeck'>
+            <template #reference>
+                <el-button type='danger' slot='reference' :loading='isLoading'>Delete Deck</el-button>
+            </template>
+        </el-popconfirm>
     </el-form-item>
+    
+        
 
 </el-form>
 
@@ -29,10 +43,10 @@
 <script>
 import useFlashcards from '../../composables/UseFlashcards'
 
-const { createDeck } = useFlashcards()
+const { createDeck, deleteDeck } = useFlashcards()
 
 export default {
-    props: ['onComplete'],
+    props: ['onComplete', 'editingDeck'],
     data() {
         return {
             isLoading: false,
@@ -47,6 +61,11 @@ export default {
             }
         }
     },
+    mounted() {
+        if (this.editingDeck) {
+            this.formData.title = this.editingDeck.title
+        }
+    },  
     methods: {
         submitNewDeckForm() {
             this.$refs['theForm'].validate(valid => {
@@ -58,7 +77,7 @@ export default {
                     const fileObj = this.formData.coverImageFiles.length > 0 ? this.formData.coverImageFiles[0].raw : undefined
 
                     console.log('testth')
-                    createDeck(this.formData.title, fileObj).then(result => {
+                    createDeck(this.formData.title, fileObj, this.editingDeck?.id).then(result => {
                         this.formData = {
                             title: '',
                             coverImageFiles: []
@@ -83,7 +102,16 @@ export default {
             })
 
             
+        },
+        deleteDeck() {
+            this.isLoading = true
+            deleteDeck(this.editingDeck.id).then(result => {
+                this.onComplete(result)
+            }).catch(console.error).finally(() => {
+                this.isLoading = false
+            })
         }
+
     }
 }
 

@@ -9,6 +9,7 @@ export default class Deck {
         this.reviewCount = data.review_count
         this.newCount = data.new_count
         this.coverImage = data.cover_image
+        this.pinned = data.pinned
     }
 
     async getNextCard() {

@@ -12,7 +12,11 @@ import DeckCard from '../components/basic/DeckCard.vue'
         </div>
 
         <el-main v-loading='loadingDecks'>
-            <DeckCard @click='() => onDeckSelected(deck)' :title='deck.title' v-for='deck in decks' :img-url='deck.coverImage' :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' :review-count='deck.reviewCount' :new-count='deck.newCount'/>
+            <div style='display: flex; flex-direction: row; flex-wrap: wrap;'>
+                <DeckCard :setPinned='(pinned) => setDeckPinned(deck.id, pinned)' :pinned='deck.pinned' @click='() => onDeckSelected(deck)' :on-edit='() => editDeck(deck)' :title='deck.title' v-for='deck in pinnedDecks' :img-url='deck.coverImage' :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' :review-count='deck.reviewCount' :new-count='deck.newCount'/>
+                <el-divider v-if='pinnedDecks.length > 0'></el-divider>
+                <DeckCard :setPinned='(pinned) => setDeckPinned(deck.id, pinned)' :pinned='deck.pinned' @click='() => onDeckSelected(deck)' :on-edit='() => editDeck(deck)' :title='deck.title' v-for='deck in otherDecks' :img-url='deck.coverImage' :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' :review-count='deck.reviewCount' :new-count='deck.newCount'/>
+            </div>
             <div v-if='decks.length == 0' style='width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;'>
                 <el-result icon="info" title="No Decks" subTitle="Create your first one now!">
                 </el-result>
@@ -21,11 +25,12 @@ import DeckCard from '../components/basic/DeckCard.vue'
         </el-main>  
 
         <el-dialog
-            title="Create New Deck"
+            :title="state.deck ? 'Edit Deck': 'Create New Deck'"
             v-model="state.isEditingDeck"
-            class='dialog'>
+            class='dialog'
+            @close='resetDialog'>
             
-            <EditDeckForm :on-complete='onNewDeckFormCompletion'/>
+            <EditDeckForm v-if='state.isEditingDeck' :on-complete='onNewDeckFormCompletion' :editing-deck='state.deck'/>
 
         </el-dialog>
     </div>
@@ -40,7 +45,7 @@ import useFlashcards from '../composables/UseFlashcards'
 
 
 const { logout, userIsLoggedIn } = useAuthUser()
-const { getDecks, createDeck } = useFlashcards()
+const { getDecks, createDeck, setPinned } = useFlashcards()
 
 export default {
     mounted() {
@@ -48,9 +53,12 @@ export default {
     },
     data() {
         return {
+            pinnedDecks: [],
+            otherDecks: [],
             decks: [],
             state: {
-                isEditingDeck: false
+                isEditingDeck: false,
+                deck: null
             },
             newDeckForm: {
                 title: '',
@@ -61,14 +69,29 @@ export default {
     },
     methods: {
         logout() { logout().then(() => this.$router.push('/login')) },
+        resetDialog() {
+            this.state.deck = null
+        },
         onNewDeckFormCompletion(result) {
-            this.isEditingDeck = false
+            this.state.isEditingDeck = false
             this.loadDecks()
         },
         loadDecks() {
             this.loadingDecks = true
             getDecks().then(result => {
                 this.decks = result
+
+                let pinnedDecks = []
+                let otherDecks = []
+
+                for(let i = 0; i < result.length; i++) {
+                    if (result[i].pinned) pinnedDecks.push(result[i])
+                    else otherDecks.push(result[i])
+                }
+
+                this.pinnedDecks = pinnedDecks
+                this.otherDecks = otherDecks
+
             }).catch(console.error).finally(() => this.loadingDecks = false)
         },
         onDeckSelected(deck) {
@@ -79,6 +102,16 @@ export default {
                     deck: deck
                 }
             })
+        },
+        editDeck(deck) {
+            this.state.deck = deck
+            this.state.isEditingDeck = true
+        },
+        setDeckPinned(deckId, pinned) {
+            setPinned(deckId, pinned).then(result => {
+                console.log('test')
+                this.loadDecks()
+            }).catch(console.error)
         }
     },
     components: {

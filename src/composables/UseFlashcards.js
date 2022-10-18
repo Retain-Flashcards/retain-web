@@ -17,7 +17,7 @@ export default () => {
         return data.map(deck => new Deck(deck))
     }
 
-    const createDeck = async (title, file) => {
+    const createDeck = async (title, file, deckId) => {
         console.log('test')
 
         let publicURL = undefined
@@ -36,7 +36,24 @@ export default () => {
             publicURL = data.publicURL
         }
 
-        //Next, INSERT a new deck row
+        //Next, INSERT a new deck row or UPDATE existing one
+        if (deckId) {
+            let updateObject = {
+                title: title
+            }
+
+            if (publicURL) updateObject['cover_image'] = publicURL
+            
+            const result = await supabase.from('decks').update(updateObject).eq('deck_id', deckId)
+
+            if (result.error) {
+                console.log(result)
+                throw new Error(`Could not create deck: ${result.error}`)
+            }
+
+            return result.data
+        }
+
         const { result, error } = await supabase.from('decks').insert([
             {
                 title: title,
@@ -219,6 +236,21 @@ export default () => {
         
     }
 
+    const deleteDeck = async (deckId) => {
+        const { data, error } = await supabase.from('decks').delete().eq('deck_id', deckId)
+        if (error) throw new Error('Could not delete deck')
+        return data
+    }
+
+    const setPinned = async (deckId, pinned) => {
+        const { data, error } = await supabase.from('decks').update({
+            pinned: pinned
+        }).eq('deck_id', deckId)
+        if (error) throw new Error('Could not set pin status')
+        console.log('testing')
+        return data
+    }
+
     return {
         getDecks,
         createDeck,
@@ -229,7 +261,9 @@ export default () => {
         createNote,
         loadNote,
         getNextCard,
-        studyCard
+        studyCard,
+        deleteDeck,
+        setPinned
     }
 
 }
