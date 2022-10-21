@@ -2,17 +2,21 @@
 
 <div class='content-container'>
     <el-header v-loading='loadingDeck' v-if='deck'>
+        <div class='return-link' @click='returnToDeck' style='margin-top: 20px;'>
+            <el-icon style='padding-right: 10px;'><ArrowLeft /></el-icon>Return to deck
+        </div>
         <div style='display: flex; align-items: center; margin-top: 20px;'>
+            
             <span style='font-size: 30px;'>Studying:</span>
             <span style='font-size: 30px; margin-left: 5px; color: var(--el-color-primary); font-weight: bold;'>{{ deck.title }}</span>
             <div class='flex-spacer'></div>
             <el-button v-if='card' type='primary' plain style='margin-right: 30px;' @click='editCard'>Edit Card</el-button>
             <div style='font-size: 30px; display: flex;'>
-                <div v-if='newLeft || reviewsLeft' class='count' style='color: var(--el-color-danger); margin-right: 30px; text-align: center;'>
+                <div v-if='newLeft || reviewsLeft' class='count' style='color: var(--el-color-primary); margin-right: 30px; text-align: center;'>
                     <p>{{ newLeft }}</p>
                     <p :style="{ textDecoration: !card.lastReviewed ? 'underline':'none', fontSize: '15px' }">New</p>
                 </div>
-                <div v-if='newLeft || reviewsLeft' class='count' style='color: var(--el-color-primary); margin-right: 30px; text-align: center;'>
+                <div v-if='newLeft || reviewsLeft' class='count' style='color: var(--el-color-primary-light-4); margin-right: 30px; text-align: center;'>
                     <p >{{ reviewsLeft }}</p>
                     <p :style="{ textDecoration: card.lastReviewed ? 'underline':'none', fontSize: '15px' }">Review</p>
                 </div>
@@ -104,6 +108,14 @@ export default {
             this.flipped = true
 
         },
+        returnToDeck() {
+            this.$router.push({
+                name: 'View Deck',
+                params: {
+                    deckId: this.deckId
+                }
+            })
+        },
         getDeck() {
             this.deckLoading = true
             getDeck(this.deckId).then(deck => {
@@ -188,5 +200,10 @@ export default {
 .footer {
     background: #EEE;
     padding-top: 10px;
+}
+
+.return-link:hover {
+    text-decoration: underline;
+    cursor: pointer;
 }
 </style>

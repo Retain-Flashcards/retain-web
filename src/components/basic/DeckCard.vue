@@ -12,13 +12,13 @@
             </div>
     
             <div class='card-content'>
-                <div class='new count-item'>
+                <div class='new count-item' :style='{ color: "var(--el-color-primary)" }'>
                     <div class='flex-spacer'></div>
                     <h1>{{ newCount }}</h1>
                     <p>New</p>
                     <div class='flex-spacer'></div>
                 </div>
-                <div class='review count-item' :style='{ color: primaryColor ? primaryColor : "var(--el-color-primary)" }'>
+                <div class='review count-item' :style='{ color: "var(--el-color-primary-light-4)" }'>
                     <div class='flex-spacer'></div>
                     <h1>{{ reviewCount }}</h1>
                     <p>Review</p>

@@ -24,11 +24,11 @@
                 <div class='stats'>
                     <div class='stats-container'>
                         <div class='flex-spacer'></div>
-                        <div class='stats-item'>
+                        <div class='stats-item' style='color: var(--el-color-primary);'>
                             <h2 class='new-text'>{{ deck.newCount }}</h2>
                             <p class='new-text'>New</p>
                         </div>
-                        <div class='stats-item'>
+                        <div class='stats-item' style='color: var(--el-color-primary-light-4);'>
                             <h2 class='review-text'>{{ deck.reviewCount }}</h2>
                             <p class='review-text'>Review</p>
                         </div>
@@ -261,9 +261,7 @@ h1 {
     margin-top: 50px;
 }
 
-.due-container h2 {
-    color: var(--el-color-danger);
-}
+
 
 .stats {
     position: relative;
@@ -287,7 +285,7 @@ h1 {
     display: flex;
     left: 0px;
     top: 0px;
-    background: var(--el-color-success);
+    background: var(--el-color-primary-overlay);
     width: 100%;
     height: 100%;
     align-items: center;
@@ -305,7 +303,6 @@ h1 {
 
 .stats-item {
     text-align: center;
-    color: var(--el-color-primary);
     font-weight: bold;
     margin-top: 10px;
     margin-bottom: 10px;
@@ -334,14 +331,6 @@ h1 {
     font-size: 40px;
     margin: 0px;
     margin-bottom: 10px;
-}
-
-h2.review-text {
-    color: var(--el-color-primary);
-}
-
-.new-text {
-    color: var(--el-color-danger);
 }
 
 .table-container {
