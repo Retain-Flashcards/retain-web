@@ -2,7 +2,7 @@
     <div v-if='deck' style='height: 100%; width: 100%;'>
         
         <div class='main-header' :style='{ backgroundImage: `url(${deck.coverImage})` }'>
-            <div class='flex-spacer background-overlay'>
+            <div class='flex-spacer background-overlay' :style="{ backgroundColor: 'var(--el-color-primary-overlay)' }">
                 <div class='return-link' @click='() => { this.$router.push({ name: "Home" }) }'>
                     <el-icon style='padding-right: 10px;'><ArrowLeft /></el-icon>Return to home
                 </div>
@@ -87,6 +87,7 @@
 <script>
 import useFlashcards from '../composables/UseFlashcards'
 import { Plus, ArrowLeft } from '@element-plus/icons-vue'
+import { setThemeColor } from '../utils'
 
 const { getDeck, getDeckNotes, deleteNote } = useFlashcards()
 
@@ -111,6 +112,7 @@ export default {
         loadDeck() {
             getDeck(this.$route.params.deckId).then(deck => {
                 this.deck = deck
+                setThemeColor(this.deck.primaryColor, document.documentElement)
 
                 this.loadNotes()
             })

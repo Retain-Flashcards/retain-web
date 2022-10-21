@@ -17,9 +17,7 @@ export default () => {
         return data.map(deck => new Deck(deck))
     }
 
-    const createDeck = async (title, file, deckId) => {
-        console.log('test')
-
+    const createDeck = async (title, file, primaryColor, deckId) => {
         let publicURL = undefined
 
         if (file) {
@@ -42,6 +40,7 @@ export default () => {
                 title: title
             }
 
+            if (primaryColor != '') updateObject['primary_color'] = primaryColor
             if (publicURL) updateObject['cover_image'] = publicURL
             
             const result = await supabase.from('decks').update(updateObject).eq('deck_id', deckId)
@@ -54,12 +53,16 @@ export default () => {
             return result.data
         }
 
+        let updateObject = {
+            title: title,
+            uid: supabase.auth.user().id,
+            cover_image: publicURL
+        }
+
+        if (primaryColor != '') updateObject['primary_color'] = primaryColor
+
         const { result, error } = await supabase.from('decks').insert([
-            {
-                title: title,
-                uid: supabase.auth.user().id,
-                cover_image: publicURL
-            }
+           updateObject
         ])
 
         if (error) throw new Error('Could not create deck')

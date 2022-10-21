@@ -1,6 +1,7 @@
 <script setup>
 import { Plus, Upload } from '@element-plus/icons-vue'
 import DeckCard from '../components/basic/DeckCard.vue'
+import { setThemeColor } from '../utils'
 </script>
 
 <template>
@@ -13,9 +14,9 @@ import DeckCard from '../components/basic/DeckCard.vue'
 
         <el-main v-loading='loadingDecks'>
             <div style='display: flex; flex-direction: row; flex-wrap: wrap;'>
-                <DeckCard :setPinned='(pinned) => setDeckPinned(deck.id, pinned)' :pinned='deck.pinned' @click='() => onDeckSelected(deck)' :on-edit='() => editDeck(deck)' :title='deck.title' v-for='deck in pinnedDecks' :img-url='deck.coverImage' :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' :review-count='deck.reviewCount' :new-count='deck.newCount'/>
+                <DeckCard :primaryColor='deck.primaryColor' :setPinned='(pinned) => setDeckPinned(deck.id, pinned)' :pinned='deck.pinned' @click='() => onDeckSelected(deck)' :on-edit='() => editDeck(deck)' :title='deck.title' v-for='deck in pinnedDecks' :img-url='deck.coverImage' :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' :review-count='deck.reviewCount' :new-count='deck.newCount'/>
                 <el-divider v-if='pinnedDecks.length > 0'></el-divider>
-                <DeckCard :setPinned='(pinned) => setDeckPinned(deck.id, pinned)' :pinned='deck.pinned' @click='() => onDeckSelected(deck)' :on-edit='() => editDeck(deck)' :title='deck.title' v-for='deck in otherDecks' :img-url='deck.coverImage' :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' :review-count='deck.reviewCount' :new-count='deck.newCount'/>
+                <DeckCard :primaryColor='deck.primaryColor' :setPinned='(pinned) => setDeckPinned(deck.id, pinned)' :pinned='deck.pinned' @click='() => onDeckSelected(deck)' :on-edit='() => editDeck(deck)' :title='deck.title' v-for='deck in otherDecks' :img-url='deck.coverImage' :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' :review-count='deck.reviewCount' :new-count='deck.newCount'/>
             </div>
             <div v-if='decks.length == 0' style='width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;'>
                 <el-result icon="info" title="No Decks" subTitle="Create your first one now!">
@@ -50,6 +51,7 @@ const { getDecks, createDeck, setPinned } = useFlashcards()
 export default {
     mounted() {
         this.loadDecks()
+        setThemeColor('#ffad33', document.documentElement)
     },
     data() {
         return {

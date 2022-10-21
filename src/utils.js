@@ -1,3 +1,5 @@
+import generateColors from './color'
+
 export function generate_uuid() {
     var result, i, j;
     result = '';
@@ -8,4 +10,13 @@ export function generate_uuid() {
         result = result + i;
     }
     return result;
+}
+
+export function setThemeColor(primary, el) {
+    let colors = generateColors(primary)
+
+    el.style.setProperty(`--el-color-primary`, primary)
+    for (const [key, value] of Object.entries(colors)) {
+        el.style.setProperty(`--el-color-primary-${key}`, value)
+    }
 }

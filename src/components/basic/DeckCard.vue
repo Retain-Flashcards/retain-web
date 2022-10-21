@@ -1,8 +1,8 @@
 <template>
-    <div class='card' :style="{ backgroundImage: imgUrl ? `url('` + imgUrl + `')`:'none' }">
-        <div :class='`card-container ${imgUrl ? "card-overlay": ""}`'>
+    <div ref='theContainer' class='card' :style="{ backgroundColor: primaryColor ? primaryColor : 'var(--el-color-primary)', backgroundImage: imgUrl ? `url('` + imgUrl + `')`:'none' }">
+        <div :class='`card-container ${imgUrl ? "card-overlay": ""}`' :style="{ backgroundColor: 'var(--el-color-primary-overlay)' }">
             <div class='edit-container' style='flex: 0.2; display: flex; flex-direction: row; margin-right: 20px; margin-left: 15px; margin-top: 15px; align-items: center;'>
-                <el-button @click.stop='() => setPinned(!pinned)' :type='pinned ? "primary":"plain"'  circle><el-icon><StarFilled v-if='pinned'/><Star v-else/></el-icon></el-button>
+                <el-button :class='`${pinned ? "pin-button" : ""}`' @click.stop='() => setPinned(!pinned)' :type='pinned ? "primary":"plain"'  circle ><el-icon><StarFilled v-if='pinned'/><Star v-else/></el-icon></el-button>
                 <div class='flex-spacer'></div> 
                 <el-button @click.stop='onEdit' class='edit-button' type='text' style='color: white; font-size: 25px;'><el-icon><MoreFilled /></el-icon></el-button>
             </div>
@@ -18,7 +18,7 @@
                     <p>New</p>
                     <div class='flex-spacer'></div>
                 </div>
-                <div class='review count-item'>
+                <div class='review count-item' :style='{ color: primaryColor ? primaryColor : "var(--el-color-primary)" }'>
                     <div class='flex-spacer'></div>
                     <h1>{{ reviewCount }}</h1>
                     <p>Review</p>
@@ -33,10 +33,16 @@
 
 <script>
 import { MoreFilled, Star, StarFilled } from '@element-plus/icons-vue'
-
+import { setThemeColor } from '../../utils'
+ 
 export default {
-    props: ['onEdit', 'pinned', 'title', 'imgUrl', 'reviewCount', 'newCount', 'setPinned']
+    props: ['onEdit', 'pinned', 'title', 'imgUrl', 'reviewCount', 'newCount', 'setPinned', 'primaryColor'],
+    updated() {
+        if (this.primaryColor) setThemeColor(this.primaryColor, this.$refs.theContainer)
+    }
 }
+
+
 
 </script>
 
@@ -59,6 +65,15 @@ export default {
         display: flex;
         transition: 0.2s;
         box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 10px;
+    }
+    
+    .pin-button {
+        background: var(--el-color-primary-light-4);
+        border-color: transparent;
+    }
+
+    .pin-button:hover {
+        background: var(--el-color-primary-light-3);
     }
 
     .card-container {

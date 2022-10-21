@@ -5,7 +5,9 @@
     <el-form-item label='Deck Title' :required='true' prop='title'>
         <el-input v-model='formData.title'></el-input>
     </el-form-item>
-
+    <el-form-item label='Color'>
+        <el-color-picker v-model='formData.primaryColor' :predefine='predefinedColors'></el-color-picker>
+    </el-form-item>
     <el-form-item label='Cover Image' prop='coverImage'>
         <div style='width: 100%; display: flex; flex-direction: column; align-items: center;'>
             <img v-if='editingDeck && editingDeck.coverImage' :src='editingDeck.coverImage' style='max-width: 100%; width: 70%; margin: 20px; border-radius: 20px;'/>
@@ -49,10 +51,23 @@ export default {
     props: ['onComplete', 'editingDeck'],
     data() {
         return {
+            predefinedColors: [
+                '#ffad33',
+                '#E03E3E',
+                '#AD1A72',
+                '#6940A5',
+                '#0B6E99',
+                '#0F7B6C',
+                '#DFAB01',
+                '#D9730D',
+                '#64473A',
+                '#9B9A97'
+            ],
             isLoading: false,
             formData: {
                 title: '',
-                coverImageFiles: []
+                coverImageFiles: [],
+                primaryColor: ''
             },
             rules: {
                 title: [
@@ -64,10 +79,12 @@ export default {
     mounted() {
         if (this.editingDeck) {
             this.formData.title = this.editingDeck.title
+            this.formData.primaryColor = this.editingDeck.primaryColor
         }
     },  
     methods: {
         submitNewDeckForm() {
+            console.log(this.formData.primaryColor)
             this.$refs['theForm'].validate(valid => {
 
                 if (valid) {
@@ -76,13 +93,11 @@ export default {
                     
                     const fileObj = this.formData.coverImageFiles.length > 0 ? this.formData.coverImageFiles[0].raw : undefined
 
-                    console.log('testth')
-                    createDeck(this.formData.title, fileObj, this.editingDeck?.id).then(result => {
+                    createDeck(this.formData.title, fileObj, this.formData.primaryColor, this.editingDeck?.id).then(result => {
                         this.formData = {
                             title: '',
                             coverImageFiles: []
                         }
-                        console.log('testagain')
                         this.onComplete(result)
                     }).catch(error => {
                         console.log(error)

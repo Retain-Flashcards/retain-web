@@ -54,6 +54,7 @@
 
 <script>
 import useFlashcards from '../composables/UseFlashcards'
+import { setThemeColor } from '../utils'
 
 const { getNextCard, getDeck, studyCard } = useFlashcards()
 
@@ -107,6 +108,7 @@ export default {
             this.deckLoading = true
             getDeck(this.deckId).then(deck => {
                 this.deck = deck
+                setThemeColor(this.deck.primaryColor, document.documentElement)
             }).catch(error => {
 
             }).finally(() => this.deckLoading = false)

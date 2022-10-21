@@ -48,6 +48,7 @@
 
 <script>
 import useFlashcards from '../composables/UseFlashcards'
+import { setThemeColor } from '../utils'
 
 const { getDecks, uploadImage, createNote, loadNote, deleteNote } = useFlashcards()
 
@@ -116,6 +117,11 @@ export default {
             this.deckSelect.loading = true
             getDecks().then(result => {
                 this.deckSelect.options = result
+                for (let i = 0; i < result.length; i++) {
+                    if (result[i].id == this.deckId) {
+                        setThemeColor(result[i].primaryColor, document.documentElement)
+                    }
+                }
             }).catch(error => {
 
             }).finally(() => this.deckSelect.loading = false)

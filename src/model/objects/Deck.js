@@ -10,6 +10,7 @@ export default class Deck {
         this.newCount = data.new_count
         this.coverImage = data.cover_image
         this.pinned = data.pinned
+        this.primaryColor = data.primary_color
     }
 
     async getNextCard() {
