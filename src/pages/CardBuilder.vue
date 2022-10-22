@@ -127,12 +127,14 @@ export default {
             }).finally(() => this.deckSelect.loading = false)
         },
         onDeckSelectChange(value) {
+            this.deckId = value
             this.$router.push({ 
                 name: 'Create Cards',
                 params: {
                     deckId: value
                 }
             })
+            this.loadDeckSelectOptions()
         },
 
         uploadFrontImage(event, insertImage, files) {
