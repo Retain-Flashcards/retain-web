@@ -66,6 +66,12 @@ export default {
     },
     mounted() {
         this.loadDeckSelectOptions()
+        console.log(this.$refs.frontEditor)
+
+        const textareas = document.getElementsByTagName('textarea')
+        for (let i = 0; i < textareas.length; i++) {
+            textareas[i].spellcheck = true
+        }
 
         if (this.noteId) this.loadExistingNote()
     },  
@@ -185,7 +191,7 @@ export default {
             let currentIndex = 1
 
             if (clozeNums.length > 0) currentIndex = Math.max(...clozeNums) + (keepIndex ? 0:1)
-
+    
 
             this.$refs.frontEditor.insert((selected) => {
                 const prefix = `{{c${currentIndex}::`

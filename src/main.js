@@ -44,6 +44,7 @@ import './styles/element-plus-theme.scss'
 import './styles/index.css'
 import '@kangc/v-md-editor/lib/style/base-editor.css'
 import '@kangc/v-md-editor/lib/theme/style/github.css'
+import createKatexPlugin from '@kangc/v-md-editor/lib/plugins/katex/cdn';
 
 //Auth functions
 const { userIsLoggedIn, setAuthStateChangedListener } = useAuthUser()
@@ -84,6 +85,8 @@ const app = createApp(App)
 VMdEditor.use(githubTheme, {
     Hljs: hljs,
 });
+
+VMdEditor.use( createKatexPlugin() )
 
 //Using
 app.use(router)
