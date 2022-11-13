@@ -87,6 +87,7 @@ VMdEditor.use(githubTheme, {
 });
 
 VMdEditor.use( createKatexPlugin() )
+VMdPreview.use( createKatexPlugin() )
 
 //Using
 app.use(router)
