@@ -26,7 +26,6 @@
                     <el-button type='primary' :disabled='submittingNote' @click='submitNote'>{{ this.noteId ? 'Save':'Add'}} Card</el-button>
                 </div>
                 <v-md-editor class='frontEditor' ref='frontEditor' v-model="editor.frontContent" height="400px" placeholder='Add Content...' autofocus right-toolbar='preview' :disabled-menus='[]' @upload-image='uploadFrontImage' :before-preview-change='processFrontContent'></v-md-editor>
-                <v-md-preview :text="editor.frontContent" height="400px"></v-md-preview>
             </el-main>
         </div>
         <div id='backEditor'>
