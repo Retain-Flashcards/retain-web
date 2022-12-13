@@ -221,6 +221,7 @@ export default {
                 })
             }).finally(() => {
                 this.table.notes[this.notesPage][index].loadingReset = false
+                this.reloadDeckCount()
             })
 
         },
