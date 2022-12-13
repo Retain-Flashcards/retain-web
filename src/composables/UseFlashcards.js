@@ -201,6 +201,20 @@ export default () => {
 
     }
 
+    const resetNote = async (noteId) => {
+        const { data, error } = await supabase.from('cards').update({
+            learning: true,
+            last_reviewed: null,
+            current_interval: 0,
+            buried_until: null,
+            learning_step: 0,
+            precise_last_reviewed: null
+        }).eq('note_id', noteId)
+
+        if (error) throw error
+        else return data[0]
+    }
+
     const loadNote = async (noteId) => {
         const { data, error } = await supabase.from('notes').select('*').eq('id', noteId)
 
@@ -266,7 +280,8 @@ export default () => {
         getNextCard,
         studyCard,
         deleteDeck,
-        setPinned
+        setPinned,
+        resetNote
     }
 
 }

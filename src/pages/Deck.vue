@@ -67,6 +67,11 @@
                             <el-button  @click='() => editNote(scope.row.id)'>Edit</el-button>
                         </template>
                     </el-table-column>
+                    <el-table-column label='Reset' width='105'>
+                        <template v-slot='scope'>
+                            <el-button :loading='scope.row.loadingReset || false' plain type='warning' @click='() => resetNote(scope.$index, scope.row.id)'>Reset</el-button>
+                        </template>
+                    </el-table-column>
                     <el-table-column label='Delete' width='90'>
                         <template v-slot='scope'>
                             <el-button type='danger' plain @click='deleteNote(scope.$index, scope.row.id)'>Delete</el-button>
@@ -87,9 +92,10 @@
 <script>
 import useFlashcards from '../composables/UseFlashcards'
 import { Plus, ArrowLeft } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import { setThemeColor } from '../utils'
 
-const { getDeck, getDeckNotes, deleteNote } = useFlashcards()
+const { getDeck, getDeckNotes, deleteNote, resetNote } = useFlashcards()
 
 export default {
     setup() {
@@ -198,6 +204,25 @@ export default {
             }).catch(error => {
 
             }).finally(() => this.table.loading = false)
+        },
+
+        resetNote(index, noteId) {
+
+            this.table.notes[this.notesPage][index].loadingReset = true
+            resetNote(noteId).then((result) => {
+                ElMessage({
+                    message: 'Card reset successfully!',
+                    type: 'success'
+                })
+            }).catch(error => {
+                ElMessage({
+                    message: `An error occurred: ${error.message}`,
+                    type: 'error'
+                })
+            }).finally(() => {
+                this.table.notes[this.notesPage][index].loadingReset = false
+            })
+
         },
 
         beginStudy() {
