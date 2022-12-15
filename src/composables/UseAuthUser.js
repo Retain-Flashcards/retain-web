@@ -27,7 +27,7 @@ export default function useAuthUser() {
         const { data, error } = await supabase.auth.signIn({
             provider: 'google',
         }, {
-            redirectTo: 'http://localhost:3003/login'
+            redirectTo: `${window.location.hostname + window.location.port == 8000 ? '': window.location.port}/login`
         })
         return data
     }
