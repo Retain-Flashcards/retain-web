@@ -11,11 +11,24 @@ export default function useAuthUser() {
     supabase.auth.onAuthStateChange((e, session) => {
         user.value = supabase.auth.user()
     })  
+
+    const reloadAuth = async () => {
+        user.value = supabase.auth.user()
+    }
     
     const loginEmailPassword = async (email, password) => {
         console.log("TEST")
         const data = await supabase.auth.signIn({ email, password })
         console.log(data)
+        return data
+    }
+
+    const logInWithGoogle = async () => {
+        const { data, error } = await supabase.auth.signIn({
+            provider: 'google',
+        }, {
+            redirectTo: 'http://localhost:3003/login'
+        })
         return data
     }
 
@@ -55,7 +68,9 @@ export default function useAuthUser() {
         userIsLoggedIn,
         setAuthStateChangedListener,
         getUser,
-        registerUser
+        registerUser,
+        logInWithGoogle,
+        reloadAuth
     }
 
 }

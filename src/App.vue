@@ -44,9 +44,17 @@ export default {
     mounted() {
         this.reloading = true
     },
+    methods: {
+        handleGoogleCredentials(response) {
+            console.log(response)
+        }
+    },      
     computed: {
         isAuthenticated() {
             this.reloading = false
+
+            const loggedIn = userIsLoggedIn()
+
             return userIsLoggedIn()
         }
     },

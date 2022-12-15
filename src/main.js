@@ -13,6 +13,7 @@ import PasswordUpdateSuccess from './pages/PasswordUpdateSuccess.vue'
 import VerifyEmail from './pages/VerifyEmail.vue'
 import Deck from './pages/Deck.vue'
 import CardBuilder from './pages/CardBuilder.vue'
+import GoogleLogin from './pages/GoogleLogin.vue'
 import Study from './pages/Study.vue'
 
 //UI Frameworks
@@ -53,6 +54,7 @@ const { userIsLoggedIn, setAuthStateChangedListener } = useAuthUser()
 const routes = [
     { name: 'Home', path: '/', component: Home, meta: { requiresAuth: true } },
     { name: 'Login', path: '/login', component: Login },
+    { name: 'Google Login', path: '/google', component: GoogleLogin },
     { name: 'Register', path: '/register', component: Register },
     { name: 'Verify Email', path: '/verify', component: VerifyEmail },
     { name: 'Password Updated Successfully', path: '/passwordupdated', component: PasswordUpdateSuccess },

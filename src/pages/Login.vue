@@ -29,9 +29,15 @@ el-input {
 
 <script>
 import useAuthUser from '../composables/UseAuthUser'
-const { loginEmailPassword } = useAuthUser()
+const { loginEmailPassword, userIsLoggedIn, reloadAuth } = useAuthUser()
 
 export default {
+    mounted() {
+        reloadAuth()
+        if (userIsLoggedIn()) {
+            this.$router.replace({ name: "Home" })
+        }
+    },
     data() {
         return {
             formData: {
