@@ -113,11 +113,12 @@ export default {
                     message: 'Your Deck Has Been Shared!',
                     type: 'success'
                 })
-            }).catch(console.error).finally(() => {
+            }).catch((error) => {
                 ElMessage({
                     message: 'Something Went Wrong',
                     type: 'error'
                 })
+            }).finally(() => {
                 this.share.loading = false
             })
         },
