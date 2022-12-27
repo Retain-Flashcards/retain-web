@@ -2,6 +2,7 @@
 import { Plus, Upload } from '@element-plus/icons-vue'
 import DeckCard from '../components/basic/DeckCard.vue'
 import { setThemeColor } from '../utils'
+import { ElMessage } from 'element-plus'
 </script>
 
 <template>
@@ -14,9 +15,9 @@ import { setThemeColor } from '../utils'
 
         <el-main v-loading='loadingDecks'>
             <div style='display: flex; flex-direction: row; flex-wrap: wrap;'>
-                <DeckCard :primaryColor='deck.primaryColor' :setPinned='(pinned) => setDeckPinned(deck.id, pinned)' :pinned='deck.pinned' @click='() => onDeckSelected(deck)' :on-edit='() => editDeck(deck)' :title='deck.title' v-for='deck in pinnedDecks' :img-url='deck.coverImage' :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' :review-count='deck.reviewCount' :new-count='deck.newCount'/>
+                <DeckCard :shared='deck.shared' :primaryColor='deck.primaryColor' :setPinned='(pinned) => setDeckPinned(deck.id, pinned)' :pinned='deck.pinned' @click='() => onDeckSelected(deck)' :on-edit='() => editDeck(deck)' :on-share='() => this.shareDeckClicked(deck)' :title='deck.title' v-for='deck in pinnedDecks' :img-url='deck.coverImage' :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' :review-count='deck.reviewCount' :new-count='deck.newCount'/>
                 <el-divider v-if='pinnedDecks.length > 0'></el-divider>
-                <DeckCard :primaryColor='deck.primaryColor' :setPinned='(pinned) => setDeckPinned(deck.id, pinned)' :pinned='deck.pinned' @click='() => onDeckSelected(deck)' :on-edit='() => editDeck(deck)' :title='deck.title' v-for='deck in otherDecks' :img-url='deck.coverImage' :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' :review-count='deck.reviewCount' :new-count='deck.newCount'/>
+                <DeckCard :shared='deck.shared' :primaryColor='deck.primaryColor' :setPinned='(pinned) => setDeckPinned(deck.id, pinned)' :pinned='deck.pinned' @click='() => onDeckSelected(deck)' :on-edit='() => editDeck(deck)' :on-share='() => this.shareDeckClicked(deck)' :title='deck.title' v-for='deck in otherDecks' :img-url='deck.coverImage' :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' :review-count='deck.reviewCount' :new-count='deck.newCount'/>
             </div>
             <div v-if='decks.length == 0' style='width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;'>
                 <el-result icon="info" title="No Decks" subTitle="Create your first one now!">
@@ -34,6 +35,27 @@ import { setThemeColor } from '../utils'
             <EditDeckForm v-if='state.isEditingDeck' :on-complete='onNewDeckFormCompletion' :editing-deck='state.deck'/>
 
         </el-dialog>
+
+        <el-dialog
+            :title="share.deck && `Sharing ${share.deck.title}`"
+            v-model="share.open"
+            class='dialog'
+            @close='resetShareDialog'>
+            <el-form v-loading='share.loading'>
+                <el-form-item label='Email'>
+                    <el-input v-model='share.email' placeholder='Enter email to share to...'></el-input>
+                </el-form-item>
+                <el-form-item label='Role'>
+                    <el-radio-group v-model='share.role'>
+                        <el-radio-button label='Viewer'/>
+                        <el-radio-button label='Editor'/>
+                    </el-radio-group>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type='primary' @click='shareDeckRequest'>Share</el-button>
+                </el-form-item>
+            </el-form>
+        </el-dialog>
     </div>
     
 </template>
@@ -46,7 +68,7 @@ import useFlashcards from '../composables/UseFlashcards'
 
 
 const { logout, userIsLoggedIn } = useAuthUser()
-const { getDecks, createDeck, setPinned } = useFlashcards()
+const { getDecks, createDeck, setPinned, shareDeck } = useFlashcards()
 
 export default {
     mounted() {
@@ -66,13 +88,38 @@ export default {
                 title: '',
                 coverImageFiles: []
             },
-            loadingDecks: false
+            loadingDecks: false,
+            share: {
+                open: false,
+                deck: null,
+                email: '',
+                role: 'Viewer',
+                loading: false
+            }
         }
     },
     methods: {
         logout() { logout().then(() => this.$router.push('/login')) },
         resetDialog() {
             this.state.deck = null
+        },
+        resetShareDialog() {
+            this.share.deck = null
+        },
+        shareDeckRequest() {
+            this.share.loading = true
+            shareDeck(this.share.email, this.share.role, this.share.deck.id).then((result) => {
+                ElMessage({
+                    message: 'Your Deck Has Been Shared!',
+                    type: 'success'
+                })
+            }).catch(console.error).finally(() => {
+                ElMessage({
+                    message: 'Something Went Wrong',
+                    type: 'error'
+                })
+                this.share.loading = false
+            })
         },
         onNewDeckFormCompletion(result) {
             this.state.isEditingDeck = false
@@ -108,6 +155,10 @@ export default {
         editDeck(deck) {
             this.state.deck = deck
             this.state.isEditingDeck = true
+        },
+        shareDeckClicked(deck) {
+            this.share.open = true
+            this.share.deck = deck
         },
         setDeckPinned(deckId, pinned) {
             setPinned(deckId, pinned).then(result => {

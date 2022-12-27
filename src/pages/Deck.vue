@@ -8,6 +8,7 @@
                 </div>
                 <div class='flex-spacer'></div>
                 <div style='display: flex; align-items: center;'>
+                    <el-button v-if='deck.shared' type='text' style='color: white; font-size: 30px; margin-right: 15px;'><el-icon><Connection /></el-icon></el-button>
                     <h1>{{ deck.title }}</h1>
                 </div>
             </div>
@@ -44,7 +45,7 @@
 
                 <div class='table-header' style='display: flex; align-items: center; margin-bottom: 5px;'>
                     <h3>All Notes ({{ table.noteCount }})</h3>
-                    <el-button type='primary' style='margin-left: 30px;' @click='createNotes'>
+                    <el-button v-if='deck.accessLevel == undefined || deck.accessLevel == null || deck.accessLevel > 1' type='primary' style='margin-left: 30px;' @click='createNotes'>
                         <el-icon style='margin-right: 5px;'><Plus /></el-icon> Add Notes
                     </el-button>
                     <div class='flex-spacer'></div>
@@ -62,7 +63,7 @@
                             <el-checkbox v-model='scope.row.active'></el-checkbox>
                         </template>
                     </el-table-column>
-                    <el-table-column label='Edit' width='90'>
+                    <el-table-column label='Edit' width='90' v-if='deck.accessLevel == undefined || deck.accessLevel == null || deck.accessLevel > 1'>
                         <template v-slot='scope'>
                             <el-button  @click='() => editNote(scope.row.id)'>Edit</el-button>
                         </template>
@@ -72,7 +73,7 @@
                             <el-button :loading='scope.row.loadingReset || false' plain type='warning' @click='() => resetNote(scope.$index, scope.row.id)'>Reset</el-button>
                         </template>
                     </el-table-column>
-                    <el-table-column label='Delete' width='90'>
+                    <el-table-column label='Delete' width='90' v-if='deck.accessLevel == undefined || deck.accessLevel == null || deck.accessLevel > 1'>
                         <template v-slot='scope'>
                             <el-button type='danger' plain @click='deleteNote(scope.$index, scope.row.id)'>Delete</el-button>
                         </template>

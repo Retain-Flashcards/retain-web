@@ -4,10 +4,19 @@
             <div class='edit-container' style='flex: 0.2; display: flex; flex-direction: row; margin-right: 20px; margin-left: 15px; margin-top: 15px; align-items: center;'>
                 <el-button :class='`${pinned ? "pin-button" : ""}`' @click.stop='() => setPinned(!pinned)' :type='pinned ? "primary":"plain"'  circle ><el-icon><StarFilled v-if='pinned'/><Star v-else/></el-icon></el-button>
                 <div class='flex-spacer'></div> 
-                <el-button @click.stop='onEdit' class='edit-button' type='text' style='color: white; font-size: 25px;'><el-icon><MoreFilled /></el-icon></el-button>
+                <el-dropdown trigger='click' @command='handleMoreCommand'>
+                    <el-button @click.stop='() => {}' class='edit-button' type='text' style='color: white; font-size: 25px;'><el-icon><MoreFilled /></el-icon></el-button>
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item command='edit'>Edit</el-dropdown-item>
+                            <el-dropdown-item command='share'>Share</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
             </div>
             <div style='flex: 0.05;'></div>
-            <div class='card-header' >
+            <div class='card-header'>
+                <el-button v-if='shared' type='text' style='color: white; font-size: 20px; margin-right: 7px;'><el-icon><Connection /></el-icon></el-button>
                 <h3>{{ title }}</h3>
             </div>
     
@@ -32,13 +41,19 @@
 </template>
 
 <script>
-import { MoreFilled, Star, StarFilled } from '@element-plus/icons-vue'
+import { MoreFilled, Star, StarFilled, Connection } from '@element-plus/icons-vue'
 import { setThemeColor } from '../../utils'
  
 export default {
-    props: ['onEdit', 'pinned', 'title', 'imgUrl', 'reviewCount', 'newCount', 'setPinned', 'primaryColor'],
+    props: ['onEdit', 'onShare', 'pinned', 'title', 'imgUrl', 'reviewCount', 'newCount', 'setPinned', 'primaryColor', 'shared'],
     updated() {
         if (this.primaryColor) setThemeColor(this.primaryColor, this.$refs.theContainer)
+    },
+    methods: {
+        handleMoreCommand(command) {
+            if (command == 'edit') this.onEdit()
+            else this.onShare()
+        }
     }
 }
 
@@ -86,11 +101,14 @@ export default {
         padding-left: 20px;
         padding-right: 20px;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
+        align-items: flex-start;
+        overflow: hidden;
     }
 
     h3 {
         margin: 0px;
+        margin-right: 5px;
         margin-bottom: 10px;
         color: white;
         font-size: 23px;

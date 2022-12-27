@@ -9,9 +9,7 @@ const { supabase, makeSupabaseFetch } = useSupabase()
 export default () => {
 
     const getDecks = async () => {
-
-        const { data, error } = await supabase.from('decks_with_new_review_counts').select(`*`)
-
+        const { data, error } = await supabase.from('decks_with_new_review_counts_new').select(`*`)
         if (error) throw new Error(error)
         console.log(data)
         return data.map(deck => new Deck(deck))
@@ -71,7 +69,7 @@ export default () => {
     }
 
     const getDeck = async (deckId) => {
-        const { data, error } = await supabase.from('decks_with_new_review_counts').select('*').eq('deck_id', deckId)
+        const { data, error } = await supabase.from('decks_with_new_review_counts_new').select('*').eq('deck_id', deckId)
 
         if (error || data.length == 0) throw new Error('Could not fetch deck')
 
@@ -201,7 +199,7 @@ export default () => {
     }
 
     const resetNote = async (noteId) => {
-        const { data, error } = await supabase.from('cards').update({
+        const { data, error } = await supabase.from('card_reviews').update({
             learning: true,
             last_reviewed: null,
             current_interval: 0,
@@ -234,6 +232,20 @@ export default () => {
         if (!result.card) return result
 
         result.card = new Card(result.card)
+
+        return result
+
+    }
+
+    const shareDeck = async (email, role, deckId) => {
+        
+        const result = await makeSupabaseFetch('share-deck', {
+            email,
+            role,
+            deckId
+        })
+
+        console.log(result)
 
         return result
 
@@ -280,7 +292,8 @@ export default () => {
         studyCard,
         deleteDeck,
         setPinned,
-        resetNote
+        resetNote,
+        shareDeck
     }
 
 }

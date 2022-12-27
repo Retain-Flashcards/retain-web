@@ -11,6 +11,8 @@ export default class Deck {
         this.coverImage = data.cover_image
         this.pinned = data.pinned
         this.primaryColor = data.primary_color
+        this.accessLevel = data.access_level
+        this.shared = data.shared
     }
 
     async getNextCard() {
