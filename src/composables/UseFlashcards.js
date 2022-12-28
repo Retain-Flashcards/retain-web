@@ -251,6 +251,19 @@ export default () => {
 
     }
 
+    const generateAIQuiz = async (selectedNotes, deckId) => {
+        
+        const result = await makeSupabaseFetch('generate-quiz', {
+            notes: selectedNotes,
+            deckId
+        })
+
+        console.log(result)
+
+        return result
+
+    }
+
     const studyCard = async (cardId, category) => {
 
         const todayDate = new Date()
@@ -279,6 +292,25 @@ export default () => {
         return data
     }
 
+    const getQuiz = async (quizPath) => {
+        const { data, error } = await supabase.storage.from('quizzes').download(quizPath)
+        if (error) throw new Error('Could not delete deck')
+
+        const json = await data.text()
+
+        return JSON.parse(json)
+    }
+
+    const getQuizzes = async (deckId) => {
+        const { data, error } = await supabase.storage.from('quizzes').list(`${supabase.auth.user().id}/${deckId}`)
+
+        return data
+    }
+
+    const getQuizPath = (quizName, deckId) => {
+        return `${supabase.auth.user().id}/${deckId}/${quizName.replace('.json', '')}`
+    }
+
     return {
         getDecks,
         createDeck,
@@ -293,7 +325,11 @@ export default () => {
         deleteDeck,
         setPinned,
         resetNote,
-        shareDeck
+        shareDeck,
+        generateAIQuiz,
+        getQuiz,
+        getQuizzes,
+        getQuizPath
     }
 
 }

@@ -41,6 +41,31 @@
                 </div>
             </div>
 
+            <div class='due-container' style='margin-top: 0px; margin-bottom: 50px;'>
+                <div class='quizzes-header'>
+                    <h2>Quizzes</h2>
+                    <div class='flex-spacer'></div>
+                    <el-button type='primary' @click='createQuiz'>
+                        <el-icon style='margin-right: 5px;'><Plus /></el-icon> Create a Quiz
+                    </el-button>
+                </div>
+                <div class='table-container'>
+
+                    <el-table :data='quizzes' v-loading='table.loading' style='width: 100%;' stripe :show-header='false'>
+                        <el-table-column label='Quiz' v-slot='scope' min-width="100">
+                            <el-button link type='primary' @click='openQuiz(scope.row.name)' size='large'><b>Quiz {{  scope.$index + 1  }}</b></el-button>
+                        </el-table-column>
+                        <template #empty>
+                            <div style='display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; padding-top: 10px;'>
+                                <el-icon :size='40'><InfoFilled /></el-icon>
+                                <p style='line-height: 30px;'>No Quizzes Yet!</p>
+                            </div>
+                        </template>
+                    </el-table>
+
+                </div>
+            </div>
+
             <div class='table-container'>
 
                 <div class='table-header' style='display: flex; align-items: center; margin-bottom: 5px;'>
@@ -92,11 +117,11 @@
 
 <script>
 import useFlashcards from '../composables/UseFlashcards'
-import { Plus, ArrowLeft } from '@element-plus/icons-vue'
+import { Plus, ArrowLeft, InfoFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { setThemeColor } from '../utils'
 
-const { getDeck, getDeckNotes, deleteNote, resetNote } = useFlashcards()
+const { getDeck, getDeckNotes, deleteNote, resetNote, getQuizzes, getQuizPath } = useFlashcards()
 
 export default {
     setup() {
@@ -112,16 +137,29 @@ export default {
                 loading: true,
                 notes: {},
                 noteCount: 0
-            }
+            },
+            quizzes: [],
+            loadingQuizzes: true
         }
     }, 
     methods: {
         loadDeck() {
             getDeck(this.$route.params.deckId).then(deck => {
                 this.deck = deck
+                console.log(this.deck)
                 setThemeColor(this.deck.primaryColor, document.documentElement)
 
                 this.loadNotes()
+                this.loadQuizzes()
+            })
+        },
+
+        createQuiz() {
+            this.$router.push({
+                name: 'QuizBuilder',
+                params: {
+                    deckId: this.deck.id
+                }
             })
         },
 
@@ -157,6 +195,31 @@ export default {
             }).finally(() => {
                 this.table.loading = false
             })
+        },
+
+        loadQuizzes() {
+            if (!this.deck) return
+            this.loadingQuizzes = true
+            getQuizzes(this.deck.id).then(result => {
+                this.quizzes = result.filter(item => item.name != '.emptyFolderPlaceholder')
+            }).finally(() => {
+                this.loadingQuizzes = false
+            })
+
+        },
+
+        openQuiz(quizName) {
+
+            const quizPath = getQuizPath(quizName, this.deck.id)
+
+            this.$router.push({
+                name: 'Quiz',
+                params: {
+                    deckId: this.deck.id,
+                    quizPath: quizPath
+                }
+            })
+
         },
 
         notesCount() {
@@ -380,5 +443,22 @@ h1 {
 
 .return-link el-icon {
     margin-right: 50px;
+}
+
+.ai-feature-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #EEE;
+    padding: 50px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+}
+
+.quizzes-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 </style>

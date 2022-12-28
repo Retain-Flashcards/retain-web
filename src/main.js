@@ -15,6 +15,8 @@ import Deck from './pages/Deck.vue'
 import CardBuilder from './pages/CardBuilder.vue'
 import GoogleLogin from './pages/GoogleLogin.vue'
 import Study from './pages/Study.vue'
+import QuizBuilder from './pages/QuizBuilder.vue'
+import Quiz from './pages/Quiz.vue'
 
 //UI Frameworks
 import Equal from 'equal-vue'
@@ -61,7 +63,9 @@ const routes = [
     { name: 'View Deck', path: '/deck/:deckId', component: Deck },
     { name: 'Create Cards', path: '/deck/:deckId/cards/add', component: CardBuilder },
     { name: 'Edit Card', path: '/deck/:deckId/cards/:noteId/edit', component: CardBuilder},
-    { name: 'Study Deck', path: '/deck/:deckId/study', component: Study }
+    { name: 'Study Deck', path: '/deck/:deckId/study', component: Study },
+    { name: 'QuizBuilder', path: '/deck/:deckId/quiz', component: QuizBuilder },
+    { name: 'Quiz', path: '/deck/:deckId/quiz/:quizPath', component: Quiz}
 ]
 
 const router = createRouter({
