@@ -51,9 +51,14 @@
                 </div>
                 <div class='table-container'>
 
-                    <el-table :data='quizzes' v-loading='table.loading' style='width: 100%;' stripe :show-header='false'>
-                        <el-table-column label='Quiz' v-slot='scope' min-width="100">
-                            <el-button link type='primary' @click='openQuiz(scope.row.name)' size='large'><b>Quiz {{  scope.$index + 1  }}</b></el-button>
+                    <el-table :data='quizzes' v-loading='table.loading' style='width: 100%;' stripe>
+                        <el-table-column label='Quiz' v-slot='scope' min-width="50">
+                            <div style='display: flex; flex-direction: column; height: 100%; align-items: flex-start;'>
+                                <el-button link type='primary' @click='openQuiz(scope.row.path)' size='large'><b>Quiz {{  scope.$index + 1  }}</b></el-button>
+                            </div>
+                        </el-table-column>
+                        <el-table-column label='Topics' v-slot='scope' min-width="50">
+                            <p v-if='scope.row.topics_list' style='white-space: pre-line;'>{{ scope.row.topics_list }}</p>
                         </el-table-column>
                         <template #empty>
                             <div style='display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; padding-top: 10px;'>
@@ -201,7 +206,15 @@ export default {
             if (!this.deck) return
             this.loadingQuizzes = true
             getQuizzes(this.deck.id).then(result => {
-                this.quizzes = result.filter(item => item.name != '.emptyFolderPlaceholder')
+                console.log(result)
+                this.quizzes = result.map(item => { 
+                    let path = item.path.split('/') 
+                    let quizId = path[path.length - 1]
+                    return {
+                        path: quizId,
+                        topics_list: item.topics_list
+                    }
+                })
             }).finally(() => {
                 this.loadingQuizzes = false
             })

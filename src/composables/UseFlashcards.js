@@ -11,7 +11,7 @@ export default () => {
     const getDecks = async () => {
         const { data, error } = await supabase.from('decks_with_new_review_counts_new').select(`*`)
         if (error) throw new Error(error)
-        console.log(data)
+        (data)
         return data.map(deck => new Deck(deck))
     }
 
@@ -44,7 +44,6 @@ export default () => {
             const result = await supabase.from('decks').update(updateObject).eq('deck_id', deckId)
 
             if (result.error) {
-                console.log(result)
                 throw new Error(`Could not create deck: ${result.error}`)
             }
 
@@ -99,8 +98,6 @@ export default () => {
 
     const uploadImage = async (file) => {
 
-        console.log(file)
-
         let publicURL = undefined
 
         if (file) {
@@ -153,7 +150,6 @@ export default () => {
         let maxNum = 0
         if (clozeNums.length > 0) {
             maxNum = Math.max(...clozeNums)
-            console.log(maxNum)
             for (let i = 1; i <= maxNum; i++) {
                 const regex = new RegExp(`{{c${i}::(.+?)(?:(?:::)([^:]+)?)?}}`, 'g')
                 const antiRegex = new RegExp(`{{c[^${i}]::(.+?)(?:(?:::)([^:]+)?)?}}`, 'g')
@@ -190,7 +186,6 @@ export default () => {
 
         }
 
-        console.log(cards)
         const newData = await supabase.from('cards').insert(cards)
         if (newData.error) throw new Error('Something went wrong while creating cards')
         
@@ -227,8 +222,6 @@ export default () => {
             userJwt: supabase.auth.session().access_token
         })
 
-        console.log(result)
-
         if (!result.card) return result
 
         result.card = new Card(result.card)
@@ -245,8 +238,6 @@ export default () => {
             deckId
         })
 
-        console.log(result)
-
         return result
 
     }
@@ -257,8 +248,6 @@ export default () => {
             notes: selectedNotes,
             deckId
         })
-
-        console.log(result)
 
         return result
 
@@ -288,7 +277,6 @@ export default () => {
             pinned: pinned
         }).eq('deck_id', deckId)
         if (error) throw new Error('Could not set pin status')
-        console.log('testing')
         return data
     }
 
@@ -302,8 +290,7 @@ export default () => {
     }
 
     const getQuizzes = async (deckId) => {
-        const { data, error } = await supabase.storage.from('quizzes').list(`${supabase.auth.user().id}/${deckId}`)
-
+        const { data, error } = await supabase.from('quizzes').select('path, topics_list').eq('uid', supabase.auth.user().id).eq('deck_id', deckId)
         return data
     }
 
