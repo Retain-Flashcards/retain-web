@@ -183,24 +183,6 @@ const generateQuiz = () => {
     })
 }
 
-
-const printQuiz = () => {
-    let htmlContent = `<!DOCTYPE html><html><body>`
-    for (let i = 0; i < questions.value.length; i++) {
-        htmlContent += '<b>' + questions.value[i].question + '</b><br>'
-        htmlContent += questions.value[i].answer + '<br><br>'
-    }
-    htmlContent += '</body></html>'
-
-    const WinPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
-
-    WinPrint.document.write(htmlContent);
-
-    WinPrint.document.close();
-    WinPrint.focus();
-    WinPrint.print();
-}
-
 const returnToDeck = () => {
     router.push({
         name: 'View Deck',

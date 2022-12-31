@@ -9,6 +9,7 @@ export default class Note {
         this.backContent = data.back_content
         this.deckId = data.deck_id
         this.active = data.active
+        this.createdAt = data.created_at
     }
 
     async getNextCard() {

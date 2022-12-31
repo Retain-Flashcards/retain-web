@@ -17,6 +17,8 @@ import GoogleLogin from './pages/GoogleLogin.vue'
 import Study from './pages/Study.vue'
 import QuizBuilder from './pages/QuizBuilder.vue'
 import Quiz from './pages/Quiz.vue'
+import CramBuilder from './pages/CramBuilder.vue'
+import Cram from './pages/Cram.vue'
 
 //UI Frameworks
 import Equal from 'equal-vue'
@@ -65,7 +67,9 @@ const routes = [
     { name: 'Edit Card', path: '/deck/:deckId/cards/:noteId/edit', component: CardBuilder},
     { name: 'Study Deck', path: '/deck/:deckId/study', component: Study },
     { name: 'QuizBuilder', path: '/deck/:deckId/quiz', component: QuizBuilder },
-    { name: 'Quiz', path: '/deck/:deckId/quiz/:quizPath', component: Quiz}
+    { name: 'Quiz', path: '/deck/:deckId/quiz/:quizPath', component: Quiz},
+    { name: 'Cram Builder', path: '/deck/:deckId/cram', component: CramBuilder },
+    { name: 'Cram', path: '/deck/:deckId/cram/:cramId', component: Cram }
 ]
 
 const router = createRouter({

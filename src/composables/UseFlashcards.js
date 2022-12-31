@@ -298,6 +298,40 @@ export default () => {
         return `${supabase.auth.user().id}/${deckId}/${quizName.replace('.json', '')}`
     }
 
+    const getNoteGroups = async (deckId) => {
+        const { data, error } = await supabase.rpc('get_timeline', {
+            given_deck_id: deckId
+        })
+        console.log(error)
+        return data
+    }
+
+    const createCramSession = async (deckId, noteIds) => {
+        const { data, error } = await supabase.rpc('create_cram_session', {
+            given_deck_id: deckId,
+            note_ids: noteIds
+        })
+
+        return data
+    }
+
+    const getCramSession = async (cramId) => {
+        const { data, error } = await supabase.from('cram_cards').select(`cards (id, front_content, back_content, extra_content)`).eq('cram_id', cramId)
+
+        return data
+    }
+
+    const listCramSessions = async (deckId) => {
+        const { data, error } = await supabase.rpc('get_cram_sessions', {
+            given_deck_id: deckId
+        })
+
+        console.log(data)
+        console.error(error)
+
+        return data
+    }
+
     return {
         getDecks,
         createDeck,
@@ -316,7 +350,11 @@ export default () => {
         generateAIQuiz,
         getQuiz,
         getQuizzes,
-        getQuizPath
+        getQuizPath,
+        getNoteGroups,
+        createCramSession,
+        getCramSession,
+        listCramSessions
     }
 
 }

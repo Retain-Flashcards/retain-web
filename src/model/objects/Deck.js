@@ -19,7 +19,5 @@ export default class Deck {
          const { data, error } = await supabase.rpc('get_next_card', {
             given_deck_id: this.id
          })
-
-         console.log(data)
     }
 }

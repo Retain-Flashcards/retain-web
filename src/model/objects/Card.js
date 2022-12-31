@@ -5,6 +5,7 @@ const { supabase } = useSupabase()
 export default class Card {
     constructor(data) {
         this.id = data.id
+        this.createdAt = data.created_at
         this.lastReviewed = data.last_reviewed
         this.learning = data.learning
         this.learningStep = data.learning_step

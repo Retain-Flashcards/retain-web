@@ -15,35 +15,74 @@
         </div>
 
         <div class='main-content'>
-            <el-result v-if='deck.reviewCount == 0 && deck.newCount == 0' icon="success" title="Done for the Day!" subTitle="No Reviews Due">
-                <template slot="extra">
-                    <el-button type="primary" size="medium">Back</el-button>
-                </template>
-            </el-result>
-            <div v-else class='due-container'>
+            <div style='display: flex; flex-direction: row; align-items: center; margin-top: 50px; margin-bottom: 10px;'>
                 <h2>Due Now</h2>
-                <div class='stats'>
-                    <div class='stats-container'>
-                        <div class='flex-spacer'></div>
-                        <div class='stats-item' style='color: var(--el-color-primary);'>
-                            <h2 class='new-text'>{{ deck.newCount }}</h2>
-                            <p class='new-text'>New</p>
+                <div class='flex-spacer'></div>
+            </div>
+            <div class='study-container'>
+                <el-result v-if='deck.reviewCount == 0 && deck.newCount == 0' icon="success" title="Done for the Day!" subTitle="No Reviews Due" style='flex: 2;'>
+                    <template slot="extra">
+                        <el-button type="primary" size="medium">Back</el-button>
+                    </template>
+                </el-result>
+                <div v-else class='due-container' style='flex: 2;'>
+                    <div style='display: flex; flex-direction: row;'>
+                        <div class='stats' style='flex: 2;'>
+                            <div class='stats-container'>
+                                <div class='flex-spacer'></div>
+                                <div class='stats-item' style='color: var(--el-color-primary);'>
+                                    <h2 class='new-text'>{{ deck.newCount }}</h2>
+                                    <p class='new-text'>New</p>
+                                </div>
+                                <div class='stats-item' style='color: var(--el-color-primary-light-4);'>
+                                    <h2 class='review-text'>{{ deck.reviewCount }}</h2>
+                                    <p class='review-text'>Review</p>
+                                </div>
+                                <div class='flex-spacer'></div>
+                            </div>
+                            <div class='stats-overlay' @click='beginStudy'>
+                                <button class='study-button'>Study Now</button>
+                            </div>
                         </div>
-                        <div class='stats-item' style='color: var(--el-color-primary-light-4);'>
-                            <h2 class='review-text'>{{ deck.reviewCount }}</h2>
-                            <p class='review-text'>Review</p>
-                        </div>
-                        <div class='flex-spacer'></div>
-                    </div>
-                    <div class='stats-overlay' @click='beginStudy'>
-                        <button class='study-button'>Study Now</button>
                     </div>
                 </div>
             </div>
 
             <div class='due-container' style='margin-top: 0px; margin-bottom: 50px;'>
                 <div class='quizzes-header'>
+                    <h2>Cram Sessions</h2>
+                    <el-tag type='warning' round style='margin-left: 10px;'>Beta</el-tag>
+                    <div class='flex-spacer'></div>
+                    <el-button type='primary' @click='enterCramMode'>
+                        <el-icon style='margin-right: 5px;'><Stopwatch /></el-icon> New Cram Session
+                    </el-button>
+                </div>
+                <div class='table-container'>
+
+                    <el-table :data='crams.sessions' v-loading='crams.loading' style='width: 100%;' stripe>
+                        <el-table-column label='Cram' v-slot='scope' min-width="50">
+                            <div style='display: flex; flex-direction: column; height: 100%; align-items: flex-start;'>
+                                <el-button link type='primary' @click='openCramSession(scope.row.cram_id)' size='large'><b>Cram {{  scope.$index + 1  }}</b></el-button>
+                            </div>
+                        </el-table-column>
+                        <el-table-column label='Number of Cards' v-slot='scope' min-width="50">
+                            <p v-if='scope.row.total_cards' style='white-space: pre-line;'>{{ scope.row.total_cards }}</p>
+                        </el-table-column>
+                        <template #empty>
+                            <div style='display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; padding-top: 10px;'>
+                                <el-icon :size='40'><InfoFilled /></el-icon>
+                                <p style='line-height: 30px;'>No Cram Sessions Yet!</p>
+                            </div>
+                        </template>
+                    </el-table>
+
+                </div>
+            </div>
+
+            <div class='due-container' style='margin-top: 0px; margin-bottom: 50px;'>
+                <div class='quizzes-header'>
                     <h2>Quizzes</h2>
+                    <el-tag type='danger' round style='margin-left: 10px;'>Alpha</el-tag>
                     <div class='flex-spacer'></div>
                     <el-button type='primary' @click='createQuiz'>
                         <el-icon style='margin-right: 5px;'><Plus /></el-icon> Create a Quiz
@@ -51,7 +90,7 @@
                 </div>
                 <div class='table-container'>
 
-                    <el-table :data='quizzes' v-loading='table.loading' style='width: 100%;' stripe>
+                    <el-table :data='quizzes' v-loading='loadingQuizzes' style='width: 100%;' stripe>
                         <el-table-column label='Quiz' v-slot='scope' min-width="50">
                             <div style='display: flex; flex-direction: column; height: 100%; align-items: flex-start;'>
                                 <el-button link type='primary' @click='openQuiz(scope.row.path)' size='large'><b>Quiz {{  scope.$index + 1  }}</b></el-button>
@@ -110,7 +149,7 @@
                     </el-table-column>
                 </el-table>
 
-                <el-pagination background layout='prev, pager, next' :total='table.noteCount' :page-size='20' @next-click='onTableNextClick' @prev-click='onTablePrevClick' @current-change='onTableCurrentPageChange' style='margin-top: 20px;'>
+                <el-pagination background layout='prev, pager, next' :total='table.noteCount' :page-size='20' @next-click='onTableNextClick' @prev-click='onTablePrevClick' @current-change='onTableCurrentPageChange' style='margin-top: 20px; margin-bottom: 100px;'>
 
                 </el-pagination>
 
@@ -126,7 +165,7 @@ import { Plus, ArrowLeft, InfoFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { setThemeColor } from '../utils'
 
-const { getDeck, getDeckNotes, deleteNote, resetNote, getQuizzes, getQuizPath } = useFlashcards()
+const { getDeck, getDeckNotes, deleteNote, resetNote, getQuizzes, getQuizPath, listCramSessions } = useFlashcards()
 
 export default {
     setup() {
@@ -143,6 +182,10 @@ export default {
                 notes: {},
                 noteCount: 0
             },
+            crams: {
+                loading: true,
+                sessions: []
+            },
             quizzes: [],
             loadingQuizzes: true
         }
@@ -156,6 +199,26 @@ export default {
 
                 this.loadNotes()
                 this.loadQuizzes()
+                this.loadCramSessions()
+            })
+        },
+
+        enterCramMode() {
+            this.$router.push({
+                name: 'Cram Builder',
+                params: {
+                    deckId: this.deck.id
+                }
+            })
+        },
+
+        openCramSession(cramId) {
+            this.$router.push({
+                name: 'Cram',
+                params: {
+                    deckId: this.deck.id,
+                    cramId: cramId
+                }
             })
         },
 
@@ -219,6 +282,16 @@ export default {
                 this.loadingQuizzes = false
             })
 
+        },
+
+        loadCramSessions() {
+            if (!this.deck) return
+            this.crams.loading = true
+            listCramSessions(this.deck.id).then(result => {
+                this.crams.sessions = result
+            }).finally(() => {
+                this.crams.loading = false
+            })
         },
 
         openQuiz(quizName) {
@@ -361,7 +434,6 @@ h1 {
 }
 
 .due-container {
-    margin-top: 50px;
 }
 
 
@@ -369,7 +441,6 @@ h1 {
 .stats {
     position: relative;
     border: #EEE solid 3px;
-    margin-top: 20px;
     margin-bottom: 50px;
     border-radius: 20px;
     overflow: hidden;
@@ -381,6 +452,11 @@ h1 {
     align-items: center;
     justify-content: center;
     padding: 20px;
+}
+
+.study-container {
+    display: flex;
+    flex-direction: row;
 }
 
 .stats-overlay {
@@ -473,5 +549,10 @@ h1 {
     display: flex;
     flex-direction: row;
     align-items: center;
+    margin-bottom: 10px;
+}
+
+h2 {
+    margin-top: 0px;
 }
 </style>
