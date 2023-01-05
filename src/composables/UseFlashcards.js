@@ -11,7 +11,6 @@ export default () => {
     const getDecks = async () => {
         const { data, error } = await supabase.from('decks_with_new_review_counts_new').select(`*`)
         if (error) throw new Error(error)
-        (data)
         return data.map(deck => new Deck(deck))
     }
 
@@ -273,9 +272,10 @@ export default () => {
     }
 
     const setPinned = async (deckId, pinned) => {
-        const { data, error } = await supabase.from('decks').update({
-            pinned: pinned
-        }).eq('deck_id', deckId)
+        const { data, error } = await supabase.rpc('set_pinned_status', {
+            pinned_status: pinned,
+            given_deck_id: deckId
+        })
         if (error) throw new Error('Could not set pin status')
         return data
     }

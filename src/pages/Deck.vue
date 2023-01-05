@@ -85,7 +85,7 @@
                     <el-tag type='danger' round style='margin-left: 10px;'>Alpha</el-tag>
                     <div class='flex-spacer'></div>
                     <el-button type='primary' @click='createQuiz'>
-                        <el-icon style='margin-right: 5px;'><Plus /></el-icon> Create a Quiz
+                        <el-icon style='margin-right: 5px;'><Edit /></el-icon> Create a Quiz
                     </el-button>
                 </div>
                 <div class='table-container'>
