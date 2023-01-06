@@ -199,7 +199,7 @@ onMounted(() => {
 
 </script>
 
-<style>
+<style scoped>
 .page-container {
     display: flex;
     flex-direction: row;
