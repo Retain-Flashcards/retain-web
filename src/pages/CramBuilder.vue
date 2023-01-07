@@ -8,7 +8,7 @@
             <el-col style='flex: 0.5;' class='content' v-loading='loading' justify='center'>
                 <h1>Build Your Cramming Study Set</h1>
                 <p>Here's a timeline of your notes as you've added them.</p>
-                <p>Select the notes you'd like to study!</p>
+                <p id="paragraph-that-needs-more-space-on-the-bottom">Select the notes you'd like to study!</p>
                 <div class='search-bar'>
                     <el-input v-model='searchValue' prefix-icon='search' size='large' placeholder='Search'/>
                 </div>
@@ -140,6 +140,7 @@ onMounted(() => {
 </script>
 
 <style>
+
 .table {
     text-align: left;
 }
@@ -186,4 +187,28 @@ h2 {
     margin-top: 0px;
     color: var(--el-color-primary);
 }
+
+.content {
+    display:flex;
+    flex-direction: column;
+    align-items:center;
+    width: 100%;
+}
+
+p {
+    padding-bottom: 10px;
+}
+
+#paragraph-that-needs-more-space-on-the-bottom {
+    padding-bottom: 20px;
+}
+
+.search-bar {
+    width: 100%;
+}
+
+.table-container {
+    width: 100%;
+}
+
 </style>
