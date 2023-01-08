@@ -29,12 +29,23 @@
             <el-divider v-if='card && flipped && card.extraContent.length > 0'></el-divider>
             <v-md-preview class='preview' :text="card.extraContent" v-if='card && flipped && card.extraContent.length > 0' height='400px'></v-md-preview>
         </el-main>
-        <div class='bottom-bar'>
-            <div class='flex-spacer'></div>
-            <el-button style='flex: 1;' type='success' v-if='flipped' size='large' @click='() => studyCard(true)'><el-icon class="el-icon--right"><b><Check /></b></el-icon></el-button>
-            <el-button style='flex: 1;' type='danger' v-if='flipped' size='large' @click='() => studyCard(false)'><el-icon class="el-icon--right"><b><Close /></b></el-icon></el-button>
-            <div class='flex-spacer'></div>
-        </div>
+        <footer class='bottom-bar'>
+            <div v-if='!flipped' style='display: flex; align-items: center; width: 100%; background: #EEE; padding-bottom: 0px; padding-top: 15px;'>
+                <div class='flex-spacer'></div>
+                <el-button type='primary' size='large' style='width: 50%;' @click='flipCard'>Flip</el-button>
+                <div class='flex-spacer'></div>
+            </div>
+            <div class='check-boxes' v-if='flipped'>
+                <div class='flex-spacer'></div>
+                <el-button style='flex: 1;' type='success' size='large' @click='() => studyCard(true)'><el-icon class="el-icon--right"><b><Check /></b></el-icon></el-button>
+                <el-button style='flex: 1;' type='danger' size='large' @click='() => studyCard(false)'><el-icon class="el-icon--right"><b><Close /></b></el-icon></el-button>
+                <div class='flex-spacer'></div>
+            </div>
+            <div style='width: 100%; text-align: center; font-size: 13px; margin-bottom: 0px; margin-top: 10px; color: #888;'>
+                <span v-if='!flipped'><KeyBindingIndicator>Spacebar</KeyBindingIndicator> to flip the card</span>
+                <span v-if='flipped'><KeyBindingIndicator>1</KeyBindingIndicator> = Correct,  <KeyBindingIndicator>2</KeyBindingIndicator> = Incorrect</span>
+            </div>
+        </footer>
     </div>
     
 </template>
@@ -45,6 +56,7 @@ import { useRoute, useRouter } from 'vue-router'
 import useFlashcards from '../composables/UseFlashcards'
 import { setThemeColor } from '../utils'
 import { ElMessage } from 'element-plus'
+import KeyBindingIndicator from '../components/basic/KeyBindingIndicator.vue'
 import Card from '../model/objects/Card'
 
 const { getDeck, getCramSession } = useFlashcards()
@@ -166,7 +178,7 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style>
+<style scoped>
 
 .preview {
     text-align: left;
@@ -227,13 +239,19 @@ onBeforeUnmount(() => {
     left: 0px;
     right: 0px;
     display: flex; 
-    flex-direction: row; 
-    align-items: center; 
-    padding: 20px; 
-    background: white; 
+    flex-direction: column; 
+    padding: 10px; 
+    background: #EEE; 
     border-top: 2px #EEE solid; 
     z-index: 20; 
     max-width: 100%;
+}
+
+.check-boxes {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 .progress-text {
