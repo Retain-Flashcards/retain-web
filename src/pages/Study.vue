@@ -23,7 +23,7 @@
             </div>
         </div>
     </el-header>
-    <el-main v-loading='loadingCard' style='display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50%; margin: auto; margin-bottom: 100px;'>
+    <el-main v-loading='loadingCard' style='display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50%; margin: auto; margin-bottom: 200px;'>
         <div style='text-align: center;' v-if='done'>
             <el-result icon="success" title="You're Finished!" subTitle="No more cards to review today!"></el-result>
             <el-button type="primary" size="medium" @click='goToDeck'>Back to Deck</el-button>
@@ -32,8 +32,14 @@
         <el-divider v-if='card && flipped && card.extraContent.length > 0'></el-divider>
         <v-md-preview class='preview' :text="card.extraContent" v-if='card && flipped && card.extraContent.length > 0' height='400px'></v-md-preview>
     </el-main>
-    <el-footer class='footer' style='position: fixed; bottom: 0px; width: 100%; padding-bottom: 10px; padding-top: 15px;height: auto;'>
-        <div v-if='flipped' style='display: flex; align-items: center; width: 100%;'>
+    <el-footer class='footer' style='position: fixed; bottom: 0px; width: 100%; padding: 0px; height: auto;'>
+        <div v-if='!flipped' style='display: flex; align-items: center; width: 100%; background: #EEE; padding-bottom: 0px; padding-top: 15px;'>
+            <div class='flex-spacer'></div>
+            <el-button type='primary' size='large' style='width: 50%;' @click='flipCard'>Flip</el-button>
+            <div class='flex-spacer'></div>
+        </div>
+        
+        <div v-if='flipped' style='display: flex; align-items: center; width: 100%; background: #EEE; padding-bottom: 5px; padding-top: 15px;'>
             <div class='flex-spacer'></div>
 
             <div class='action-item'>
@@ -51,6 +57,10 @@
             
             <div class='flex-spacer'></div>
         </div>
+        <div style='width: 100%; text-align: center; font-size: 13px; margin-bottom: 10px; margin-top: 10px; color: #888;'>
+            <span v-if='!flipped'><KeyBindingIndicator>Spacebar</KeyBindingIndicator> to flip the card</span>
+            <span v-if='flipped'><KeyBindingIndicator>1</KeyBindingIndicator> = Again,  <KeyBindingIndicator>2</KeyBindingIndicator> = Hard,  <KeyBindingIndicator>3</KeyBindingIndicator> = Good</span>
+        </div>
     </el-footer>
 </div>
 
@@ -59,6 +69,7 @@
 <script>
 import useFlashcards from '../composables/UseFlashcards'
 import { setThemeColor } from '../utils'
+import KeyBindingIndicator from '../components/basic/KeyBindingIndicator.vue'
 
 const { getNextCard, getDeck, studyCard } = useFlashcards()
 
@@ -67,6 +78,7 @@ export default {
         this.getDeck()
         this.getNextCard()
     },
+    components: { KeyBindingIndicator },
     created() {
         window.addEventListener('keyup', this.keyListener)
     },
@@ -173,7 +185,7 @@ export default {
 
 </script>
 
-<style>
+<style scoped>
 
 .preview {
     text-align: left;
@@ -198,8 +210,8 @@ export default {
 }
 
 .footer {
+    padding-top: 10px; 
     background: #EEE;
-    padding-top: 10px;
 }
 
 .return-link:hover {

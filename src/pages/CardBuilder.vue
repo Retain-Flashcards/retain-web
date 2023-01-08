@@ -25,7 +25,7 @@
                     <div class='flex-spacer'></div>
                     <el-button type='primary' :disabled='submittingNote' @click='submitNote'>{{ this.noteId ? 'Save':'Add'}} Card</el-button>
                 </div>
-                <v-md-editor class='frontEditor' ref='frontEditor' v-model="editor.frontContent" height="400px" placeholder='Add Content...' autofocus right-toolbar='preview' :disabled-menus='[]' @upload-image='uploadFrontImage' :before-preview-change='processFrontContent'></v-md-editor>
+                <v-md-editor class='frontEditor' ref='frontEditor' v-model="editor.frontContent" height="400px" :placeholder='frontPlaceholder' autofocus right-toolbar='preview' :disabled-menus='[]' @upload-image='uploadFrontImage' :before-preview-change='processFrontContent'></v-md-editor>
             </el-main>
         </div>
         <div id='backEditor'>
@@ -90,7 +90,10 @@ export default {
                 backLoading: false
             },
             submittingNote: false,
-            noteId: this.$route.params.noteId
+            noteId: this.$route.params.noteId,
+            frontPlaceholder: `For a simple front/back card, just enter text for the front and back. 
+
+For a fill-in-the-blank style card, write a sentence here, select the text you want to hide, and use the keyboard shortcut Cmd+Shift+C to hide it. The 'back' field can then be used to show extra content once the card is flipped.`
         }
     },
     methods: {
@@ -272,5 +275,9 @@ export default {
 
 .return-link el-icon {
     margin-right: 50px;
+}
+
+h2 {
+    margin-bottom: 20px;
 }
 </style>
