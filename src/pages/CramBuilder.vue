@@ -139,7 +139,7 @@ onMounted(() => {
 
 </script>
 
-<style>
+<style scoped>
 
 .table {
     text-align: left;
