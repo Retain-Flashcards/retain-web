@@ -554,5 +554,6 @@ h1 {
 
 h2 {
     margin-top: 0px;
+    margin-bottom: 0px;
 }
 </style>
