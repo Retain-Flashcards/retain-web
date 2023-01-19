@@ -48,66 +48,75 @@
                 </div>
             </div>
 
+            <el-collapse class='due-container' style='margin-top: 0px;'>
+                <el-collapse-item>
+                    <template #title>
+                        <div class='quizzes-header'>
+                            <h2>Cram Sessions</h2>
+                            <el-tag type='warning' round style='margin-left: 10px;'>Beta</el-tag>
+                            <div class='flex-spacer'></div>
+                            <el-button type='primary' @click='enterCramMode'>
+                                <el-icon style='margin-right: 5px;'><Stopwatch /></el-icon> New Cram Session
+                            </el-button>
+                        </div>
+                    </template>
+                    <div class='table-container'>
+
+                        <el-table :data='crams.sessions' v-loading='crams.loading' style='width: 100%;' stripe>
+                            <el-table-column label='Cram' v-slot='scope' min-width="50">
+                                <div style='display: flex; flex-direction: column; height: 100%; align-items: flex-start;'>
+                                    <el-button link type='primary' @click='openCramSession(scope.row.cram_id)' size='large'><b>Cram {{  scope.$index + 1  }}</b></el-button>
+                                </div>
+                            </el-table-column>
+                            <el-table-column label='Number of Cards' v-slot='scope' min-width="50">
+                                <p v-if='scope.row.total_cards' style='white-space: pre-line;'>{{ scope.row.total_cards }}</p>
+                            </el-table-column>
+                            <template #empty>
+                                <div style='display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; padding-top: 10px;'>
+                                    <el-icon :size='40'><InfoFilled /></el-icon>
+                                    <p style='line-height: 30px;'>No Cram Sessions Yet!</p>
+                                </div>
+                            </template>
+                        </el-table>
+
+                    </div>
+                </el-collapse-item>
+                <el-collapse-item>
+                    <template #title>
+                        <div class='quizzes-header'>
+                            <h2>Quizzes</h2>
+                            <el-tag type='danger' round style='margin-left: 10px;'>Alpha</el-tag>
+                            <div class='flex-spacer'></div>
+                            <el-button type='primary' @click='createQuiz'>
+                                <el-icon style='margin-right: 5px;'><Edit /></el-icon> Create a Quiz
+                            </el-button>
+                        </div>
+                    </template>
+                    <div class='table-container'>
+
+                        <el-table :data='quizzes' v-loading='loadingQuizzes' style='width: 100%;' stripe>
+                            <el-table-column label='Quiz' v-slot='scope' min-width="50">
+                                <div style='display: flex; flex-direction: column; height: 100%; align-items: flex-start;'>
+                                    <el-button link type='primary' @click='openQuiz(scope.row.path)' size='large'><b>Quiz {{  scope.$index + 1  }}</b></el-button>
+                                </div>
+                            </el-table-column>
+                            <el-table-column label='Topics' v-slot='scope' min-width="50">
+                                <p v-if='scope.row.topics_list' style='white-space: pre-line;'>{{ scope.row.topics_list }}</p>
+                            </el-table-column>
+                            <template #empty>
+                                <div style='display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; padding-top: 10px;'>
+                                    <el-icon :size='40'><InfoFilled /></el-icon>
+                                    <p style='line-height: 30px;'>No Quizzes Yet!</p>
+                                </div>
+                            </template>
+                        </el-table>
+
+                    </div>
+                </el-collapse-item>
+            </el-collapse>
+
             <div class='due-container' style='margin-top: 0px; margin-bottom: 50px;'>
-                <div class='quizzes-header'>
-                    <h2>Cram Sessions</h2>
-                    <el-tag type='warning' round style='margin-left: 10px;'>Beta</el-tag>
-                    <div class='flex-spacer'></div>
-                    <el-button type='primary' @click='enterCramMode'>
-                        <el-icon style='margin-right: 5px;'><Stopwatch /></el-icon> New Cram Session
-                    </el-button>
-                </div>
-                <div class='table-container'>
-
-                    <el-table :data='crams.sessions' v-loading='crams.loading' style='width: 100%;' stripe>
-                        <el-table-column label='Cram' v-slot='scope' min-width="50">
-                            <div style='display: flex; flex-direction: column; height: 100%; align-items: flex-start;'>
-                                <el-button link type='primary' @click='openCramSession(scope.row.cram_id)' size='large'><b>Cram {{  scope.$index + 1  }}</b></el-button>
-                            </div>
-                        </el-table-column>
-                        <el-table-column label='Number of Cards' v-slot='scope' min-width="50">
-                            <p v-if='scope.row.total_cards' style='white-space: pre-line;'>{{ scope.row.total_cards }}</p>
-                        </el-table-column>
-                        <template #empty>
-                            <div style='display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; padding-top: 10px;'>
-                                <el-icon :size='40'><InfoFilled /></el-icon>
-                                <p style='line-height: 30px;'>No Cram Sessions Yet!</p>
-                            </div>
-                        </template>
-                    </el-table>
-
-                </div>
-            </div>
-
-            <div class='due-container' style='margin-top: 0px; margin-bottom: 50px;'>
-                <div class='quizzes-header'>
-                    <h2>Quizzes</h2>
-                    <el-tag type='danger' round style='margin-left: 10px;'>Alpha</el-tag>
-                    <div class='flex-spacer'></div>
-                    <el-button type='primary' @click='createQuiz'>
-                        <el-icon style='margin-right: 5px;'><Edit /></el-icon> Create a Quiz
-                    </el-button>
-                </div>
-                <div class='table-container'>
-
-                    <el-table :data='quizzes' v-loading='loadingQuizzes' style='width: 100%;' stripe>
-                        <el-table-column label='Quiz' v-slot='scope' min-width="50">
-                            <div style='display: flex; flex-direction: column; height: 100%; align-items: flex-start;'>
-                                <el-button link type='primary' @click='openQuiz(scope.row.path)' size='large'><b>Quiz {{  scope.$index + 1  }}</b></el-button>
-                            </div>
-                        </el-table-column>
-                        <el-table-column label='Topics' v-slot='scope' min-width="50">
-                            <p v-if='scope.row.topics_list' style='white-space: pre-line;'>{{ scope.row.topics_list }}</p>
-                        </el-table-column>
-                        <template #empty>
-                            <div style='display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; padding-top: 10px;'>
-                                <el-icon :size='40'><InfoFilled /></el-icon>
-                                <p style='line-height: 30px;'>No Quizzes Yet!</p>
-                            </div>
-                        </template>
-                    </el-table>
-
-                </div>
+                
             </div>
 
             <div class='table-container'>
@@ -549,11 +558,19 @@ h1 {
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin-bottom: 10px;
+    width: 100%;
 }
+
+
 
 h2 {
     margin-top: 0px;
     margin-bottom: 0px;
+}
+</style>
+
+<style>
+.el-collapse-item__header {
+    flex-direction: row-reverse;
 }
 </style>
