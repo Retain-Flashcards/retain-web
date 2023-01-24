@@ -99,7 +99,7 @@ For a fill-in-the-blank style card, write a sentence here, select the text you w
     methods: {
         keyListener(e) {
             
-            if (e.metaKey && e.shiftKey && e.key.toLowerCase() == 'c') {
+            if ((e.metaKey || e.keyCode == 91) && e.shiftKey && e.key.toLowerCase() == 'c') {
                 e.preventDefault()
                 const id = e.target?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.id
                 if (id == 'frontEditor') this.addCloze(false)
