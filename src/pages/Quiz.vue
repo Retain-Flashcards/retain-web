@@ -7,7 +7,7 @@
         <div style='flex: 0.25;'></div>
         <el-col span='6' style='flex: 0.5;' v-loading='loading'>
             <div style='display: flex; flex-direction: row; align-items: center;'>
-                <h1>View Quiz</h1>
+                <h1>Viewing Quiz</h1>
                 <div style='flex: 1;'></div>
                 <el-button type='outline' @click='printQuiz'>Print Quiz</el-button>
             </div>
@@ -19,7 +19,7 @@
                     {{ question.question }}
                 </div>
                 <div>
-                    <el-button type='primary' @click='() => question.hidden = !question.hidden'>{{ question.hidden ? 'View':'Hide' }} Answer</el-button>
+                    <el-button type='primary' :plain="!question.hidden" @click='() => question.hidden = !question.hidden'>{{ question.hidden ? 'View':'Hide' }} Answer</el-button>
                 </div>
             </div>
         </el-col>
@@ -81,9 +81,28 @@ onMounted(() => {
 
 </script>
 
-<style>
+<style scoped>
 .page-container {
     display: flex;
     flex-direction: row;
+}
+
+.qa {
+    white-space: pre-line;
+    background: #EEE;
+    border-radius: 20px;
+    padding: 30px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    line-height: 25px;
+}
+
+.question-display,.answer-display {
+    margin-bottom: 20px;
+}
+
+.return-link:hover {
+    cursor: pointer;
+    text-decoration: underline;
 }
 </style>
