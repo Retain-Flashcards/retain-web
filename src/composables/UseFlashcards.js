@@ -260,7 +260,7 @@ export default () => {
         return await makeSupabaseFetch('study-card', {
             cardId,
             category,
-            localTimestamp: new Date().toLocaleDateString()
+            localTimestamp: new Date().toLocaleDateString('en-US')
         })
         
     }
