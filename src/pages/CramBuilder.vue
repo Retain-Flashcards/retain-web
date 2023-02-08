@@ -211,4 +211,14 @@ p {
     width: 100%;
 }
 
+.page-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.return-link:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
 </style>
