@@ -246,4 +246,9 @@ h1 {
 .question-display,.answer-display {
     margin-bottom: 20px;
 }
+
+.return-link:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
 </style>
