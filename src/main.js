@@ -80,7 +80,7 @@ const router = createRouter({
 //Authentication nav guard
 router.beforeEach((to) => {
     
-    if (!userIsLoggedIn() && to.meta.requiresAuth) return { path: '/login' }
+    if (!userIsLoggedIn() && to.meta.requiresAuth && to.path != '/verify') return { path: '/login' }
     else if (userIsLoggedIn() && (to.path == '/login') ) return { path: '/' }
 })
 
