@@ -8,8 +8,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 export default function useSupabase() {
     const makeSupabaseFetch = async (functionName, data) => {
 
-        /*
-        const result = await fetch(`https://ynxnzcoflvceiwiorfic.functions.supabase.co/${functionName}`, {
+        
+        const result = await fetch(`https://app.retaincards.com/${functionName}`, {
             method: 'POST',  
             headers: {
                 'Authorization': `Bearer ${supabase.auth.session().access_token}`,
@@ -18,14 +18,14 @@ export default function useSupabase() {
             body: JSON.stringify(data)
         })
 
-        return await result.json()*/
-        const result = await supabase.functions.invoke(functionName, {
+        return await result.json()
+        /*const result = await supabase.functions.invoke(functionName, {
             body: JSON.stringify(data)
         })
 
         if (result.error) throw result.error
 
-        return result.data
+        return result.data*/
     }
 
     return { supabase, makeSupabaseFetch }
