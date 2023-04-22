@@ -193,17 +193,18 @@ export default () => {
     }
 
     const resetNote = async (noteId) => {
-        const { data, error } = await supabase.from('card_reviews').update({
+
+        const { data, error } = await supabase.rpc('reset_note', { given_note_id: noteId})
+        /*const { data, error } = await supabase.from('card_reviews').update({
             learning: true,
             last_reviewed: null,
             current_interval: 0,
             buried_until: null,
             learning_step: 0,
             precise_last_reviewed: null
-        }).eq('note_id', noteId)
-
+        }).eq('note_id', noteId)*/
         if (error) throw error
-        else return data[0]
+        else return data
     }
 
     const loadNote = async (noteId) => {
