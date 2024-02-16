@@ -7,7 +7,7 @@ import { v4 } from "https://deno.land/std/uuid/mod.ts"
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { compile } from 'https://esm.sh/html-to-text'
-import { Configuration, OpenAIApi } from 'https://esm.sh/openai@4.10.0'
+import { Configuration, OpenAIApi } from 'https://esm.sh/openai@3.0.1'
 import type { Context } from "https://edge.netlify.com";
  
 export const corsHeaders = {
