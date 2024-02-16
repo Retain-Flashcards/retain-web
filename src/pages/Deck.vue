@@ -17,6 +17,17 @@
         <div class='main-content'>
             <div style='display: flex; flex-direction: row; align-items: center; margin-top: 50px; margin-bottom: 10px;'>
                 <h2>Due Now</h2>
+                <div style='width: 20px;'></div>
+                <el-select-v2 v-model='tags.selected' 
+                    placeholder='Filter by Tags...' 
+                    style='width: 200px;'
+                    multiple
+                    filterable
+                    :options='tags.options'
+                    :props='{label: "name", value: "id"}'
+                    tag-type='danger'
+                    @change='onTagsChanged'>
+                </el-select-v2>
                 <div class='flex-spacer'></div>
             </div>
             <div class='study-container'>
@@ -174,7 +185,7 @@ import { Plus, ArrowLeft, InfoFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { setThemeColor } from '../utils'
 
-const { getDeck, getDeckNotes, deleteNote, resetNote, getQuizzes, getQuizPath, listCramSessions } = useFlashcards()
+const { getDeck, getDeckNotes, deleteNote, resetNote, getQuizzes, getQuizPath, listCramSessions, loadDeckTags } = useFlashcards()
 
 export default {
     setup() {
@@ -196,7 +207,12 @@ export default {
                 sessions: []
             },
             quizzes: [],
-            loadingQuizzes: true
+            loadingQuizzes: true,
+            tags: {
+                loading: true,
+                options: [],
+                selected: []
+            }
         }
     }, 
     methods: {
@@ -210,6 +226,16 @@ export default {
                 this.loadQuizzes()
                 this.loadCramSessions()
             })
+
+            loadDeckTags(this.$route.params.deckId).then(result => {
+                this.tags.options = result
+            }).finally(() => {
+                this.tags.loading = false
+            })
+        },
+
+        onTagsChanged(selectedTags) {
+            this.reloadDeckCount()
         },
 
         enterCramMode() {
@@ -241,7 +267,7 @@ export default {
         },
 
         reloadDeckCount() {
-            getDeck(this.$route.params.deckId).then(deck => {
+            getDeck(this.$route.params.deckId, this.tags.selected).then(deck => {
                 this.deck = deck
             })
         },
@@ -393,6 +419,9 @@ export default {
                 name: 'Study Deck',
                 params: {
                     deckId: this.deck.id
+                },
+                query: {
+                    tags: this.tags.selected
                 }
             })
 

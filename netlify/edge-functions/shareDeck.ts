@@ -39,7 +39,10 @@ export default async (req: Request, context: Context): Promise<Response> => {
 
   const supabaseAdmin = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
-    SUPABASE_KEY
+    SUPABASE_KEY, 
+    {
+      schema: 'auth'
+    }
   )
 
   const {
@@ -49,7 +52,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
   if (!user) throw new Error('Must be logged in')
 
   const { email, deckId, role } = await req.json()
-
+  
   const users = unwrapSupabaseResult( await supabaseAdmin.from('users').select('id').eq('email', email.toLowerCase()) )
   if (users.length == 0) throw new Error('Invalid email')
 

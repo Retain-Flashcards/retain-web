@@ -66,12 +66,26 @@ export default () => {
         return result
     }
 
-    const getDeck = async (deckId) => {
-        const { data, error } = await supabase.from('decks_with_new_review_counts_new').select('*').eq('deck_id', deckId)
+    const getDeck = async (deckId, tagFilter = []) => {
+        if (tagFilter.length > 0) {
 
-        if (error || data.length == 0) throw new Error('Could not fetch deck')
+            const { data, error } = await supabase.rpc('get_deck_with_tag_filter', {
+                given_deck_id: deckId,
+                filter_tags: tagFilter
+            })
 
-        return new Deck(data[0])
+            if (error) throw new Error('Could not fetch deck')
+
+            return new Deck(data[0])
+        }
+
+        else {
+            const { data, error } = await supabase.from('decks_with_new_review_counts_new').select('*').eq('deck_id', deckId)
+
+            if (error || data.length == 0) throw new Error('Could not fetch deck')
+
+            return new Deck(data[0])
+        }
     }
 
     const getDeckNotes = async (deck, page) => {
@@ -215,6 +229,55 @@ export default () => {
         return new Note(data[0])
     }
 
+    const loadDeckTags = async (deckId) => {
+        const { data, error } = await supabase.from('tags').select('*').eq('deck', deckId)
+
+        if (error) throw new Error('Could not load deck tags')
+
+        return data
+    }
+
+    const loadNoteTags = async (noteId) => {
+        const { data, error } = await supabase.from('note_tags').select(`tags (
+            name,
+            id
+        )`).eq('note', noteId)
+
+        if (error) throw new Error('Could not load note tags')
+
+        return data.map(item => item.tags)
+    }
+
+    const createTag = async (deckId, tagName) => {
+        const { data, error } = await supabase.from('tags').insert({
+            name: tagName,
+            deck: deckId
+        })
+
+        if (error) throw new Error('Could not create tag')
+
+        return data
+    }
+
+    const addTagToNote = async (noteId, tagId) => {
+        const { data, error } = await supabase.from('note_tags').insert({
+            note: noteId,
+            tag: tagId
+        })
+
+        if (error) throw new Error('Could not add tag to note')
+
+        return data
+    }
+
+    const deleteTagFromNote = async (noteId, tagId) => {
+        const { data, error } = await supabase.from('note_tags').delete().eq('note', noteId).eq('tag', tagId)
+
+        if (error) throw new Error('Could not delete tag from note')
+
+        return data
+    }
+
     const getNextCard = async (deckId) => {
         
         const result = await makeSupabaseFetch('get-next-card-new', {
@@ -283,7 +346,7 @@ export default () => {
 
     const getQuiz = async (quizPath) => {
         const { data, error } = await supabase.storage.from('quizzes').download(quizPath)
-        if (error) throw new Error('Could not delete deck')
+        if (error) throw new Error('Could not retrieve quiz')
 
         const json = await data.text()
 
@@ -355,7 +418,12 @@ export default () => {
         getNoteGroups,
         createCramSession,
         getCramSession,
-        listCramSessions
+        listCramSessions,
+        loadDeckTags,
+        loadNoteTags,
+        createTag,
+        addTagToNote,
+        deleteTagFromNote
     }
 
 }

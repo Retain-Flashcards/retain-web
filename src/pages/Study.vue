@@ -1,14 +1,25 @@
 <template>
 
 <div class='content-container'>
-    <el-header v-loading='loadingDeck' v-if='deck'>
+    <el-header v-loading='loadingDeck' v-if='deck' style='margin-bottom: 30px;'>
         <div class='return-link' @click='returnToDeck' style='margin-top: 20px;'>
             <el-icon style='padding-right: 10px;'><ArrowLeft /></el-icon>Return to deck
         </div>
-        <div style='display: flex; align-items: center; margin-top: 20px;'>
+        <div style='display: flex; align-items: center; margin-top: 20px; margin-bottom: 20px;'>
             
             <span style='font-size: 30px;'>Studying:</span>
             <span style='font-size: 30px; margin-left: 5px; color: var(--el-color-primary); font-weight: bold;'>{{ deck.title }}</span>
+            <el-select-v2 v-model='selectedTags' 
+                placeholder='Filter by Tags...' 
+                style='width: 200px; margin-left: 20px;'
+                multiple
+                filterable
+                :options='deckTags.options'
+                :props='{label: "name", value: "id"}'
+                tag-type='danger'
+                :loading='deckTags.loading'
+                @change='onTagsChanged'>
+            </el-select-v2>
             <div class='flex-spacer'></div>
             <el-button v-if='card' type='primary' plain style='margin-right: 30px;' @click='editCard'>Edit Card</el-button>
             <div style='font-size: 30px; display: flex;'>
@@ -71,7 +82,7 @@ import useFlashcards from '../composables/UseFlashcards'
 import { setThemeColor } from '../utils'
 import KeyBindingIndicator from '../components/basic/KeyBindingIndicator.vue'
 
-const { getNextCard, getDeck, studyCard } = useFlashcards()
+const { getNextCard, getDeck, studyCard, loadDeckTags } = useFlashcards()
 
 export default {
     mounted() {
@@ -88,6 +99,7 @@ export default {
     data() {
         return {
             deckId: this.$route.params.deckId,
+            selectedTags: this.$route.query.tags ? ( Array.isArray(this.$route.query.tags) ? this.$route.query.tags : this.$route.query.tags.split(',')) : [],
             loadingCard: false,
             card: undefined,
             deck: undefined,
@@ -98,7 +110,11 @@ export default {
             goodTime: '',
             reviewsLeft: 0,
             newLeft: 0,
-            done: false
+            done: false,
+            deckTags: {
+                loading: true,
+                options: []
+            }
         }
     },
     methods: {
@@ -130,12 +146,17 @@ export default {
         },
         getDeck() {
             this.deckLoading = true
-            getDeck(this.deckId).then(deck => {
+            getDeck(this.deckId, this.selectedTags).then(deck => {
                 this.deck = deck
                 setThemeColor(this.deck.primaryColor, document.documentElement)
             }).catch(error => {
 
             }).finally(() => this.deckLoading = false)
+
+            loadDeckTags(this.deckId).then(tags => {
+                this.deckTags.options = tags
+                this.deckTags.loading = false
+            })
         },
         getNextCard() {
             this.loadingCard = true
