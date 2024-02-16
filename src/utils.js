@@ -20,3 +20,9 @@ export function setThemeColor(primary, el) {
         el.style.setProperty(`--el-color-primary-${key}`, value)
     }
 }
+
+export function randomizeFilename(filename, acceptedExtensions = ['jpeg', 'jpg', 'png']) {
+    const extension = filename.split('.').pop().toLowerCase()
+    if (!(acceptedExtensions.includes(extension))) throw new Error('Invalid File Format')
+    return generate_uuid() + '.' + extension
+}

@@ -10,7 +10,7 @@
         <h1>{{ this.noteId ? 'Edit':'Add'}} Card</h1>
         <div class='flex-spacer'></div>
         <span style='margin-right: 10px;'>To deck: </span>
-        <el-select v-model='deckSelect.value' placeholder='to deck...' :loading='deckSelect.loading' @change='onDeckSelectChange'>
+        <el-select v-model='deckSelect.value' placeholder='to deck...' :loading='deckSelect.loading' @change='onDeckSelectChange' style='width: 200px'>
             <el-option v-for='item in deckSelect.options' :key='item.id' :label='item.title' :value='item.id'>
 
             </el-option>
@@ -18,6 +18,35 @@
     </div>
 
     <el-main class='main-content' v-loading='submittingNote'>
+        <div id='tags'>
+            <el-main>
+                <h2>Tags</h2>
+                <el-select-v2 
+                    v-model='editor.tags' 
+                    :loading='editor.tagsLoading' 
+                    multiple 
+                    filterable 
+                    allow-create 
+                    placeholder='Add tags...' 
+                    style='width: 100%;' 
+                    @change='onTagsChanged'
+                    tag-type='danger'
+                    :options='deckTags.options'
+                    :props='{label: "name", value: "id"}'
+                    no-data-text='Start Typing to Create a Tag...'>
+                    <template #default='{ item }'>
+                        <span>{{ item.name }}</span>
+                    </template>
+                    <!--<template #tag>
+                        {{ item }}
+                        <el-tag v-for="tag in value" :key="tag.id" type='primary'/>
+                    </template>-->
+                    <!--<el-option v-for='tag in deckTags.options' :key='tag.id' :label='tag.name' :value='tag.id'>
+
+                    </el-option>-->
+                </el-select-v2>
+            </el-main>
+        </div>
         <div id='frontEditor'>
             <el-main v-loading='editor.frontLoading'>
                 <div style='display: flex; width: 100%; align-items: center;'>
@@ -50,7 +79,7 @@
 import useFlashcards from '../composables/UseFlashcards'
 import { setThemeColor } from '../utils'
 
-const { getDecks, uploadImage, createNote, loadNote, deleteNote } = useFlashcards()
+const { getDecks, uploadImage, createNote, loadNote, deleteNote, loadNoteTags, addTagToNote, loadDeckTags, createTag, deleteTagFromNote } = useFlashcards()
 
 const CLOZE_COLORS = ['red', 'orange', 'green', 'blue', 'purple']
 
@@ -83,12 +112,19 @@ export default {
                 value: this.$route.params.deckId,
                 loading: true
             },
+            deckTags: {
+                loading: true,
+                options: []
+            },
             editor: {
                 frontContent: '',
                 frontLoading: false,
                 backContent: '',
-                backLoading: false
+                backLoading: false,
+                tagsLoading: false,
+                tags: []
             },
+            noteTags: [],
             submittingNote: false,
             noteId: this.$route.params.noteId,
             frontPlaceholder: `For a simple front/back card, just enter text for the front and back. 
@@ -117,14 +153,96 @@ For a fill-in-the-blank style card, write a sentence here, select the text you w
             loadNote(this.noteId).then(result => {
                 this.editor.frontContent = result.frontContent
                 this.editor.backContent = result.backContent
+
+                this.editor.tagLoading = true
+                loadNoteTags(this.noteId).then(tags => {
+                    this.editor.tags = tags.map(tag => tag.id)
+                    this.noteTags = tags
+                }).catch(error => {
+                    console.error(error)
+                }).finally(() => this.editor.tagLoading = false)
             }).catch(error => {
 
             }).finally(() => {
                 this.submittingNote = false
             })
         },  
+        logValue(value) {
+            console.log(value)
+        },
+        async onTagsChanged(value) {
+
+            this.deckTags.loading = true
+
+            //Check to see if there are any new tags; if so, add them to the deck
+            const currentDeckTags = this.deckTags.options.map(tag => tag.id)
+            
+            //If there are any new tags, load the tag selector and add the new tags to the deck
+            for (let i = 0; i < value.length; i++) {
+                if (currentDeckTags.includes(value[i])) continue
+                try {
+                    const result = await createTag(this.deckId, value[i])
+                    value[i] = result[0].id
+                } catch (error) {
+                }
+            }
+
+            //Reload the deck tags to include the new tags
+            try {
+                const result = await loadDeckTags(this.deckId)
+                this.deckTags.options = result
+                this.editor.tags = value
+            } catch (error) {
+                this.editor.tags = this.editor.tags.filter(tag => currentDeckTags.includes(tag))
+            }
+
+            //Next, sync the editor tags with the ones on the note
+
+            //Find new tags and add them
+            for (let i = 0; i < this.editor.tags.length; i++) {
+                if (this.noteTags.map(tag => tag.id).includes(this.editor.tags[i])) continue
+                try {
+                    const result = await addTagToNote(this.noteId, this.editor.tags[i])
+                } catch (error) {
+                    this.editor.tags = this.editor.tags.filter(tag => tag != this.editor.tags[i])
+                    break
+                }
+            }
+
+            //Reload the note tags
+            this.noteTags = await loadNoteTags(this.noteId)
+
+            //Find tags to remove and remove them
+            let tagsToRemove = []
+            for (let i = 0; i < this.noteTags.length; i++) {
+                if (this.editor.tags.includes(this.noteTags[i].id)) continue
+                try {
+                    if (this.noteTags[i].id == undefined) {
+                        tagsToRemove.push(this.noteTags[i].id)
+                        continue
+                    } 
+                    const result = await deleteTagFromNote(this.noteId, this.noteTags[i].id)
+                    tagsToRemove.push(this.noteTags[i].id)
+                } catch (error) {
+                    this.editor.tags.push(this.noteTags[i].id)
+                    console.error(error)
+                }
+            }
+            this.noteTags = this.noteTags.filter(tag => !tagsToRemove.includes(tag.id))
+
+            this.deckTags.loading = false
+
+        },
+        addTag() {
+            addTagToNote(this.noteId, '7f591f9c-2032-4bb5-8232-fe37be6ea876').then(result => {
+                
+            }).catch(error => {
+                console.error(error)
+            })
+        },
         loadDeckSelectOptions() {
             this.deckSelect.loading = true
+            this.deckTags.loading = true
             getDecks().then(result => {
                 this.deckSelect.options = result
                 for (let i = 0; i < result.length; i++) {
@@ -135,6 +253,13 @@ For a fill-in-the-blank style card, write a sentence here, select the text you w
             }).catch(error => {
 
             }).finally(() => this.deckSelect.loading = false)
+
+            loadDeckTags(this.deckId).then(result => {
+                this.deckTags.options = result
+            }).catch(error => {
+
+            }).finally(() => this.deckTags.loading = false)
+            
         },
         onDeckSelectChange(value) {
             this.deckId = value

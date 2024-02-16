@@ -25,6 +25,9 @@ const unwrapSupabaseResult = (result: any, error: string = 'Something went wrong
 }
 
 export default async (req: Request, context: Context): Promise<Response> => {
+  
+  console.log('testing')
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
