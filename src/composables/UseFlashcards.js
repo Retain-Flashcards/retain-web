@@ -280,8 +280,9 @@ export default () => {
 
     const getNextCard = async (deckId) => {
         
-        const result = await makeSupabaseFetch('get-next-card-new', {
+        const result = await makeSupabaseFetch('get-next-card-v3', {
             deckId,
+            filterTags: [],
             userJwt: supabase.auth.session().access_token
         })
 
