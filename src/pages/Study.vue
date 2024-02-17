@@ -161,7 +161,7 @@ export default {
         getNextCard() {
             this.loadingCard = true
             this.flipped = false
-            getNextCard(this.deckId).then(result => {
+            getNextCard(this.deckId, this.selectedTags).then(result => {
                 if (!result.card) this.done = true
                 
                 this.card = result.card

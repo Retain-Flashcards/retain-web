@@ -278,11 +278,11 @@ export default () => {
         return data
     }
 
-    const getNextCard = async (deckId) => {
+    const getNextCard = async (deckId, filterTags) => {
         
         const result = await makeSupabaseFetch('get-next-card-v3', {
             deckId,
-            filterTags: [],
+            filterTags: filterTags,
             userJwt: supabase.auth.session().access_token
         })
 

@@ -55,13 +55,10 @@ export default async (req: Request, context: Context): Promise<Response> => {
   tomorrowTimestamp.setDate(todayTimestamp.getDate() + 1)
   tomorrowTimestamp.setHours(3)
 
-  console.log('Getting cards')
-  console.log(filterTags)
   const reviewCards = unwrapSupabaseResult( await supabase.rpc('get_review_cards_with_filter_tags', {
     given_deck_id: deckId,
     filter_tags: filterTags
   }) )
-  console.log(reviewCards)
   
   if (!reviewCards || reviewCards.length < 1) return new Response(
     JSON.stringify({
@@ -91,7 +88,8 @@ export default async (req: Request, context: Context): Promise<Response> => {
   const deck = unwrapSupabaseResult( await supabase.rpc('get_deck_with_tag_filter', {
     given_deck_id: deckId,
     filter_tags: filterTags
-  }) )[0]
+  }) )
+  console.log(deck)
 
 
   //Generate times for card
