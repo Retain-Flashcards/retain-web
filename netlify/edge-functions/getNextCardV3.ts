@@ -30,7 +30,6 @@ const unwrapSupabaseResult = (result: any, error: string = 'Something went wrong
 }
 
 export default async (req: Request, context: Context): Promise<Response> => {
-  console.log('test')
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -88,8 +87,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
   const deck = unwrapSupabaseResult( await supabase.rpc('get_deck_with_tag_filter', {
     given_deck_id: deckId,
     filter_tags: filterTags
-  }) )
-  console.log(deck)
+  }) )[0]
 
 
   //Generate times for card
