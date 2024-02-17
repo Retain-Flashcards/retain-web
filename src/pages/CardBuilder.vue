@@ -198,48 +198,10 @@ For a fill-in-the-blank style card, write a sentence here, select the text you w
 
             //Next, sync the editor tags with the ones on the note
 
-            //Find new tags and add them
-            for (let i = 0; i < this.editor.tags.length; i++) {
-                if (this.noteTags.map(tag => tag.id).includes(this.editor.tags[i])) continue
-                try {
-                    const result = await addTagToNote(this.noteId, this.editor.tags[i])
-                } catch (error) {
-                    this.editor.tags = this.editor.tags.filter(tag => tag != this.editor.tags[i])
-                    break
-                }
-            }
-
-            //Reload the note tags
-            this.noteTags = await loadNoteTags(this.noteId)
-
-            //Find tags to remove and remove them
-            let tagsToRemove = []
-            for (let i = 0; i < this.noteTags.length; i++) {
-                if (this.editor.tags.includes(this.noteTags[i].id)) continue
-                try {
-                    if (this.noteTags[i].id == undefined) {
-                        tagsToRemove.push(this.noteTags[i].id)
-                        continue
-                    } 
-                    const result = await deleteTagFromNote(this.noteId, this.noteTags[i].id)
-                    tagsToRemove.push(this.noteTags[i].id)
-                } catch (error) {
-                    this.editor.tags.push(this.noteTags[i].id)
-                    console.error(error)
-                }
-            }
-            this.noteTags = this.noteTags.filter(tag => !tagsToRemove.includes(tag.id))
-
             this.deckTags.loading = false
 
         },
-        addTag() {
-            addTagToNote(this.noteId, '7f591f9c-2032-4bb5-8232-fe37be6ea876').then(result => {
-                
-            }).catch(error => {
-                console.error(error)
-            })
-        },
+
         loadDeckSelectOptions() {
             this.deckSelect.loading = true
             this.deckTags.loading = true
@@ -334,30 +296,66 @@ For a fill-in-the-blank style card, write a sentence here, select the text you w
             })
         },
 
-        submitNote() {
+        async submitNote() {
             
             this.submittingNote = true
 
+            let noteId = this.noteId
+
             if (this.noteId) {
-                deleteNote(this.noteId).then(() => {
-                    this.createNote(this.noteId)
-                }).catch(error => {
+                try {
+                    await deleteNote(this.noteId)
+                    await this.createNote(this.noteId)
+                } catch (error) {
                     this.submittingNote = false
-                })
+                }
             } 
-            else this.createNote()
-            
+            else noteId = await this.createNote()
+
+            //Find new tags and add them
+            for (let i = 0; i < this.editor.tags.length; i++) {
+                if (this.noteTags.map(tag => tag.id).includes(this.editor.tags[i])) continue
+                try {
+                    const result = await addTagToNote(noteId, this.editor.tags[i])
+                } catch (error) {
+                    this.editor.tags = this.editor.tags.filter(tag => tag != this.editor.tags[i])
+                    break
+                }
+            }
+
+            //Reload the note tags
+            this.noteTags = await loadNoteTags(noteId)
+
+            //Find tags to remove and remove them
+            let tagsToRemove = []
+            for (let i = 0; i < this.noteTags.length; i++) {
+                if (this.editor.tags.includes(this.noteTags[i].id)) continue
+                try {
+                    if (this.noteTags[i].id == undefined) {
+                        tagsToRemove.push(this.noteTags[i].id)
+                        continue
+                    } 
+                    const result = await deleteTagFromNote(noteId, this.noteTags[i].id)
+                    tagsToRemove.push(this.noteTags[i].id)
+                } catch (error) {
+                    this.editor.tags.push(this.noteTags[i].id)
+                    console.error(error)
+                }
+            }
+            if (this.noteId) this.noteTags = this.noteTags.filter(tag => !tagsToRemove.includes(tag.id))
+            else this.noteTags = []
 
         },
-        createNote(noteId) {
-            createNote(this.deckSelect.value, this.editor.frontContent, this.editor.backContent, noteId).then(result => {
-                if (!noteId) {
-                    this.editor.frontContent = ''
-                    this.editor.backContent = ''
-                }
-            }).catch(error => {
-                console.error(error)
-            }).finally(() => this.submittingNote = false)
+        async createNote(noteId) {
+            const result = await createNote(this.deckSelect.value, this.editor.frontContent, this.editor.backContent, noteId)
+            
+            if (!noteId) {
+                this.editor.frontContent = ''
+                this.editor.backContent = ''
+            }
+            this.submittingNote = false
+
+            return result[0].note_id
         }
     }
 }

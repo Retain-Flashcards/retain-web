@@ -145,6 +145,7 @@ export default {
             })
         },
         getDeck() {
+            this.done = false
             this.deckLoading = true
             getDeck(this.deckId, this.selectedTags).then(deck => {
                 this.deck = deck
@@ -175,6 +176,11 @@ export default {
             }).finally(() => {
                 this.loadingCard = false
             })
+        },
+        onTagsChanged(value) {
+            this.selectedTags = value
+            this.getDeck()
+            this.getNextCard()
         },
         studyCard(category) {
             this.loadingCard = true
