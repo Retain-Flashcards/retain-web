@@ -13,6 +13,8 @@ export default class Deck {
         this.primaryColor = data.primary_color
         this.accessLevel = data.access_level
         this.shared = data.shared
+        this.daily_new_limit = data.daily_new_limit
+        this.daily_review_limit = data.daily_review_limit
     }
 
     async getNextCard() {

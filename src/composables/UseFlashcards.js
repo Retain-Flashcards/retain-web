@@ -397,6 +397,53 @@ export default () => {
         return data
     }
 
+    const getDeckStudySettings = async (deck) => {
+        const { data, error } = await supabase.from('daily_review_counters').select('*').eq('deck', deck.id).eq('day', new Date().toISOString().split('T')[0])
+
+        if (error) throw error
+
+        if (data.length == 0) {
+            return {
+                newLimit: deck.daily_new_limit,
+                reviewLimit: deck.daily_review_limit, 
+                today: false
+            }
+        }
+
+        return {
+            newLimit: data[0].new_limit,
+            reviewLimit: data[0].review_limit,
+            today: true
+        }
+    }
+
+    const setTodayStudySettings = async (deck, newLimit, reviewLimit) => {
+        const { data, error } = await supabase.from('daily_review_counters').upsert({
+            deck: deck.id,
+            new_limit: newLimit,
+            review_limit: reviewLimit,
+            day: new Date().toISOString().split('T')[0]
+        })
+
+        if (error) throw error
+
+        return data
+    }
+
+    const setDeckStudySettings = async (deck, newLimit, reviewLimit) => {
+        const { data, error } = await supabase.from('decks').update({
+            daily_new_limit: newLimit,
+            daily_review_limit: reviewLimit
+        }).eq('deck_id', deck.id)
+
+        if (error) throw error
+
+        deck.daily_new_limit = newLimit
+        deck.daily_review_limit = reviewLimit
+
+        return data
+    }
+
     return {
         getDecks,
         createDeck,
@@ -424,7 +471,10 @@ export default () => {
         loadNoteTags,
         createTag,
         addTagToNote,
-        deleteTagFromNote
+        deleteTagFromNote,
+        getDeckStudySettings,
+        setTodayStudySettings,
+        setDeckStudySettings
     }
 
 }

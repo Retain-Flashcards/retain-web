@@ -4,6 +4,8 @@ import { createRouter, createWebHistory} from 'vue-router'
 //Composables
 import useAuthUser from './composables/UseAuthUser'
 
+import LoadableProvider from './components/LoadableProvider.vue'
+
 //Pages
 import App from './App.vue'
 import Home from './pages/Home.vue'
@@ -109,6 +111,8 @@ app.use(vueShortkey)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
 }
+
+app.component('loadable-provider', LoadableProvider)
 
 //Mount
 app.mount('#app')

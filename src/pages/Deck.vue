@@ -17,7 +17,7 @@
         <div class='main-content'>
             <div style='display: flex; flex-direction: row; align-items: center; margin-top: 50px; margin-bottom: 10px;'>
                 <h2>Due Now</h2>
-                <div style='width: 20px;'></div>
+                <div class='flex-spacer'></div>
                 <el-select-v2 v-model='tags.selected' 
                     placeholder='Filter by Tags...' 
                     style='width: 200px;'
@@ -28,7 +28,10 @@
                     tag-type='danger'
                     @change='onTagsChanged'>
                 </el-select-v2>
-                <div class='flex-spacer'></div>
+                <div style='width: 20px;'></div>
+                <el-button type='primary' plain @click='openSettingsDialog'>
+                    <el-icon style='margin-right: 5px;'><Setting /></el-icon> Study Settings
+                </el-button>
             </div>
             <div class='study-container'>
                 <el-result v-if='deck.reviewCount == 0 && deck.newCount == 0' icon="success" title="Done for the Day!" subTitle="No Reviews Due" style='flex: 2;'>
@@ -173,6 +176,33 @@
 
                 </el-pagination>
 
+                <el-dialog 
+                    v-model='deckSettings.editing' title='Study Settings'>
+                    <loadable-provider :loadable='deckSettingsLoadable'>
+                        <template #data='data'>
+                            <div style='display: flex; flex-direction: column; align-items: center;'>
+                                <el-form label-position='top' style='width: 100%;'>
+                                    <el-form-item label='New Limit'>
+                                        <el-input v-model='deckSettings.newLimit' type='number'></el-input>
+                                    </el-form-item>
+                                    <el-form-item label='Review Limit'>
+                                        <el-input v-model='deckSettings.reviewLimit' type='number'></el-input>
+                                    </el-form-item>
+                                    <el-form-item>
+                                        <el-radio-group v-model='deckSettings.mode'>
+                                            <el-radio-button label='defaults'>Set as Deck Defaults</el-radio-button>
+                                            <el-radio-button label='today'>Just For Today</el-radio-button>   
+                                        </el-radio-group>
+                                    </el-form-item>
+                                    <el-form-item>
+                                        <el-button type='primary' @click='saveStudySettings'>Save</el-button>
+                                    </el-form-item>
+                                </el-form>
+                            </div>
+                        </template>
+                    </loadable-provider>
+                </el-dialog>
+
             </div>
         </div>
 
@@ -181,17 +211,28 @@
 
 <script>
 import useFlashcards from '../composables/UseFlashcards'
-import { Plus, ArrowLeft, InfoFilled } from '@element-plus/icons-vue'
+import LoadableProvider from '../components/LoadableProvider.vue'
+import Loadable from '../model/loadable.js'
+import { Plus, ArrowLeft, InfoFilled, Setting } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { setThemeColor } from '../utils'
 
-const { getDeck, getDeckNotes, deleteNote, resetNote, getQuizzes, getQuizPath, listCramSessions, loadDeckTags } = useFlashcards()
+const { getDeck, getDeckNotes, deleteNote, resetNote, getQuizzes, getQuizPath, listCramSessions, loadDeckTags, getDeckStudySettings, setDeckStudySettings, setTodayStudySettings } = useFlashcards()
 
 export default {
     setup() {
     },
     mounted() {
-        this.loadDeck()
+        this.loadDeck().then(() => {
+            this.deckSettingsLoadable.loadWithFuture(async () => {
+                const settings = await getDeckStudySettings(this.deck)
+                this.deckSettings.newLimit = settings.newLimit
+                this.deckSettings.reviewLimit = settings.reviewLimit
+                if (settings.today) this.deckSettings.mode = 'today'
+                return settings
+            })
+        })
+        
     },
     data() {
         return {
@@ -212,30 +253,47 @@ export default {
                 loading: true,
                 options: [],
                 selected: []
-            }
+            },
+            deckSettings: {
+                editing: false,
+                newLimit: 20,
+                reviewLimit: 20,
+                mode: 'defaults'
+            }, 
+            deckSettingsLoadable: new Loadable()
         }
     }, 
     methods: {
-        loadDeck() {
-            getDeck(this.$route.params.deckId).then(deck => {
-                this.deck = deck
-                console.log(this.deck)
-                setThemeColor(this.deck.primaryColor, document.documentElement)
+        async loadDeck() {
+            const deck = await getDeck(this.$route.params.deckId)
+            this.deck = deck
+            console.log(this.deck)
+            setThemeColor(this.deck.primaryColor, document.documentElement)
 
-                this.loadNotes()
-                this.loadQuizzes()
-                this.loadCramSessions()
-            })
+            this.loadNotes()
+            this.loadQuizzes()
+            this.loadCramSessions()
 
-            loadDeckTags(this.$route.params.deckId).then(result => {
-                this.tags.options = result
-            }).finally(() => {
-                this.tags.loading = false
-            })
+            const result = await loadDeckTags(this.$route.params.deckId)
+            this.tags.options = result
+            this.tags.loading = false
         },
 
         onTagsChanged(selectedTags) {
             this.reloadDeckCount()
+        },
+
+        openSettingsDialog() {
+            this.deckSettings.editing = true
+        },
+
+        saveStudySettings() {
+            this.deckSettingsLoadable.loadWithFuture(async () => {
+                if (this.deckSettings.mode == 'defaults')
+                    await setDeckStudySettings(this.deck, this.deckSettings.newLimit, this.deckSettings.reviewLimit)
+                else if (this.deckSettings.mode == 'today')
+                    await setTodayStudySettings(this.deck, this.deckSettings.newLimit, this.deckSettings.reviewLimit)
+            })
         },
 
         enterCramMode() {

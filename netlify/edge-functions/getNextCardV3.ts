@@ -54,9 +54,31 @@ export default async (req: Request, context: Context): Promise<Response> => {
   tomorrowTimestamp.setDate(todayTimestamp.getDate() + 1)
   tomorrowTimestamp.setHours(3)
 
-  const reviewCards = unwrapSupabaseResult( await supabase.rpc('get_review_cards_with_filter_tags', {
+  //First, check for new and review limits
+  //Get new new and review counts
+  const deck = unwrapSupabaseResult( await supabase.rpc('get_deck_with_tag_filter', {
     given_deck_id: deckId,
     filter_tags: filterTags
+  }) )[0]
+
+  const dailyCounterRecord = unwrapSupabaseResult( await supabase.from('daily_review_counters').select('new_seen, review_seen, new_limit, review_limit').eq('deck', deck.deck_id).eq('day', todayTimestamp.toISOString().split('T')[0]) )[0]
+
+  let newLimit = deck.daily_new_limit
+  let reviewLimit = deck.daily_review_limit
+  if (dailyCounterRecord) {
+    newLimit = dailyCounterRecord.new_limit
+    reviewLimit = dailyCounterRecord.review_limit
+  }
+
+  //Now, calculate how much is left
+  const newLeft = Math.max(newLimit - (dailyCounterRecord ? dailyCounterRecord.new_seen : 0), 0)
+  const reviewsLeft = Math.max(reviewLimit - (dailyCounterRecord ? dailyCounterRecord.review_seen : 0), 0)
+
+  const reviewCards = unwrapSupabaseResult( await supabase.rpc('get_review_cards_with_filter_tags', {
+    given_deck_id: deckId,
+    filter_tags: filterTags,
+    new_limit: newLeft,
+    review_limit: reviewsLeft
   }) )
   
   if (!reviewCards || reviewCards.length < 1) return new Response(
@@ -83,13 +105,6 @@ export default async (req: Request, context: Context): Promise<Response> => {
   }
 
 
-  //Get new new and review counts
-  const deck = unwrapSupabaseResult( await supabase.rpc('get_deck_with_tag_filter', {
-    given_deck_id: deckId,
-    filter_tags: filterTags
-  }) )[0]
-
-
   //Generate times for card
   let againTime = ''
   let hardTime = ''
@@ -111,12 +126,20 @@ export default async (req: Request, context: Context): Promise<Response> => {
     goodTime = `${Math.round((card.current_interval * (card.ease_factor ? card.ease_factor : 2.5)) / 1440)} days`
   }
 
+  let reviewCount = 0
+  let newCount = 0
+
+  //Get new and review counts
+  for (let i = 0; i < reviewCards.length; i++) {
+    if (reviewCards[i].learning) newCount++
+    else reviewCount++
+  }
 
   return new Response(
     JSON.stringify({
       card: card,
-      reviewsLeft: deck.review_count,
-      newLeft: deck.new_count,
+      reviewsLeft: reviewCount,
+      newLeft: newCount,
       againTime,
       hardTime,
       goodTime
