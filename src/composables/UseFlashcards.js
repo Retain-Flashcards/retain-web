@@ -9,7 +9,7 @@ const { supabase, makeSupabaseFetch } = useSupabase()
 export default () => {
 
     const getDecks = async () => {
-        const { data, error } = await supabase.from('decks_with_new_review_counts_new').select(`*`)
+        const { data, error } = await supabase.rpc('get_all_decks')
         if (error) throw new Error(error)
         return data.map(deck => new Deck(deck))
     }
@@ -67,25 +67,16 @@ export default () => {
     }
 
     const getDeck = async (deckId, tagFilter = []) => {
-        if (tagFilter.length > 0) {
 
-            const { data, error } = await supabase.rpc('get_deck_with_tag_filter', {
-                given_deck_id: deckId,
-                filter_tags: tagFilter
-            })
+        const { data, error } = await supabase.rpc('get_deck_with_tag_filter', {
+            given_deck_id: deckId,
+            filter_tags: tagFilter
+        })
 
-            if (error) throw new Error('Could not fetch deck')
+        if (error) throw new Error('Could not fetch deck')
 
-            return new Deck(data[0])
-        }
+        return new Deck(data[0])
 
-        else {
-            const { data, error } = await supabase.from('decks_with_new_review_counts_new').select('*').eq('deck_id', deckId)
-
-            if (error || data.length == 0) throw new Error('Could not fetch deck')
-
-            return new Deck(data[0])
-        }
     }
 
     const getDeckNotes = async (deck, page) => {

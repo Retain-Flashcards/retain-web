@@ -267,7 +267,6 @@ export default {
         async loadDeck() {
             const deck = await getDeck(this.$route.params.deckId)
             this.deck = deck
-            console.log(this.deck)
             setThemeColor(this.deck.primaryColor, document.documentElement)
 
             this.loadNotes()
@@ -293,6 +292,8 @@ export default {
                     await setDeckStudySettings(this.deck, this.deckSettings.newLimit, this.deckSettings.reviewLimit)
                 else if (this.deckSettings.mode == 'today')
                     await setTodayStudySettings(this.deck, this.deckSettings.newLimit, this.deckSettings.reviewLimit)
+
+                this.reloadDeckCount()
             })
         },
 
