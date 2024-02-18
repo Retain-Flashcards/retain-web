@@ -157,14 +157,14 @@ export default async (req: Request, context: Context): Promise<Response> => {
     unwrapSupabaseResult( await supabase.from('daily_review_counters').insert({
       deck: note.deck_id,
       day: todayTimestamp.toISOString().split('T')[0],
-      newSeen: cardType == 'new' ? 1 : 0,
-      reviewSeen: cardType == 'review' ? 1 : 0,
+      new_seen: cardType == 'new' ? 1 : 0,
+      review_seen: cardType == 'review' ? 1 : 0,
     }) )[0]
   }
   else {
     unwrapSupabaseResult( await supabase.from('daily_review_counters').update({
-      newSeen: dailyCounters.newSeen + (cardType == 'new' ? 1 : 0),
-      reviewSeen: dailyCounters.reviewSeen + (cardType == 'review' ? 1 : 0),
+      new_seen: dailyCounters.new_seen + (cardType == 'new' ? 1 : 0),
+      review_seen: dailyCounters.review_seen + (cardType == 'review' ? 1 : 0),
     }).eq('id', dailyCounters.id) )
   }
 
