@@ -60,6 +60,15 @@ export default async (req: Request, context: Context): Promise<Response> => {
     given_card_id: cardId
   }) )[0]
 
+  //Determine if it was a new or review card
+  let cardType = 'none'
+  if (card.last_reviewed == null) {
+    cardType = 'new'
+  } else if (card.learning == false) {
+    cardType = 'review'
+  }
+
+
   //Get the card's note
   const note = unwrapSupabaseResult( await supabase.from('notes').select('*').eq('id', card.note_id) )[0]
 
@@ -141,6 +150,23 @@ export default async (req: Request, context: Context): Promise<Response> => {
 
   console.log(updatedCard)
   const finalResult = unwrapSupabaseResult( await supabase.from('card_reviews').upsert(updatedCard) )
+
+  const getDailyCountersResult = unwrapSupabaseResult( await supabase.from('daily_review_counters').select('*').eq('deck', note.deck_id).eq('day', todayTimestamp.toISOString().split('T')[0]) )
+  let dailyCounters = getDailyCountersResult[0]
+  if (!dailyCounters) {
+    unwrapSupabaseResult( await supabase.from('daily_review_counters').insert({
+      deck: note.deck_id,
+      day: todayTimestamp.toISOString().split('T')[0],
+      newSeen: cardType == 'new' ? 1 : 0,
+      reviewSeen: cardType == 'review' ? 1 : 0,
+    }) )[0]
+  }
+  else {
+    unwrapSupabaseResult( await supabase.from('daily_review_counters').update({
+      newSeen: dailyCounters.newSeen + (cardType == 'new' ? 1 : 0),
+      reviewSeen: dailyCounters.reviewSeen + (cardType == 'review' ? 1 : 0),
+    }).eq('id', dailyCounters.id) )
+  }
 
   return new Response(
     JSON.stringify({
