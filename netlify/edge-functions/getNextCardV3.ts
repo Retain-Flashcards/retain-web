@@ -72,7 +72,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
 
   //Now, calculate how much is left
   const newLeft = Math.max(newLimit - (dailyCounterRecord ? dailyCounterRecord.new_seen : 0), 0)
-  const reviewsLeft = Math.max(reviewLimit - (dailyCounterRecord ? dailyCounterRecord.review_seen : 0), 0)
+  const reviewsLeft = Math.max(reviewLimit - (dailyCounterRecord ? dailyCounterRecord.review_seen : 0) + (dailyCounterRecord ? dailyCounterRecord.new_seen : 0), 0)
 
   console.log('NEW LEFT', newLeft)
   console.log('REVIEWS LEFT', reviewsLeft)
