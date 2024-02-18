@@ -159,7 +159,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
       day: todayTimestamp.toISOString().split('T')[0],
       new_seen: cardType == 'new' ? 1 : 0,
       review_seen: cardType == 'review' ? 1 : 0,
-    }) )[0]
+    }) )
   }
   else {
     unwrapSupabaseResult( await supabase.from('daily_review_counters').update({
