@@ -74,6 +74,9 @@ export default async (req: Request, context: Context): Promise<Response> => {
   const newLeft = Math.max(newLimit - (dailyCounterRecord ? dailyCounterRecord.new_seen : 0), 0)
   const reviewsLeft = Math.max(reviewLimit - (dailyCounterRecord ? dailyCounterRecord.review_seen : 0), 0)
 
+  console.log('NEW LEFT', newLeft)
+  console.log('REVIEWS LEFT', reviewsLeft)
+
   const reviewCards = unwrapSupabaseResult( await supabase.rpc('get_review_cards_with_filter_tags', {
     given_deck_id: deckId,
     filter_tags: filterTags,
