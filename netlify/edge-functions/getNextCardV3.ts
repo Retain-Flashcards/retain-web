@@ -135,7 +135,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
 
   //Get new and review counts
   for (let i = 0; i < reviewCards.length; i++) {
-    if (reviewCards[i].learning && !reviewCards[i].last_reviewed) newCount++
+    if (!reviewCards[i].last_reviewed) newCount++
     else reviewCount++
   }
 
