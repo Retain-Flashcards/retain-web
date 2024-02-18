@@ -26,8 +26,6 @@ const unwrapSupabaseResult = (result: any, error: string = 'Something went wrong
 
 export default async (req: Request, context: Context): Promise<Response> => {
   
-  console.log('testing')
-
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -45,9 +43,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
   if (!user) throw new Error('No user') 
 
   const { cardId, category, localTimestamp } = await req.json()
-  console.log(localTimestamp)
   const todayTimestamp = new Date(localTimestamp)
-  console.log(todayTimestamp.getDate())
   todayTimestamp.setHours(3)
   todayTimestamp.setMinutes(0)
   todayTimestamp.setSeconds(0)
@@ -59,13 +55,14 @@ export default async (req: Request, context: Context): Promise<Response> => {
   const card = unwrapSupabaseResult( await supabase.rpc('get_card', {
     given_card_id: cardId
   }) )[0]
+  //Get the current card_review status
+  const cardReview = unwrapSupabaseResult( await supabase.from('card_reviews').select('*').eq('card_id', cardId).eq('uid', user.id) )[0]
 
   //Determine if it was a new or review card
   let cardType = 'none'
-  console.log(card)
-  if (card.last_reviewed == null) {
+  if (!cardReview || cardReview.last_reviewed == null) {
     cardType = 'new'
-  } else if (card.learning == false) {
+  } else if (cardReview.learning == false) {
     cardType = 'review'
   }
 
@@ -81,8 +78,6 @@ export default async (req: Request, context: Context): Promise<Response> => {
   const result = await supabase.from('card_reviews').update({
     buried_until: tomorrowTimestamp.toISOString()
   }).not('card_id', 'eq', cardId).not('last_reviewed', 'is', null).lt('last_reviewed', todayTimestamp.toISOString()).eq('note_id', note.id)
-
-  console.log(user)
 
   let updatedCard: any = {
     'card_id': cardId,
@@ -149,7 +144,6 @@ export default async (req: Request, context: Context): Promise<Response> => {
   updatedCard['precise_last_reviewed'] = new Date()
   updatedCard['current_interval'] = Math.round(updatedCard['current_interval'])
 
-  console.log(updatedCard)
   const finalResult = unwrapSupabaseResult( await supabase.from('card_reviews').upsert(updatedCard) )
 
   const getDailyCountersResult = unwrapSupabaseResult( await supabase.from('daily_review_counters').select('*').eq('deck', note.deck_id).eq('day', todayTimestamp.toISOString().split('T')[0]) )
