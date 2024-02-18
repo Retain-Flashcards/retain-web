@@ -66,8 +66,8 @@ export default async (req: Request, context: Context): Promise<Response> => {
   let newLimit = deck.daily_new_limit
   let reviewLimit = deck.daily_review_limit
   if (dailyCounterRecord) {
-    newLimit = dailyCounterRecord.new_limit
-    reviewLimit = dailyCounterRecord.review_limit
+    if (dailyCounterRecord.new_limit) newLimit = dailyCounterRecord.new_limit
+    if (dailyCounterRecord.review_limit) reviewLimit = dailyCounterRecord.review_limit
   }
 
   //Now, calculate how much is left
