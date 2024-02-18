@@ -11,7 +11,7 @@
     <el-form-item label='Cover Image' prop='coverImage'>
         <div style='width: 100%; display: flex; flex-direction: column; align-items: center;'>
             <img v-if='editingDeck && editingDeck.coverImage' :src='editingDeck.coverImage' style='max-width: 100%; width: 70%; margin: 20px; border-radius: 20px;'/>
-            <el-upload drag :file-list="formData.coverImageFiles" thumbnail-mode :auto-upload='false' action='' list-type='picture' :multiple='false' :style='{ display: "flex", flex: 1, width: "100%" }'>
+            <el-upload drag v-model:file-list="formData.coverImageFiles" thumbnail-mode :auto-upload='false' action='' list-type='picture' :multiple='false' :style='{ display: "flex", flex: 1, width: "100%" }'>
                 <div class='flex-spacer'></div>
                 <div>
                     <el-icon><Upload /></el-icon>
@@ -84,15 +84,12 @@ export default {
     },  
     methods: {
         submitNewDeckForm() {
-            console.log(this.formData.primaryColor)
             this.$refs['theForm'].validate(valid => {
-
                 if (valid) {
                     
                     this.isLoading = true
                     
                     const fileObj = this.formData.coverImageFiles.length > 0 ? this.formData.coverImageFiles[0].raw : undefined
-
                     createDeck(this.formData.title, fileObj, this.formData.primaryColor, this.editingDeck?.id).then(result => {
                         this.formData = {
                             title: '',

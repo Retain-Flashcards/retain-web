@@ -2,7 +2,7 @@
     <div ref='theContainer' class='card' :style="{ backgroundColor: primaryColor ? primaryColor : 'var(--el-color-primary)', backgroundImage: imgUrl ? `url('` + imgUrl + `')`:'none' }">
         <div :class='`card-container ${imgUrl ? "card-overlay": ""}`' :style="{ backgroundColor: 'var(--el-color-primary-overlay)' }">
             <div class='edit-container' style='flex: 0.2; display: flex; flex-direction: row; margin-right: 20px; margin-left: 15px; margin-top: 15px; align-items: center;'>
-                <el-button :class='`${pinned ? "pin-button" : ""}`' @click.stop='() => setPinned(!pinned)' :type='pinned ? "primary":"plain"'  circle ><el-icon><StarFilled v-if='pinned'/><Star v-else/></el-icon></el-button>
+                <el-button :class='`${pinned ? "pin-button" : ""}`' @click.stop='() => setPinned(!pinned)' :type='pinned ? "primary":"default"' :plain='!pinned'  circle ><el-icon><StarFilled v-if='pinned'/><Star v-else/></el-icon></el-button>
                 <div class='flex-spacer'></div> 
                 <el-dropdown trigger='click' @command='handleMoreCommand'>
                     <el-button @click.stop='() => {}' class='edit-button' type='text' style='color: white; font-size: 25px;'><el-icon><MoreFilled /></el-icon></el-button>
