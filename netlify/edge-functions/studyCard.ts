@@ -62,6 +62,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
 
   //Determine if it was a new or review card
   let cardType = 'none'
+  console.log(card)
   if (card.last_reviewed == null) {
     cardType = 'new'
   } else if (card.learning == false) {
