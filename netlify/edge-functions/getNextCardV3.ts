@@ -83,6 +83,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
     new_limit: newLeft,
     review_limit: reviewsLeft
   }) )
+  console.log(reviewCards.length)
   
   if (!reviewCards || reviewCards.length < 1) return new Response(
     JSON.stringify({
