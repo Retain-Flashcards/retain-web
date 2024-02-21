@@ -75,14 +75,17 @@ export default async (req: Request, context: Context): Promise<Response> => {
   //- not a new card
   //- haven't already been reviewed today
   //- are from this note
-  const result = await supabase.from('card_reviews').update({
-    buried_until: tomorrowTimestamp.toISOString()
-  }).not('card_id', 'eq', cardId).not('last_reviewed', 'is', null).lt('last_reviewed', todayTimestamp.toISOString()).eq('note_id', note.id)
-
   let updatedCard: any = {
     'card_id': cardId,
     'uid': user.id,
     'ease_factor': 2.5
+  }
+  if (note && note.id) {
+    const result = await supabase.from('card_reviews').update({
+      buried_until: tomorrowTimestamp.toISOString()
+    }).not('card_id', 'eq', cardId).not('last_reviewed', 'is', null).lt('last_reviewed', todayTimestamp.toISOString()).eq('note_id', note.id)
+    
+    updatedCard['note_id'] = note.id
   }
 
   //Is this card in the learning phase?
@@ -109,6 +112,8 @@ export default async (req: Request, context: Context): Promise<Response> => {
     if (updatedCard['learning_step'] > learningSteps.length - 1) {
       updatedCard['learning'] = false
       updatedCard['current_interval'] = 1440 //(1 day)
+    } else if (category == 'hard' && updatedCard['learning_step'] == 0) {
+      updatedCard['current_interval'] = Math.round((learningSteps[ updatedCard['learning_step'] ] + learningSteps[ updatedCard['learning_step'] + 1 ]) / 2)
     } else {
       updatedCard['current_interval'] = learningSteps[ updatedCard['learning_step'] ]
     }
