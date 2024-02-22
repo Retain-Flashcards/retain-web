@@ -115,7 +115,8 @@ export default async (req: Request, context: Context): Promise<Response> => {
   let goodTime = ''
   if (card.learning != false) {
     againTime = `${learningSteps[0]} min`
-    hardTime = `${Math.round((learningSteps[card.learning_step] + (card.learning_step < learningSteps.length - 1 ? learningSteps[card.learning_step + 1]:0))/2)} min`
+    console.log('CARD LEARNING STEP', card.learning_step)
+    hardTime = `${Math.round( (learningSteps[card.learning_step] + (card.learning_step < learningSteps.length - 1 ? learningSteps[card.learning_step + 1]:0))/2)} min`
     goodTime = (card.learning_step < learningSteps.length - 1) ? `${learningSteps[ card.learning_step + 1 ]} min`:`1 day`
   }
   

@@ -393,7 +393,7 @@ export default () => {
 
         if (error) throw error
 
-        if (data.length == 0) {
+        if (data.length == 0 || (data[0].new_limit == null && data[0].review_limit == null)) {
             return {
                 newLimit: deck.daily_new_limit,
                 reviewLimit: deck.daily_review_limit, 
@@ -402,8 +402,8 @@ export default () => {
         }
 
         return {
-            newLimit: data[0].new_limit,
-            reviewLimit: data[0].review_limit,
+            newLimit: data[0].new_limit || deck.daily_new_limit,
+            reviewLimit: data[0].review_limit || deck.daily_review_limit,
             today: true
         }
     }
