@@ -70,6 +70,9 @@ export default async (req: Request, context: Context): Promise<Response> => {
     if (dailyCounterRecord.review_limit) reviewLimit = dailyCounterRecord.review_limit
   }
 
+  console.log('NEW LIMIT', newLimit)
+  console.log('REVIEW LIMIT', reviewLimit)
+
   //Now, calculate how much is left
   const newLeft = Math.max(newLimit - (dailyCounterRecord ? dailyCounterRecord.new_seen : 0), 0)
   const reviewsLeft = Math.max(reviewLimit - (dailyCounterRecord ? dailyCounterRecord.review_seen : 0) + (dailyCounterRecord ? dailyCounterRecord.new_seen : 0), 0)
@@ -115,8 +118,6 @@ export default async (req: Request, context: Context): Promise<Response> => {
   let goodTime = ''
   if (card.learning != false) {
     againTime = `${learningSteps[0]} min`
-    console.log('CARD LEARNING STEP', card.learning_step)
-    console.log('GOOD TIME', (card.learning_step < learningSteps.length - 1) ? `${learningSteps[ card.learning_step + 1 ]} min`:`1 day`)
     hardTime = `${Math.round( (learningSteps[card.learning_step + 0] + (card.learning_step < learningSteps.length - 1 ? learningSteps[card.learning_step + 1]:0))/2)} min`
     goodTime = (card.learning_step < learningSteps.length - 1) ? `${learningSteps[ card.learning_step + 1 ]} min`:`1 day`
   }
