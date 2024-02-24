@@ -70,9 +70,8 @@ export default async (req: Request, context: Context): Promise<Response> => {
     if (dailyCounterRecord.review_limit) reviewLimit = dailyCounterRecord.review_limit
   }
 
-  console.log('NEW LIMIT', newLimit)
-  console.log('REVIEW LIMIT', reviewLimit)
-  console.log('DAILY COUNTER RECORD', JSON.stringify(dailyCounterRecord, null, 2))
+  
+  console.log('TodayString', todayTimestamp.toISOString().split('T')[0])
 
   //Now, calculate how much is left
   const newLeft = Math.max(newLimit - (dailyCounterRecord ? dailyCounterRecord.new_seen : 0), 0)
