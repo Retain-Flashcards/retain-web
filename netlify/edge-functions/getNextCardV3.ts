@@ -70,14 +70,9 @@ export default async (req: Request, context: Context): Promise<Response> => {
     if (dailyCounterRecord.review_limit) reviewLimit = dailyCounterRecord.review_limit
   }
 
-  console.log('TodayString', todayTimestamp.toISOString().split('T')[0])
-
   //Now, calculate how much is left
   const newLeft = Math.max(newLimit - (dailyCounterRecord ? dailyCounterRecord.new_seen : 0), 0)
   const reviewsLeft = Math.max(reviewLimit - (dailyCounterRecord ? dailyCounterRecord.review_seen : 0) + (dailyCounterRecord ? dailyCounterRecord.new_seen : 0), 0)
-
-  console.log('NEW LEFT', newLeft)
-  console.log('REVIEWS LEFT', reviewsLeft)
 
   const reviewCards = unwrapSupabaseResult( await supabase.rpc('get_review_cards_with_filter_tags', {
     given_deck_id: deckId,
@@ -85,7 +80,6 @@ export default async (req: Request, context: Context): Promise<Response> => {
     new_limit: newLeft,
     review_limit: reviewsLeft
   }) )
-  console.log(reviewCards.length)
   
   if (!reviewCards || reviewCards.length < 1) return new Response(
     JSON.stringify({
