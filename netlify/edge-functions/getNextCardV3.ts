@@ -45,9 +45,9 @@ export default async (req: Request, context: Context): Promise<Response> => {
   } = await supabase.auth.getUser()
 
 
-  const { deckId, filterTags, userJwt } = await req.json()
+  const { deckId, filterTags, userJwt, localTimestamp } = await req.json()
 
-  const todayTimestamp = new Date()
+  const todayTimestamp = new Date(localTimestamp)
   
   todayTimestamp.setHours(3)
   const tomorrowTimestamp = new Date()
@@ -70,7 +70,6 @@ export default async (req: Request, context: Context): Promise<Response> => {
     if (dailyCounterRecord.review_limit) reviewLimit = dailyCounterRecord.review_limit
   }
 
-  
   console.log('TodayString', todayTimestamp.toISOString().split('T')[0])
 
   //Now, calculate how much is left

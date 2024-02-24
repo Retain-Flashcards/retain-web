@@ -274,7 +274,8 @@ export default () => {
         const result = await makeSupabaseFetch('get-next-card-v3', {
             deckId,
             filterTags: filterTags,
-            userJwt: supabase.auth.session().access_token
+            userJwt: supabase.auth.session().access_token,
+            localTimestamp: new Date().toLocaleDateString('en-US')
         })
 
         if (!result.card) return result
