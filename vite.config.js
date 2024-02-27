@@ -1,3 +1,4 @@
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { fileURLToPath, URL } from 'url'
 
 import { defineConfig } from 'vite'
@@ -10,7 +11,10 @@ export default defineConfig({
   server: {
     port: 3003
   },
-  plugins: [vue(), vueJsx()],
+  plugins: [vue(), vueJsx(), sentryVitePlugin({
+    org: "individual-ik",
+    project: "javascript-vue"
+  })],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
@@ -22,6 +26,8 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         mobileStudy: resolve(__dirname, 'mobileStudy.html')
       }
-    }
+    },
+
+    sourcemap: true
   }
 })

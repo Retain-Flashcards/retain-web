@@ -9,6 +9,8 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.0.6",
     "@kangc/v-md-editor": "^2.3.15",
+    "@sentry/vite-plugin": "^2.14.2",
+    "@sentry/vue": "^7.103.0",
     "@supabase/supabase-js": "^1.35.4",
     "@vueuse/core": "^8.9.1",
     "bootstrap": "^5.1.3",
