@@ -14,6 +14,9 @@ export default defineConfig({
   plugins: [vue(), vueJsx(), sentryVitePlugin({
     org: "individual-ik",
     project: "javascript-vue"
+  }), sentryVitePlugin({
+    org: "individual-ik",
+    project: "javascript-vue"
   })],
   resolve: {
     alias: {
