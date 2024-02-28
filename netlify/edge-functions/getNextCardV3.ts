@@ -95,6 +95,14 @@ export default async (req: Request, context: Context): Promise<Response> => {
   )
 
   let card = reviewCards[0]
+
+  for (let i = 0; i < reviewCards.length; i++) {
+    if (reviewCards[i].learning == false && reviewCards[i].last_reviewed && Math.random() > 0.8) {
+      card = reviewCards[i]
+      break
+    }
+  }
+
   for (let i = 0; i < reviewCards.length; i++) {
     if (reviewCards[i].last_reviewed && reviewCards[i].learning && reviewCards[i].precise_last_reviewed) {
       let msDiff = new Date().getTime() - new Date(reviewCards[i].precise_last_reviewed).getTime()

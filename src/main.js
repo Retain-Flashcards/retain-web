@@ -6,6 +6,8 @@ import useAuthUser from './composables/UseAuthUser'
 
 import LoadableProvider from './components/LoadableProvider.vue'
 
+import RollbarPlugin from '../rollbar'
+
 //Pages
 import App from './App.vue'
 import Home from './pages/Home.vue'
@@ -102,6 +104,7 @@ VMdEditor.use( createKatexPlugin() )
 VMdPreview.use( createKatexPlugin() )
 
 //Using
+app.use(RollbarPlugin)
 app.use(router)
 app.use(Equal)
 app.use(ElementPlus)

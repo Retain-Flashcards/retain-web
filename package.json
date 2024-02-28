@@ -20,6 +20,7 @@
     "highlight.js": "^11.6.0",
     "mavon-editor": "^2.10.4",
     "netlify-cli": "^12.12.0",
+    "rollbar": "^2.26.3",
     "vue": "^3.2.37",
     "vue-router": "^4.1.1",
     "vue-shortkey": "^3.1.7",
