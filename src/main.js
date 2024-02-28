@@ -1,6 +1,5 @@
 import { createApp } from 'vue'
 import { createRouter, createWebHistory} from 'vue-router'
-import * as Sentry from '@sentry/vue'
 
 //Composables
 import useAuthUser from './composables/UseAuthUser'
@@ -101,26 +100,6 @@ VMdEditor.use(githubTheme, {
 
 VMdEditor.use( createKatexPlugin() )
 VMdPreview.use( createKatexPlugin() )
-
-//Sentry
-Sentry.init({
-    dsn: "https://9907c90bf33a2985d20863d55acd1cf5@o4506821142904832.ingest.sentry.io/4506821144412160",
-    integrations: [
-        Sentry.browserTracingIntegration(),
-        Sentry.replayIntegration({
-        maskAllText: false,
-        blockAllMedia: false,
-        }),
-    ],
-    // Performance Monitoring
-    tracesSampleRate: 1.0, //  Capture 100% of the transactions
-    // Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
-    tracePropagationTargets: ["localhost", /^https:\/\/app\.retaincards\.com/],
-    // Session Replay
-    replaysSessionSampleRate: 1.0, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
-    replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
-})
-
 
 //Using
 app.use(router)
