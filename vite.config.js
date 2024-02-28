@@ -28,16 +28,6 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         mobileStudy: resolve(__dirname, 'mobileStudy.html')
-      },
-      output: {
-        manualChunks: (id) => {
-          if (id.includes(X)) {
-            return "vendor-X";
-          }
-           if (id.includes(Y)) {
-            return "vendor-Y";
-          }
-        },
       }
     },
 
