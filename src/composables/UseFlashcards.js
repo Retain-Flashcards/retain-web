@@ -1,6 +1,6 @@
 import Deck from '../model/objects/Deck'
 import useSupabase from './UseSupabase'
-import { generate_uuid } from '../utils'
+import { generate_uuid, standardDateString } from '../utils'
 import Note from '../model/objects/Note'
 import Card from '../model/objects/Card'
 
@@ -414,7 +414,7 @@ export default () => {
             deck: deck.id,
             new_limit: newLimit,
             review_limit: reviewLimit,
-            day: new Date().toISOString().split('T')[0]
+            day: standardDateString(new Date())
         })
 
         if (error) throw error

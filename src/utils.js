@@ -26,3 +26,7 @@ export function randomizeFilename(filename, acceptedExtensions = ['jpeg', 'jpg',
     if (!(acceptedExtensions.includes(extension))) throw new Error('Invalid File Format')
     return generate_uuid() + '.' + extension
 }
+
+export function standardDateString(date) {
+    return date.getFullYear().toString() + '-' + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getDate().toString().padStart(2, '0')
+}
