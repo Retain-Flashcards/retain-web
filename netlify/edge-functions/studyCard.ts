@@ -25,6 +25,8 @@ const unwrapSupabaseResult = (result: any, error: string = 'Something went wrong
 }
 
 export default async (req: Request, context: Context): Promise<Response> => {
+
+  const FUNCTION_START_TIME = new Date().getTime()
   
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -167,6 +169,9 @@ export default async (req: Request, context: Context): Promise<Response> => {
       review_seen: dailyCounters.review_seen + (cardType == 'review' ? 1 : 0),
     }).eq('deck', note.deck_id).eq('day', todayTimestamp.toISOString().split('T')[0]) )
   }
+
+  const FUNCTION_END_TIME = new Date().getTime()
+  console.log(`(studyCard) Execution time: ${FUNCTION_END_TIME - FUNCTION_START_TIME}ms`)
 
   return new Response(
     JSON.stringify({

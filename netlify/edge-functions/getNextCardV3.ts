@@ -30,6 +30,9 @@ const unwrapSupabaseResult = (result: any, error: string = 'Something went wrong
 }
 
 export default async (req: Request, context: Context): Promise<Response> => {
+
+  const FUNCTION_START_TIME = new Date().getTime()
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -142,6 +145,9 @@ export default async (req: Request, context: Context): Promise<Response> => {
     if (!reviewCards[i].last_reviewed) newCount++
     else reviewCount++
   }
+
+  const FUNCTION_END_TIME = new Date().getTime()
+  console.log(`(getNextCardV3) Execution time: ${FUNCTION_END_TIME - FUNCTION_START_TIME}ms`)
 
   return new Response(
     JSON.stringify({
