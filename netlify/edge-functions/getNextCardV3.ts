@@ -99,14 +99,20 @@ export default async (req: Request, context: Context): Promise<Response> => {
 
   let card = reviewCards[0]
 
-  for (let i = 0; i < reviewCards.length; i++) {
-    if (reviewCards[i].learning == false && reviewCards[i].last_reviewed) {
-      if (Math.random() > 0.8) card = reviewCards[i]
-      break
-    }
-  }
+  let reviewCount = 0
+  let newCount = 0
+
+  let lookingForReviewOverride = Math.random() > 0.8
 
   for (let i = 0; i < reviewCards.length; i++) {
+    if (!reviewCards[i].last_reviewed) newCount++
+    else reviewCount++
+
+    if (reviewCards[i].learning == false && reviewCards[i].last_reviewed && lookingForReviewOverride) {
+      card = reviewCards[i]
+      lookingForReviewOverride = false
+    }
+
     if (reviewCards[i].last_reviewed && reviewCards[i].learning && reviewCards[i].precise_last_reviewed) {
       let msDiff = new Date().getTime() - new Date(reviewCards[i].precise_last_reviewed).getTime()
       let minDiff = Math.floor(msDiff/1000/60)
@@ -135,15 +141,6 @@ export default async (req: Request, context: Context): Promise<Response> => {
     againTime = `${learningSteps[ learningSteps.length - 1 ]} min`
     hardTime = `${Math.round((card.current_interval * 1.2) / 1440)} days`
     goodTime = `${Math.round((card.current_interval * (card.ease_factor ? card.ease_factor : 2.5)) / 1440)} days`
-  }
-
-  let reviewCount = 0
-  let newCount = 0
-
-  //Get new and review counts
-  for (let i = 0; i < reviewCards.length; i++) {
-    if (!reviewCards[i].last_reviewed) newCount++
-    else reviewCount++
   }
 
   const FUNCTION_END_TIME = new Date().getTime()
