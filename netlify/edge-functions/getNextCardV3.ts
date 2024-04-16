@@ -59,10 +59,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
 
   //First, check for new and review limits
   //Get new new and review counts
-  const deck = unwrapSupabaseResult( await supabase.rpc('get_deck_with_tag_filter', {
-    given_deck_id: deckId,
-    filter_tags: filterTags
-  }) )[0]
+  const deck = unwrapSupabaseResult( await supabase.from('decks_with_new_review_counts_new').select('*').eq('deck_id', deckId) )[0]
 
   const dailyCounterRecord = unwrapSupabaseResult( await supabase.from('daily_review_counters').select('new_seen, review_seen, new_limit, review_limit').eq('deck', deck.deck_id).eq('day', todayTimestamp.toISOString().split('T')[0]) )[0]
 
