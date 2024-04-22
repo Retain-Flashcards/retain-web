@@ -32,6 +32,8 @@ export default async (req: Request, context: Context): Promise<Response> => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  console.log(req.headers.get('Authorization')!)
+
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
     Deno.env.get('SUPABASE_ANON_KEY') ?? '',
