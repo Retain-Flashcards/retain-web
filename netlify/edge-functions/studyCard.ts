@@ -38,7 +38,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
     { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
   )
 
-  console.log(supabase.auth.getUser())
+  console.log(await supabase.auth.getUser())
 
   const {
     data: { user },
