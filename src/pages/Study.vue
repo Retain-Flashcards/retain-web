@@ -184,6 +184,7 @@ export default {
         },
         studyCard(category) {
             this.loadingCard = true
+            if (!this.card) return
             studyCard(this.card.id, category).then(result => {
                 this.getNextCard()
             })
