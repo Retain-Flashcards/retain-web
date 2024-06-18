@@ -167,8 +167,6 @@ export default {
                 this.loadDecks()
             }).catch(console.error)
         }
-    },
-    components: {
     }
 }
 

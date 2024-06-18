@@ -1,7 +1,7 @@
 <template>
 
 <div class='content-container'>
-    <el-header v-loading='loadingDeck' v-if='deck' style='margin-bottom: 30px;'>
+    <el-header v-loading='deckLoading' v-if='deck' style='margin-bottom: 30px;'>
         <div class='return-link' @click='returnToDeck' style='margin-top: 20px;'>
             <el-icon style='padding-right: 10px;'><ArrowLeft /></el-icon>Return to deck
         </div>
@@ -34,6 +34,7 @@
             </div>
         </div>
     </el-header>
+    
     <el-main v-loading='loadingCard' style='display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50%; margin: auto; margin-bottom: 200px;'>
         <div style='text-align: center;' v-if='done'>
             <el-result icon="success" title="You're Finished!" subTitle="No more cards to review today!"></el-result>
@@ -153,7 +154,7 @@ export default {
             }).catch(error => {
 
             }).finally(() => this.deckLoading = false)
-
+            
             loadDeckTags(this.deckId).then(tags => {
                 this.deckTags.options = tags
                 this.deckTags.loading = false
@@ -164,8 +165,14 @@ export default {
             this.flipped = false
             getNextCard(this.deckId, this.selectedTags).then(result => {
                 if (!result.card) this.done = true
-                
-                this.card = result.card
+                this.card = {
+                    ...result.card,
+                    backContent: result.card.backContent
+                                    .replaceAll('>$$', '> $$')
+                                    .replaceAll('$$<', '$$ <')
+                                    .replaceAll('>$', '> $')
+                                    .replaceAll('$<', '$ <')
+                }
                 this.againTime = result.againTime
                 this.hardTime = result.hardTime
                 this.goodTime = result.goodTime
