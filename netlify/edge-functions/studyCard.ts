@@ -68,7 +68,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
   let cardType = 'none'
   if (!cardReview || cardReview.last_reviewed == null) {
     cardType = 'new'
-  } else if (cardReview.learning == false) {
+  } else {
     cardType = 'review'
   }
 
