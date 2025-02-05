@@ -47,7 +47,9 @@ export default async (req: Request, context: Context): Promise<Response> => {
     presence_penalty: 0
   })
 
-  const full_response = JSON.parse( response.data.choices[0].message.content )
+  console.log(response)
+
+  const full_response = JSON.parse( response.choices[0].message.content )
 
   return new Response(
     JSON.stringify({
