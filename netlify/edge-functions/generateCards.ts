@@ -4,7 +4,7 @@
 
 import "https://deno.land/x/xhr@0.1.2/mod.ts"
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts"
-import OpenAI from "npm:openai"
+import OpenAI from "https://deno.land/x/openai@v4.69.0/mod.ts"
 import type { Context } from "https://edge.netlify.com";
  
 export const corsHeaders = {
