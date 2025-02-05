@@ -17,7 +17,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  const { messages } = await req.json()
+  const { messages, imageUrl } = await req.json()
 
   const openai = new OpenAI({
     apiKey: Deno.env.get('OPENAI_API_KEY') as string
