@@ -159,6 +159,8 @@ export default async (req: Request, context: Context): Promise<Response> => {
 
   const getDailyCountersResult = unwrapSupabaseResult( await supabase.from('daily_review_counters').select('*').eq('deck', note.deck_id).eq('day', todayTimestamp.toISOString().split('T')[0]) )
   let dailyCounters = getDailyCountersResult[0]
+  console.log('DAILY COUNTERS')
+  console.log(dailyCounters)
   if (!dailyCounters) {
     unwrapSupabaseResult( await supabase.from('daily_review_counters').insert({
       deck: note.deck_id,
