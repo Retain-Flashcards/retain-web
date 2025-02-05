@@ -40,7 +40,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
     response_format: {
       "type": "text"
     },
-    temperature: 5,
+    temperature: 1.5,
     max_completion_tokens: 2048,
     top_p: 1,
     frequency_penalty: 0,
