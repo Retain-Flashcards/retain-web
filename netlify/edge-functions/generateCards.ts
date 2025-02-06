@@ -41,7 +41,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
       "type": "text"
     },
     temperature: 1.2,
-    max_completion_tokens: 2048,
+    max_completion_tokens: 8700,
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0
