@@ -161,6 +161,7 @@ export default {
             })
         },
         getNextCard() {
+            console.log('GETTING CARD')
             this.loadingCard = true
             this.flipped = false
             getNextCard(this.deckId, this.selectedTags).then(result => {
@@ -190,6 +191,7 @@ export default {
             this.getNextCard()
         },
         studyCard(category) {
+            console.log('STUDYING')
             this.loadingCard = true
             if (!this.card) return
             studyCard(this.card.id, category).then(result => {

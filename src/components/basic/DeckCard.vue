@@ -49,6 +49,9 @@ export default {
     updated() {
         if (this.primaryColor) setThemeColor(this.primaryColor, this.$refs.theContainer)
     },
+    mounted() {
+        if (this.primaryColor) setThemeColor(this.primaryColor, this.$refs.theContainer)
+    },
     methods: {
         handleMoreCommand(command) {
             if (command == 'edit') this.onEdit()

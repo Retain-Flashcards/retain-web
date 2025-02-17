@@ -1,9 +1,14 @@
 <template>
-    <div v-if='deck' style='height: 100%; width: 100%;'>
+<LoadableProvider :loadable='deckLoadable'>
+<template #notStarted>
+
+</template>
+<template #default='{ data: deck }'>
+    <div style='height: 100%; width: 100%;'>
         
         <div class='main-header' :style='{ backgroundImage: `url(${deck.coverImage})` }'>
             <div class='flex-spacer background-overlay' :style="{ backgroundColor: 'var(--el-color-primary-overlay)' }">
-                <div class='return-link' @click='() => { this.$router.push({ name: "Home" }) }'>
+                <div class='return-link' @click='() => { router.push({ name: "Home" }) }'>
                     <el-icon style='padding-right: 10px;'><ArrowLeft /></el-icon>Return to home
                 </div>
                 <div class='flex-spacer'></div>
@@ -26,7 +31,7 @@
                     :options='tags.options'
                     :props='{label: "name", value: "id"}'
                     tag-type='danger'
-                    @change='onTagsChanged'>
+                    @change='(selected) => { reloadDeckCount()}'>
                 </el-select-v2>
                 <div style='width: 20px;'></div>
                 <el-button type='primary' plain @click='openSettingsDialog'>
@@ -75,24 +80,24 @@
                         </div>
                     </template>
                     <div class='table-container'>
-
-                        <el-table :data='crams.sessions' v-loading='crams.loading' style='width: 100%;' stripe>
-                            <el-table-column label='Cram' v-slot='scope' min-width="50">
-                                <div style='display: flex; flex-direction: column; height: 100%; align-items: flex-start;'>
-                                    <el-button link type='primary' @click='openCramSession(scope.row.cram_id)' size='large'><b>Cram {{  scope.$index + 1  }}</b></el-button>
-                                </div>
-                            </el-table-column>
-                            <el-table-column label='Number of Cards' v-slot='scope' min-width="50">
-                                <p v-if='scope.row.total_cards' style='white-space: pre-line;'>{{ scope.row.total_cards }}</p>
-                            </el-table-column>
-                            <template #empty>
-                                <div style='display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; padding-top: 10px;'>
-                                    <el-icon :size='40'><InfoFilled /></el-icon>
-                                    <p style='line-height: 30px;'>No Cram Sessions Yet!</p>
-                                </div>
-                            </template>
-                        </el-table>
-
+                        <LoadableStateProvider :loadable='cramSessionsLoadable' v-slot='{ loading, data: cramSessions }'>
+                            <el-table :data='cramSessions' v-loading='loading' style='width: 100%;' stripe>
+                                <el-table-column label='Cram' v-slot='scope' min-width="50">
+                                    <div style='display: flex; flex-direction: column; height: 100%; align-items: flex-start;'>
+                                        <el-button link type='primary' @click='openCramSession(scope.row.cram_id)' size='large'><b>Cram {{  scope.$index + 1  }}</b></el-button>
+                                    </div>
+                                </el-table-column>
+                                <el-table-column label='Number of Cards' v-slot='scope' min-width="50">
+                                    <p v-if='scope.row.total_cards' style='white-space: pre-line;'>{{ scope.row.total_cards }}</p>
+                                </el-table-column>
+                                <template #empty>
+                                    <div style='display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; padding-top: 10px;'>
+                                        <el-icon :size='40'><InfoFilled /></el-icon>
+                                        <p style='line-height: 30px;'>No Cram Sessions Yet!</p>
+                                    </div>
+                                </template>
+                            </el-table>
+                        </LoadableStateProvider>
                     </div>
                 </el-collapse-item>
                 <el-collapse-item>
@@ -106,26 +111,28 @@
                             </el-button>
                         </div>
                     </template>
-                    <div class='table-container'>
+                    <LoadableStateProvider :loadable='quizzesLoadable' v-slot='{ loading, data: quizzes }'>
+                        <div class='table-container'>
 
-                        <el-table :data='quizzes' v-loading='loadingQuizzes' style='width: 100%;' stripe>
-                            <el-table-column label='Quiz' v-slot='scope' min-width="50">
-                                <div style='display: flex; flex-direction: column; height: 100%; align-items: flex-start;'>
-                                    <el-button link type='primary' @click='openQuiz(scope.row.path)' size='large'><b>Quiz {{  scope.$index + 1  }}</b></el-button>
-                                </div>
-                            </el-table-column>
-                            <el-table-column label='Topics' v-slot='scope' min-width="50">
-                                <p v-if='scope.row.topics_list' style='white-space: pre-line;'>{{ scope.row.topics_list }}</p>
-                            </el-table-column>
-                            <template #empty>
-                                <div style='display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; padding-top: 10px;'>
-                                    <el-icon :size='40'><InfoFilled /></el-icon>
-                                    <p style='line-height: 30px;'>No Quizzes Yet!</p>
-                                </div>
-                            </template>
-                        </el-table>
+                            <el-table :data='quizzes' v-loading='loading' style='width: 100%;' stripe>
+                                <el-table-column label='Quiz' v-slot='scope' min-width="50">
+                                    <div style='display: flex; flex-direction: column; height: 100%; align-items: flex-start;'>
+                                        <el-button link type='primary' @click='openQuiz(scope.row.path)' size='large'><b>Quiz {{  scope.$index + 1  }}</b></el-button>
+                                    </div>
+                                </el-table-column>
+                                <el-table-column label='Topics' v-slot='scope' min-width="50">
+                                    <p v-if='scope.row.topics_list' style='white-space: pre-line;'>{{ scope.row.topics_list }}</p>
+                                </el-table-column>
+                                <template #empty>
+                                    <div style='display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; padding-top: 10px;'>
+                                        <el-icon :size='40'><InfoFilled /></el-icon>
+                                        <p style='line-height: 30px;'>No Quizzes Yet!</p>
+                                    </div>
+                                </template>
+                            </el-table>
 
-                    </div>
+                        </div>
+                    </LoadableStateProvider>
                 </el-collapse-item>
             </el-collapse>
 
@@ -134,368 +141,292 @@
             </div>
 
             <div class='table-container'>
+                <LoadableStateProvider :loadable='notesLoadable' v-slot='{ loading }'>
+                    <div class='table-header' style='display: flex; align-items: center; margin-bottom: 5px;'>
+                        <h3>All Notes ({{ tableState.noteCount }})</h3>
+                        <div style='display: flex; align-items: center' v-if='deck.accessLevel == undefined || deck.accessLevel == null || deck.accessLevel > 1'>
+                            <el-button type='primary' style='margin-left: 30px;' @click='createNotes'>
+                                <el-icon style='margin-right: 5px;'><Plus /></el-icon> Add Notes
+                            </el-button> 
+                            <el-button type='primary' plain style='margin-left: 30px;' @click='aiCardBuilder'>
+                                <el-icon style='margin-right: 5px;'><MagicStick /></el-icon> Try our new AI Card Builder
+                            </el-button>
+                        </div>
+                        
+                        <div class='flex-spacer'></div>
+                    </div>
 
-                <div class='table-header' style='display: flex; align-items: center; margin-bottom: 5px;'>
-                    <h3>All Notes ({{ table.noteCount }})</h3>
-                    <el-button v-if='deck.accessLevel == undefined || deck.accessLevel == null || deck.accessLevel > 1' type='primary' style='margin-left: 30px;' @click='createNotes'>
-                        <el-icon style='margin-right: 5px;'><Plus /></el-icon> Add Notes
-                    </el-button>
-                    <div class='flex-spacer'></div>
-                </div>
+                    <el-table :data='tableState.notes[tableState.currentPage]' v-loading='loading' style='width: 100%;' stripe>
+                        <el-table-column label='Note ID' v-slot='scope' width='180'>
+                            <p style='color: #AAA;'>{{ scope.row.id }}</p>
+                        </el-table-column>
+                        <el-table-column prop='frontContent' label='Front Content' style='flex: 1'>
+                        </el-table-column>
+                        <el-table-column prop='backContent' label='Back Content' style='flex: 1'></el-table-column>
+                        <!--<el-table-column label='Active?' width='90'>
+                            <template v-slot='scope'>
+                                <el-checkbox v-model='scope.row.active'></el-checkbox>
+                            </template>
+                        </el-table-column>-->
+                        <el-table-column label='Edit' width='90' v-if='deck.accessLevel == undefined || deck.accessLevel == null || deck.accessLevel > 1'>
+                            <template v-slot='scope'>
+                                <el-button  @click='() => editNote(scope.row.id)'>Edit</el-button>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label='Reset' width='105'>
+                            <template v-slot='scope'>
+                                <el-button :loading='scope.row.loadingReset || false' plain type='warning' @click='() => _resetNote(scope.$index, scope.row.id)'>Reset</el-button>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label='Delete' width='90' v-if='deck.accessLevel == undefined || deck.accessLevel == null || deck.accessLevel > 1'>
+                            <template v-slot='scope'>
+                                <el-button type='danger' plain @click='_deleteNote(scope.$index, scope.row.id)'>Delete</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
 
-                <el-table :data='table.notes[this.notesPage]' v-loading='table.loading' style='width: 100%;' stripe>
-                    <el-table-column label='Note ID' v-slot='scope' width='180'>
-                        <p style='color: #AAA;'>{{ scope.row.id }}</p>
-                    </el-table-column>
-                    <el-table-column prop='frontContent' label='Front Content' style='flex: 1'>
-                    </el-table-column>
-                    <el-table-column prop='backContent' label='Back Content' style='flex: 1'></el-table-column>
-                    <el-table-column label='Active?' width='90'>
-                        <template v-slot='scope'>
-                            <el-checkbox v-model='scope.row.active'></el-checkbox>
-                        </template>
-                    </el-table-column>
-                    <el-table-column label='Edit' width='90' v-if='deck.accessLevel == undefined || deck.accessLevel == null || deck.accessLevel > 1'>
-                        <template v-slot='scope'>
-                            <el-button  @click='() => editNote(scope.row.id)'>Edit</el-button>
-                        </template>
-                    </el-table-column>
-                    <el-table-column label='Reset' width='105'>
-                        <template v-slot='scope'>
-                            <el-button :loading='scope.row.loadingReset || false' plain type='warning' @click='() => resetNote(scope.$index, scope.row.id)'>Reset</el-button>
-                        </template>
-                    </el-table-column>
-                    <el-table-column label='Delete' width='90' v-if='deck.accessLevel == undefined || deck.accessLevel == null || deck.accessLevel > 1'>
-                        <template v-slot='scope'>
-                            <el-button type='danger' plain @click='deleteNote(scope.$index, scope.row.id)'>Delete</el-button>
-                        </template>
-                    </el-table-column>
-                </el-table>
+                    <el-pagination background layout='prev, pager, next' :total='tableState.noteCount' :page-size='20' @next-click='onTableNextClick' @prev-click='onTablePrevClick' @current-change='onTableCurrentPageChange' style='margin-top: 20px; margin-bottom: 100px;'>
 
-                <el-pagination background layout='prev, pager, next' :total='table.noteCount' :page-size='20' @next-click='onTableNextClick' @prev-click='onTablePrevClick' @current-change='onTableCurrentPageChange' style='margin-top: 20px; margin-bottom: 100px;'>
+                    </el-pagination>
 
-                </el-pagination>
-
-                <el-dialog 
-                    v-model='deckSettings.editing' title='Study Settings'>
-                    <loadable-provider :loadable='deckSettingsLoadable'>
-                        <template #data='data'>
+                    <el-dialog 
+                        v-model='settingsModal.isOpen.value' title='Study Settings'>
+                        <LoadableStateProvider :loadable='studySettingsLoadable' v-slot='{ loading, data: deckSettings}'>
                             <div style='display: flex; flex-direction: column; align-items: center;'>
-                                <el-form label-position='top' style='width: 100%;'>
+                                <el-form label-position='top' style='width: 100%;' v-loading='loading'> 
                                     <el-form-item label='New Limit'>
-                                        <el-input v-model='deckSettings.newLimit' type='number'></el-input>
+                                        <el-input v-model='settingsModal.state().newLimit' type='number'></el-input>
                                     </el-form-item>
                                     <el-form-item label='Review Limit'>
-                                        <el-input v-model='deckSettings.reviewLimit' type='number'></el-input>
+                                        <el-input v-model='settingsModal.state().reviewLimit' type='number'></el-input>
                                     </el-form-item>
                                     <el-form-item>
-                                        <el-radio-group v-model='deckSettings.mode'>
+                                        <el-radio-group v-model='settingsModal.state().mode'>
                                             <el-radio-button label='defaults'>Set as Deck Defaults</el-radio-button>
                                             <el-radio-button label='today'>Just For Today</el-radio-button>   
                                         </el-radio-group>
                                     </el-form-item>
                                     <el-form-item>
-                                        <el-button type='primary' @click='saveStudySettings'>Save</el-button>
+                                        <el-button type='primary' @click='saveSettings'>Save</el-button>
                                     </el-form-item>
                                 </el-form>
                             </div>
-                        </template>
-                    </loadable-provider>
-                </el-dialog>
-
+                        </LoadableStateProvider>
+                    </el-dialog>
+                </LoadableStateProvider>
             </div>
+            
         </div>
 
     </div>
 </template>
+<template #loading>
+    <div style='height: 100%; width: 100%;' v-loading='true'></div>
+</template>
+<template #error='{ error }'>
+</template>
+</LoadableProvider>
+</template>
 
-<script>
+<script setup>
+//Composables
+import { onMounted, ref } from 'vue'
 import useFlashcards from '../composables/UseFlashcards'
-import LoadableProvider from '../components/LoadableProvider.vue'
-import Loadable from '../model/loadable.js'
-import { Plus, ArrowLeft, InfoFilled, Setting } from '@element-plus/icons-vue'
+import useDeck from '../composables/useDeck.js'
+import useNotes from '../composables/useNotes.js'
+import { useRoute, useRouter } from 'vue-router'
+const route = useRoute()
+const router = useRouter()
+import useLoadable from '../composables/useLoadable.js'
+import useModal from '../composables/useModal.js'
+const {
+    fetchData,
+    getQuizzes,
+    getQuizPath,
+    listCramSessions,
+    loadTags,
+    getStudySettings,
+    setDeckStudySettings,
+    setTodayStudySettings
+} = useDeck(route.params.deckId)
+
+const {
+    fetchDeckNotes,
+    deleteNote,
+    resetNote
+} = useNotes(route.params.deckId)
+
+//UI components
+import LoadableProvider from '../components/basic/LoadableProvider.vue'
+import { Plus, ArrowLeft, InfoFilled, Setting, MagicStick } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+
+//Other
 import { setThemeColor } from '../utils'
+import LoadableStateProvider from '../components/basic/LoadableStateProvider.vue'
 
-const { getDeck, getDeckNotes, deleteNote, resetNote, getQuizzes, getQuizPath, listCramSessions, loadDeckTags, getDeckStudySettings, setDeckStudySettings, setTodayStudySettings } = useFlashcards()
+//Data
+const tags = ref({
+    options: [],
+    selected: []
+})
+const tableState = ref({
+    currentPage: 0,
+    notes: {},
+    noteCount: 0
+})
 
-export default {
-    setup() {
-    },
-    mounted() {
-        this.loadDeck().then(() => {
-            this.deckSettingsLoadable.loadWithFuture(async () => {
-                const settings = await getDeckStudySettings(this.deck)
-                this.deckSettings.newLimit = settings.newLimit
-                this.deckSettings.reviewLimit = settings.reviewLimit
-                if (settings.today) this.deckSettings.mode = 'today'
-                return settings
-            })
-        })
-        
-    },
-    data() {
-        return {
-            deck: null,
-            notesPage: 0,
-            table: {
-                loading: true,
-                notes: {},
-                noteCount: 0
-            },
-            crams: {
-                loading: true,
-                sessions: []
-            },
-            quizzes: [],
-            loadingQuizzes: true,
-            tags: {
-                loading: true,
-                options: [],
-                selected: []
-            },
-            deckSettings: {
-                editing: false,
-                newLimit: 20,
-                reviewLimit: 20,
-                mode: 'defaults'
-            }, 
-            deckSettingsLoadable: new Loadable()
-        }
-    }, 
-    methods: {
-        async loadDeck() {
-            const deck = await getDeck(this.$route.params.deckId)
-            this.deck = deck
-            setThemeColor(this.deck.primaryColor, document.documentElement)
+//Modals
+const settingsModal = useModal({
+    newLimit: 20,
+    reviewLimit: 200,
+    mode: 'defaults'
+})
 
-            this.loadNotes()
-            this.loadQuizzes()
-            this.loadCramSessions()
-
-            const result = await loadDeckTags(this.$route.params.deckId)
-            this.tags.options = result
-            this.tags.loading = false
-        },
-
-        onTagsChanged(selectedTags) {
-            this.reloadDeckCount()
-        },
-
-        openSettingsDialog() {
-            this.deckSettings.editing = true
-        },
-
-        saveStudySettings() {
-            this.deckSettingsLoadable.loadWithFuture(async () => {
-                if (this.deckSettings.mode == 'defaults')
-                    await setDeckStudySettings(this.deck, this.deckSettings.newLimit, this.deckSettings.reviewLimit)
-                else if (this.deckSettings.mode == 'today')
-                    await setTodayStudySettings(this.deck, this.deckSettings.newLimit, this.deckSettings.reviewLimit)
-
-                this.reloadDeckCount()
-            })
-        },
-
-        enterCramMode() {
-            this.$router.push({
-                name: 'Cram Builder',
-                params: {
-                    deckId: this.deck.id
-                }
-            })
-        },
-
-        openCramSession(cramId) {
-            this.$router.push({
-                name: 'Cram',
-                params: {
-                    deckId: this.deck.id,
-                    cramId: cramId
-                }
-            })
-        },
-
-        createQuiz() {
-            this.$router.push({
-                name: 'QuizBuilder',
-                params: {
-                    deckId: this.deck.id
-                }
-            })
-        },
-
-        reloadDeckCount() {
-            getDeck(this.$route.params.deckId, this.tags.selected).then(deck => {
-                this.deck = deck
-            })
-        },
-
-        editNote(noteId) {
-            this.$router.push({
-                name: 'Edit Card',
-                params: {
-                    deckId: this.deck.id,
-                    noteId: noteId
-                }
-            })
-        },
-
-        loadNotes() {
-            if (!this.deck) return
+//Loadables
+const deckLoadable = useLoadable(async (prevValue, tagFilter = []) => {
+    const deck = await fetchData(tagFilter)
+    setThemeColor(deck.primaryColor, document.documentElement)
+    return deck
+})
+const notesLoadable = useLoadable(async () => {
+    if (!deckLoadable.value()) return
             
-            this.table.loading = true
-            const pagesLoaded = this.notesCount() / 20
-            const pagesToLoad = this.notesPage - pagesLoaded
+    const pagesLoaded = notesCount() / 20
+    const pagesToLoad = tableState.value.currentPage - pagesLoaded
 
-            getDeckNotes(this.deck, this.notesPage).then(result => {
-                const { notes, count } = result
-                this.table.notes[this.notesPage] = [...notes.map( item => item.export() )]
-                this.table.noteCount = count
-            }).catch(error => {
-                console.log(error)
-            }).finally(() => {
-                this.table.loading = false
-            })
-        },
-
-        loadQuizzes() {
-            if (!this.deck) return
-            this.loadingQuizzes = true
-            getQuizzes(this.deck.id).then(result => {
-                console.log(result)
-                this.quizzes = result.map(item => { 
-                    let path = item.path.split('/') 
-                    let quizId = path[path.length - 1]
-                    return {
-                        path: quizId,
-                        topics_list: item.topics_list
-                    }
-                })
-            }).finally(() => {
-                this.loadingQuizzes = false
-            })
-
-        },
-
-        loadCramSessions() {
-            if (!this.deck) return
-            this.crams.loading = true
-            listCramSessions(this.deck.id).then(result => {
-                this.crams.sessions = result
-            }).finally(() => {
-                this.crams.loading = false
-            })
-        },
-
-        openQuiz(quizName) {
-
-            const quizPath = getQuizPath(quizName, this.deck.id)
-
-            this.$router.push({
-                name: 'Quiz',
-                params: {
-                    deckId: this.deck.id,
-                    quizPath: quizPath
-                }
-            })
-
-        },
-
-        notesCount() {
-            let count = 0
-            for (const [key, value] of Object.entries(this.table.notes)) {
-                count += value.length
-            }
-            return count
-        },  
-
-        onTableNextClick(currentPage) {
-            const pagesLoaded = this.notesCount() / 20
-            if (currentPage > pagesLoaded) {
-                this.notesPage = currentPage - 1
-                this.loadNotes()
-            }
-        },
-
-        onTablePrevClick(currentPage) {
-            const pagesLoaded = this.notesCount() / 20
-            if (currentPage > 0) {
-                this.notesPage = currentPage - 1
-            }
-        },
-
-        onTableCurrentPageChange(currentPage) {
-            const pagesLoaded = this.notesCount() / 20
-            console.log(currentPage)
-            if (currentPage > pagesLoaded) {
-                console.log('test')
-                this.notesPage = currentPage - 1
-                this.loadNotes()
-            }
-            else if (currentPage > 0 && currentPage != this.notesPage + 1) {
-                this.notesPage = currentPage - 1
-            }
-        },
-
-        deleteNote(index, noteId) {
-            this.table.loading = true
-            deleteNote(noteId).then(() => {
-
-                //Reload current page
-                this.table.notes[this.notesPage].splice(index, 1)
-
-            }).catch(error => {
-
-            }).finally(() => this.table.loading = false)
-        },
-
-        resetNote(index, noteId) {
-
-            this.table.notes[this.notesPage][index].loadingReset = true
-            resetNote(noteId).then((result) => {
-                ElMessage({
-                    message: 'Card reset successfully!',
-                    type: 'success'
-                })
-            }).catch(error => {
-                ElMessage({
-                    message: `An error occurred: ${error.message}`,
-                    type: 'error'
-                })
-            }).finally(() => {
-                this.table.notes[this.notesPage][index].loadingReset = false
-                this.reloadDeckCount()
-            })
-
-        },
-
-        beginStudy() {
-
-            //TODO
-            console.log('Beginning study')
-            this.$router.push({
-                name: 'Study Deck',
-                params: {
-                    deckId: this.deck.id
-                },
-                query: {
-                    tags: this.tags.selected
-                }
-            })
-
-        },
-
-        createNotes() {
-            this.$router.push({
-                name: 'Create Cards',
-                params: {
-                    deckId: this.deck.id
-                }
-            })
+    const result = await fetchDeckNotes(tableState.value.currentPage)
+    const { notes, count } = result
+    tableState.value.notes[tableState.value.currentPage] = [...notes.map(item => item.export())]
+    tableState.value.noteCount = count
+})
+const cramSessionsLoadable = useLoadable(async () => {
+    if (!deckLoadable.value()) return []
+    const result = await listCramSessions()
+    return result
+})
+const quizzesLoadable = useLoadable(async () => {
+    if (!deckLoadable.value()) return []
+    const result = await getQuizzes()
+    return result.map(item => {
+        let path = item.path.split('/')
+        let quizId = path[path.length - 1]
+        return {
+            path: quizId,
+            topics_list: item.topics_list
         }
+    })
+})
+const studySettingsLoadable = useLoadable(async (prevValue, deck) => {
+    const result = await getStudySettings(deck.daily_new_limit, deck.daily_review_limit)
+    return {
+        ...prevValue,
+        newLimit: result.newLimit,
+        reviewLimit: result.reviewLimit,
+        mode: result.today ? 'today' : 'defaults'
+    }
+}, {
+    editing: false,
+    newLimit: 20,
+    reviewLimit: 200,
+    mode: 'defaults'
+})
+
+const saveSettings = async () => {
+    const newSettings = settingsModal.state()
+    studySettingsLoadable.loadWithFunction(async () => {
+        if (newSettings.mode == 'defaults') await setDeckStudySettings(Number(newSettings.newLimit), Number(newSettings.reviewLimit))
+        else if (newSettings.mode == 'today') await setTodayStudySettings(Number(newSettings.newLimit), Number(newSettings.reviewLimit))
+        reloadDeckCount()
+        return newSettings
+    })
+}
+
+
+//Methods
+function openSettingsDialog() { settingsModal.openWithState(studySettingsLoadable.value()) }
+function reloadDeckCount() { deckLoadable.loadSilently(tags.value.selected) }
+function notesCount() {
+    let count = 0
+    for (const [key, value] of Object.entries(tableState.value.notes)) {
+        count += value.length
+    }
+    return count
+}
+function enterCramMode() { router.push({ name: 'Cram Builder', params: { deckId: route.params.deckId } }) }
+function openCramSession(cramId) { router.push({ name: 'Cram', params: { deckId: route.params.deckId, cramId: cramId } }) }
+function createQuiz() { router.push({ name: 'QuizBuilder', params: { deckId: route.params.deckId } }) }
+function editNote(noteId) { router.push({ name: 'Edit Card', params: { deckId: route.params.deckId, noteId: noteId } }) }
+function openQuiz(quizName) {
+    const quizPath = getQuizPath(quizName)
+    router.push({ name: 'Quiz', params: { deckId: route.params.deckId, quizPath: quizPath } })
+} 
+function beginStudy() { router.push({ name: 'Study Deck', params: { deckId: route.params.deckId }, query: { tags: this.tags.selected } }) }
+function createNotes() { router.push({ name: 'Create Cards', params: { deckId: route.params.deckId } }) }
+function aiCardBuilder() { router.push({ name: 'AI Card Builder', params: { deckId: route.params.deckId } }) }
+
+
+function onTableNextClick(currentPage) {
+    const pagesLoaded = notesCount() / 20
+    if (currentPage > pagesLoaded) {
+        tableState.value.currentPage = currentPage - 1
+        notesLoadable.load()
     }
 }
+
+function onTablePrevClick(currentPage) {
+    const pagesLoaded = notesCount() / 20
+    if (currentPage > 0) {
+        tableState.value.currentPage = currentPage - 1
+    }
+}
+function onTableCurrentPageChange(currentPage) {
+    const pagesLoaded = notesCount() / 20
+    if (currentPage > pagesLoaded) {
+        tableState.value.currentPage = currentPage - 1
+        notesLoadable.load()
+    }
+    else if (currentPage > 0 && currentPage != tableState.value.currentPage + 1) {
+        tableState.value.currentPage = currentPage - 1
+    }
+}
+function _deleteNote(index, noteId) {
+    notesLoadable.loadWithVoidFunction(async (prevValue) => {
+        await deleteNote(noteId)
+        tableState.value.notes[tableState.value.currentPage].splice(index, 1)
+    })
+}
+function _resetNote(index, noteId) {
+    notesLoadable.loadWithVoidFunction(async () => {
+        try {
+            await resetNote(noteId)
+            ElMessage({
+                message: 'Card reset successfully!',
+                type: 'success'
+            })
+        } catch(e) {
+            ElMessage({
+                message: `An error occurred: ${e.message}`,
+                type: 'error'
+            })
+        }
+        reloadDeckCount()
+    })
+}
+
+
+//Lifecycle
+onMounted(() => {
+    deckLoadable.load().then(async (deck) => {
+        notesLoadable.load()
+        cramSessionsLoadable.load()
+        quizzesLoadable.load()
+        studySettingsLoadable.load(deck)
+
+        const tagOptions = await loadTags(route.params.deckId)
+        tags.value.options = tagOptions
+    })
+})
 
 </script>
 

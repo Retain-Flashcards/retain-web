@@ -1,7 +1,3 @@
-import useSupabase from '../../composables/UseSupabase'
-
-const { supabase } = useSupabase()
-
 export default class Card {
     constructor(data) {
         this.id = data.id

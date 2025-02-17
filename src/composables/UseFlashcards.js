@@ -3,6 +3,7 @@ import useSupabase from './UseSupabase'
 import { generate_uuid, standardDateString } from '../utils'
 import Note from '../model/objects/Note'
 import Card from '../model/objects/Card'
+import { decode } from 'base64-arraybuffer'
 
 const { supabase, makeSupabaseFetch } = useSupabase()
 
@@ -100,6 +101,24 @@ export default () => {
         return
     }
 
+    const uploadPNGFromDataURL = async (dataUrl) => {
+        const base64 = dataUrl.replace(/^data:image\/?[A-z]*;base64,/,'')
+        const buffer = decode(base64)
+
+        let publicURL = undefined
+        const fileName = generate_uuid() + '.png'
+        const filePath = `${supabase.auth.user().id}/card_images/${fileName}`
+        const uploadInitial = await supabase.storage.from('card-images').upload(filePath, buffer, {
+            contentType: 'image/png'
+        })
+        if (uploadInitial.error) throw new Error('Could not upload file')
+
+        const { data, error } = supabase.storage.from('card-images').getPublicUrl(filePath)
+        if (error) throw new Error('Could not get file URL')
+        publicURL = data.publicURL
+        return publicURL
+    }
+
     const uploadImage = async (file) => {
 
         let publicURL = undefined
@@ -123,6 +142,26 @@ export default () => {
 
         return publicURL
 
+    }
+
+    const uploadPDF = async (file) => {
+        let publicURL = undefined
+        if (file) {
+            const extension = file.name.split('.').pop().toLowerCase()
+            if (extension != 'pdf') throw new Error('File must be a PDF')
+            const fileName = generate_uuid() + '.pdf'
+            const filePath = `${supabase.auth.user().id}/note-pdfs/${fileName}`
+            const uploadInitial = await supabase.storage.from('note-pdfs').upload(filePath, file)
+            console.log(uploadInitial.error)
+            if (uploadInitial.error) throw new Error('Could not upload file')
+
+            const { data, error } = supabase.storage.from('note-pdfs').getPublicUrl(filePath)
+
+            if (error) throw new Error('Could not get file URL')
+            publicURL = data.publicURL
+        }
+
+        return publicURL
     }
 
     const createNote = async (deckId, frontContent, backContent, noteId) => {
@@ -383,9 +422,6 @@ export default () => {
             given_deck_id: deckId
         })
 
-        console.log(data)
-        console.error(error)
-
         return data
     }
 
@@ -443,6 +479,8 @@ export default () => {
         getDeckNotes,
         deleteNote,
         uploadImage,
+        uploadPNGFromDataURL,
+        uploadPDF,
         createNote,
         loadNote,
         getNextCard,

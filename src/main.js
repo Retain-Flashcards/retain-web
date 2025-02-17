@@ -6,8 +6,6 @@ import useAuthUser from './composables/UseAuthUser'
 
 import LoadableProvider from './components/LoadableProvider.vue'
 
-import RollbarPlugin from '../rollbar'
-
 //Pages
 import App from './App.vue'
 import Home from './pages/Home.vue'
@@ -23,6 +21,7 @@ import QuizBuilder from './pages/QuizBuilder.vue'
 import Quiz from './pages/Quiz.vue'
 import CramBuilder from './pages/CramBuilder.vue'
 import Cram from './pages/Cram.vue'
+import AiCardBuilder from './pages/AiCardBuilder.vue'
 
 //UI Frameworks
 import Equal from 'equal-vue'
@@ -73,7 +72,8 @@ const routes = [
     { name: 'QuizBuilder', path: '/deck/:deckId/quiz', component: QuizBuilder },
     { name: 'Quiz', path: '/deck/:deckId/quiz/:quizPath', component: Quiz},
     { name: 'Cram Builder', path: '/deck/:deckId/cram', component: CramBuilder },
-    { name: 'Cram', path: '/deck/:deckId/cram/:cramId', component: Cram }
+    { name: 'Cram', path: '/deck/:deckId/cram/:cramId', component: Cram },
+    { name: 'AI Card Builder', path: '/deck/:deckId/cards/add-ai', component: AiCardBuilder }
 ]
 
 const router = createRouter({
@@ -104,7 +104,6 @@ VMdEditor.use( createKatexPlugin() )
 VMdPreview.use( createKatexPlugin() )
 
 //Using
-app.use(RollbarPlugin)
 app.use(router)
 app.use(Equal)
 app.use(ElementPlus)
