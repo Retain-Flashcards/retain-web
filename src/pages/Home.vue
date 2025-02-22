@@ -41,7 +41,7 @@
             :title="shareDeckModal.state().deck && `Sharing ${shareDeckModal.state().deck.title}`"
             v-model="shareDeckModal.isOpen.value"
             class='dialog'
-            @close='resetShareDialog'>
+            @close='() => shareDeckModal.close()'>
             <LoadableStateProvider :loadable='shareDeckLoadable' v-slot='{ loading, data, error }'>
                 <el-form v-loading='loading'>
                     <el-form-item label='Email'>

@@ -13,7 +13,7 @@
                 </div>
                 <div class='flex-spacer'></div>
                 <div style='display: flex; align-items: center;'>
-                    <el-button v-if='deck.shared' type='text' style='color: white; font-size: 30px; margin-right: 15px;'><el-icon><Connection /></el-icon></el-button>
+                    <el-button v-if='deck.shared' type='link' style='color: white; font-size: 30px; margin-right: 15px;'><el-icon><Connection /></el-icon></el-button>
                     <h1>{{ deck.title }}</h1>
                 </div>
             </div>
@@ -361,7 +361,7 @@ function openQuiz(quizName) {
     const quizPath = getQuizPath(quizName)
     router.push({ name: 'Quiz', params: { deckId: route.params.deckId, quizPath: quizPath } })
 } 
-function beginStudy() { router.push({ name: 'Study Deck', params: { deckId: route.params.deckId }, query: { tags: this.tags.selected } }) }
+function beginStudy() { router.push({ name: 'Study Deck', params: { deckId: route.params.deckId }, query: { tags: tags.value.selected } }) }
 function createNotes() { router.push({ name: 'Create Cards', params: { deckId: route.params.deckId } }) }
 function aiCardBuilder() { router.push({ name: 'AI Card Builder', params: { deckId: route.params.deckId } }) }
 

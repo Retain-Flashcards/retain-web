@@ -53,6 +53,7 @@ import './styles/index.css'
 import '@kangc/v-md-editor/lib/style/base-editor.css'
 import '@kangc/v-md-editor/lib/theme/style/github.css'
 import createKatexPlugin from '@kangc/v-md-editor/lib/plugins/katex/cdn';
+import StudyWrapper from './pages/StudyWrapper.vue'
 
 //Auth functions
 const { userIsLoggedIn, setAuthStateChangedListener } = useAuthUser()
@@ -68,7 +69,7 @@ const routes = [
     { name: 'View Deck', path: '/deck/:deckId', component: Deck },
     { name: 'Create Cards', path: '/deck/:deckId/cards/add', component: CardBuilder },
     { name: 'Edit Card', path: '/deck/:deckId/cards/:noteId/edit', component: CardBuilder},
-    { name: 'Study Deck', path: '/deck/:deckId/study', component: Study },
+    { name: 'Study Deck', path: '/deck/:deckId/study', component: StudyWrapper },
     { name: 'QuizBuilder', path: '/deck/:deckId/quiz', component: QuizBuilder },
     { name: 'Quiz', path: '/deck/:deckId/quiz/:quizPath', component: Quiz},
     { name: 'Cram Builder', path: '/deck/:deckId/cram', component: CramBuilder },

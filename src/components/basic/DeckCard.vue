@@ -5,7 +5,7 @@
                 <el-button :class='`${pinned ? "pin-button" : ""}`' @click.stop='() => setPinned(!pinned)' :type='pinned ? "primary":"default"' :plain='!pinned'  circle ><el-icon><StarFilled v-if='pinned'/><Star v-else/></el-icon></el-button>
                 <div class='flex-spacer'></div> 
                 <el-dropdown trigger='click' @command='handleMoreCommand'>
-                    <el-button @click.stop='() => {}' class='edit-button' type='text' style='color: white; font-size: 25px;'><el-icon><MoreFilled /></el-icon></el-button>
+                    <el-button @click.stop='() => {}' class='edit-button' plain link style='color: white; font-size: 25px;'><el-icon><MoreFilled /></el-icon></el-button>
                     <template #dropdown>
                         <el-dropdown-menu>
                             <el-dropdown-item command='edit'>Edit</el-dropdown-item>
@@ -16,7 +16,7 @@
             </div>
             <div style='flex: 0.05;'></div>
             <div class='card-header'>
-                <el-button v-if='shared' type='text' style='color: white; font-size: 20px; margin-right: 7px;'><el-icon><Connection /></el-icon></el-button>
+                <el-button v-if='shared' plain link style='color: white; font-size: 20px; margin-right: 7px;'><el-icon><Connection /></el-icon></el-button>
                 <h3>{{ title }}</h3>
             </div>
     

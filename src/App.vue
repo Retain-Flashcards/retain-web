@@ -10,13 +10,16 @@
         </div>
         <div v-else style='height: 100%; flex: 1;'>
             <Navbar id='navbar'/>
+            <KeyBindingProvider>
             <el-row align='middle' justify='center' style='flex: 1; height: 100%;'>
                 <el-col :span='8'></el-col>
                 <el-col :span='8'>
-                    <router-view />
+                    
+                        <router-view />
                 </el-col>
                 <el-col :span='8'></el-col>
             </el-row>
+            </KeyBindingProvider>
         </div>
     </div>
 </template>
@@ -26,6 +29,7 @@ import useAuthUser from './composables/UseAuthUser'
 import useGlobalLoader from './composables/UseGlobalLoader'
 import Navbar from './components/Navbar.vue'
 import Sidebar from './components/Sidebar.vue'
+import KeyBindingProvider from './components/basic/KeyBindingProvider.vue'
 const { userIsLoggedIn, getUser } = useAuthUser()
 
 const { globalLoader } = useGlobalLoader()
@@ -60,7 +64,8 @@ export default {
     },
     components: {
         Navbar,
-        Sidebar
+        Sidebar,
+        KeyBindingProvider
     }
 }
 </script>
