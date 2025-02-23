@@ -72,6 +72,19 @@
                     <template #title>
                         <div class='quizzes-header'>
                             <h2>Cram Sessions</h2>
+                            <div class='info-tooltip'>
+                                <el-tooltip
+                                    class='info-tooltip'
+                                    effect='dark'
+                                    placement='right-start'
+                                >
+                                    <template #content>
+                                        Use "Cram Sessions" to create study sets that you can review<br /> on your own time, outside of the scheduled reviews.
+                                    </template>
+                                    <el-icon><InfoFilled /></el-icon>
+
+                                </el-tooltip>
+                            </div>
                             <div class='flex-spacer'></div>
                             <el-button type='primary' @click='enterCramMode'>
                                 <el-icon style='margin-right: 5px;'><Stopwatch /></el-icon> New Cram Session
@@ -99,6 +112,7 @@
                         </LoadableStateProvider>
                     </div>
                 </el-collapse-item>
+                <!--
                 <el-collapse-item>
                     <template #title>
                         <div class='quizzes-header'>
@@ -133,6 +147,7 @@
                         </div>
                     </LoadableStateProvider>
                 </el-collapse-item>
+                -->
             </el-collapse>
 
             <div class='due-container' style='margin-top: 0px; margin-bottom: 50px;'>
@@ -584,6 +599,25 @@ h1 {
 h2 {
     margin-top: 0px;
     margin-bottom: 0px;
+}
+
+.info-tooltip {
+    margin-left: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #AAA;
+    border-radius: 5px;
+    transition: 0.2s;
+}
+
+.el-icon.el-tooltip__trigger {
+    padding: 7px;
+}
+
+.info-tooltip:hover {
+    cursor: pointer;
+    background-color: #EEE;
 }
 </style>
 

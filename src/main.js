@@ -70,8 +70,8 @@ const routes = [
     { name: 'Create Cards', path: '/deck/:deckId/cards/add', component: CardBuilder },
     { name: 'Edit Card', path: '/deck/:deckId/cards/:noteId/edit', component: CardBuilder},
     { name: 'Study Deck', path: '/deck/:deckId/study', component: StudyWrapper },
-    { name: 'QuizBuilder', path: '/deck/:deckId/quiz', component: QuizBuilder },
-    { name: 'Quiz', path: '/deck/:deckId/quiz/:quizPath', component: Quiz},
+    /*{ name: 'QuizBuilder', path: '/deck/:deckId/quiz', component: QuizBuilder },*/
+   /* { name: 'Quiz', path: '/deck/:deckId/quiz/:quizPath', component: Quiz}, */
     { name: 'Cram Builder', path: '/deck/:deckId/cram', component: CramBuilder },
     { name: 'Cram', path: '/deck/:deckId/cram/:cramId', component: Cram },
     { name: 'AI Card Builder', path: '/deck/:deckId/cards/add-ai', component: AiCardBuilder }
