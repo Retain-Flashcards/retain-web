@@ -72,7 +72,6 @@
                     <template #title>
                         <div class='quizzes-header'>
                             <h2>Cram Sessions</h2>
-                            <el-tag type='warning' round style='margin-left: 10px;'>Beta</el-tag>
                             <div class='flex-spacer'></div>
                             <el-button type='primary' @click='enterCramMode'>
                                 <el-icon style='margin-right: 5px;'><Stopwatch /></el-icon> New Cram Session
