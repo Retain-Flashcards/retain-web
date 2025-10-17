@@ -100,6 +100,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
   let newCount = 0
 
   let lookingForReviewOverride = Math.random() > 0.8
+  console.log(lookingForReviewOverride)
 
   for (let i = 0; i < reviewCards.length; i++) {
     if (!reviewCards[i].last_reviewed) newCount++
