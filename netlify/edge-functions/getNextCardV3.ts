@@ -100,8 +100,6 @@ export default async (req: Request, context: Context): Promise<Response> => {
   let newCount = 0
 
   let lookingForReviewOverride = Math.random() > 0.8
-  console.log(lookingForReviewOverride)
-  console.log(card)
 
   for (let i = 0; i < reviewCards.length; i++) {
     if (!reviewCards[i].last_reviewed) newCount++
@@ -112,16 +110,16 @@ export default async (req: Request, context: Context): Promise<Response> => {
       lookingForReviewOverride = false
     }
 
-    if (reviewCards[i].last_reviewed && reviewCards[i].learning && reviewCards[i].precise_last_reviewed) {
+    if (reviewCards[i].last_reviewed && reviewCards[i].learning && reviewCards[i].precise_last_reviewed && lookingForReviewOverride) {
       let msDiff = new Date().getTime() - new Date(reviewCards[i].precise_last_reviewed).getTime()
       let minDiff = Math.floor(msDiff/1000/60)
       if (card.last_reviewed && card.learning && card.learning_step < reviewCards[i].learning_step) continue
-      if (msDiff > 0 && minDiff >= reviewCards[i].current_interval) card = reviewCards[i]
+      if (msDiff > 0 && minDiff >= reviewCards[i].current_interval) {
+        card = reviewCards[i]
+        lookingForReviewOverride = false
+      }
     }
   }
-
-  console.log(card)
-
 
   //Generate times for card
   let againTime = ''
