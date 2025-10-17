@@ -99,7 +99,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
   let reviewCount = 0
   let newCount = 0
 
-  let lookingForReviewOverride = Math.random() > 0.8
+  let lookingForReviewOverride = Math.random() >= 0.3
 
   for (let i = 0; i < reviewCards.length; i++) {
     if (!reviewCards[i].last_reviewed) newCount++
