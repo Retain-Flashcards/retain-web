@@ -101,6 +101,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
 
   let lookingForReviewOverride = Math.random() > 0.8
   console.log(lookingForReviewOverride)
+  console.log(card)
 
   for (let i = 0; i < reviewCards.length; i++) {
     if (!reviewCards[i].last_reviewed) newCount++
@@ -118,6 +119,8 @@ export default async (req: Request, context: Context): Promise<Response> => {
       if (msDiff > 0 && minDiff >= reviewCards[i].current_interval) card = reviewCards[i]
     }
   }
+
+  console.log(card)
 
 
   //Generate times for card
