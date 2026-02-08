@@ -25,14 +25,14 @@
         </el-form-item>
 
         <el-form-item>
-            <el-button type='primary' @click='submitNewDeckForm' :loading='submitLoading || deleteLoading'>{{ editingDeck ? 'Save':'Create' }} Deck</el-button>
+            <brand-button style='margin-right: 10px;' type='primary' @click='submitNewDeckForm' :loading='submitLoading || deleteLoading'>{{ editingDeck ? 'Save':'Create' }} Deck</brand-button>
             <el-popconfirm
                 v-if='editingDeck'
                 confirm-button-type='danger'
                 title="Delete this deck?"
                 @confirm='() => deleteDeckLoadable.load()'>
                 <template #reference>
-                    <el-button type='danger' slot='reference' :loading='submitLoading || deleteLoading'>Delete Deck</el-button>
+                    <brand-button type='error' slot='reference' :loading='submitLoading || deleteLoading'>Delete Deck</brand-button>
                 </template>
             </el-popconfirm>
         </el-form-item>
@@ -47,9 +47,16 @@
 
 <script setup>
 import { onMounted, onUpdated, ref } from 'vue';
-import useDecks from '../../composables/useDecks'
-import useLoadable from '../../composables/useLoadable';
-import LoadableStateProvider from './LoadableStateProvider.vue'
+
+import BrandButton from './BrandButton.vue'
+
+
+import useDecks from '../../composables/api/useDecks'
+import useLoadable from '../../composables/ui/useLoadable';
+import LoadableStateProvider from './providers/LoadableStateProvider.vue'
+import useNotificationService from '../../composables/ui/useNotificationService'
+
+const notificationService = useNotificationService()
 
 const { createDeck, updateDeck, deleteDeck } = useDecks()
 
@@ -74,19 +81,12 @@ const formData = ref({
     primaryColor: ''
 })
 
-const formRules = {
-    title: [
-        { required: true, message: 'Please enter deck title', trigger: 'blur' }
-    ]
-}
-
-
-const theForm = ref(null)
 
 onMounted(() => {
     formData.value.title = props.editingDeck?.title
     formData.value.primaryColor = props.editingDeck?.primaryColor
 })
+
 onUpdated(() => {
     formData.value.title = props.editingDeck?.title
     formData.value.primaryColor = props.editingDeck?.primaryColor
@@ -107,10 +107,7 @@ const submitFormLoadable = useLoadable(async () => {
 
         props.onComplete(result)
     } catch(error) {
-        this.$Notification.error({
-            title: 'Error',
-            text: 'Something went wrong. Please try again.'
-        })
+        notificationService.error('Something went wrong. Please try again.')
     }
 
 })
@@ -118,6 +115,10 @@ const submitFormLoadable = useLoadable(async () => {
 const deleteDeckLoadable = useLoadable(async () => {
     const result = await deleteDeck(props.editingDeck.id)
     props.onComplete(result)
+}, {
+    onError: () => {
+        notificationService.error('Could not delete the deck. Please try again.')
+    }
 })
 
 function submitNewDeckForm() {

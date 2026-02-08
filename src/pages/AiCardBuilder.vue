@@ -1,5 +1,4 @@
 <template>
-
     <div class='content'>
         <div class='breadcrumb' style='margin-left: 20px;margin-bottom: 30px;'>
             <div class='return-link' @click='() => { router.push({ name: "View Deck", params: { deckId: deckId } }) }'>
@@ -54,7 +53,7 @@
                         <h4>Upload PDF Here</h4>
                         <input type='file' @change='uploadPDFHandler' style='display: none;' ref='fileInput' accept='application/pdf' />
                         <p style='width: 50%'>The AI Card Builder allows you to take screenshots of your notes and have cards automatically generated from them.</p>
-                        <el-button type='primary' style='margin-top: 20px;' @click='clickFileUpload'>Upload PDF</el-button>
+                        <brand-button type='primary' style='margin-top: 20px;' @click='clickFileUpload'>Upload PDF</brand-button>
                     </div>
                     <div v-else-if='loadingFile' style='width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;'>
                         <h4>Loading PDF...</h4>
@@ -71,24 +70,6 @@
                     <AiChat :loading='aiChatLoading' :imageUrl='currentImageUrl' :deckId='deckId' />
                 </div>
             </div>
-            <!--
-            <div id='frontEditor'>
-                <el-main v-loading='editor.frontLoading'>
-                    <div style='display: flex; width: 100%; align-items: center;'>
-                        <h2>Front</h2>
-                        <div class='flex-spacer'></div>
-                        <el-button type='primary' :disabled='submittingNote' @click='submitNote'>{{ noteId ? 'Save':'Add'}} Card</el-button>
-                    </div>
-                    <v-md-editor class='frontEditor' ref='frontEditor' v-model="editor.frontContent" height="400px" :placeholder='frontPlaceholder' autofocus right-toolbar='preview' :disabled-menus='[]' @upload-image='uploadFrontImage' :before-preview-change='processFrontContent'></v-md-editor>
-                </el-main>
-            </div>
-            <div id='backEditor'>
-                <el-main style='margin-top: 50px;' v-loading='editor.backLoading'>
-                    <h2>Back</h2>
-                    <v-md-editor id='backEditor' v-model="editor.backContent" height="400px" placeholder='Add Content...' right-toolbar='preview' :disabled-menus='[]' @upload-image='uploadBackImage'></v-md-editor>
-                </el-main>
-            </div>
-            -->
         </el-main>
     
     </div>
@@ -96,18 +77,33 @@
 </template>
     
 <script setup>
-    import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+    import { ref, onMounted, onBeforeUnmount, watch, nextTick, computed } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
-    import useFlashcards from '../composables/UseFlashcards'
+    import useDecks from '../composables/api/useDecks'
+    import useNotes from '../composables/api/useNotes'
+    import useStorage from '../composables/api/useStorage'
+    import useDeck from '../composables/api/useDeck'
     import { setThemeColor } from '../utils'
     import PDFViewer from '../components/PDFViewer.vue'
     import AiChat from '../components/AiChat.vue'
     import PdfViewerController from '../model/PdfViewerController'
+    import BrandButton from '../components/basic/BrandButton.vue'
 
     const route = useRoute()
     const router = useRouter()
-    
-    const { getDecks, uploadImage, uploadPNGFromDataURL, uploadPDF, createNote, loadNote, deleteNote, loadNoteTags, addTagToNote, loadDeckTags, createTag, deleteTagFromNote } = useFlashcards()
+
+    const { fetchAllDecks } = useDecks()
+
+    const {
+        uploadImage,
+        uploadPNGFromDataURL,
+        uploadPDF
+    } = useStorage()
+
+    const deckId = ref(route.params.deckId)
+
+    const deck = computed(() => useDeck(deckId.value))
+    const notes = computed(() => useNotes(deckId.value))
     
     const CLOZE_COLORS = ['red', 'orange', 'green', 'blue', 'purple']
 
@@ -117,7 +113,6 @@
         fileInput.value.click()
     }
 
-    const deckId = ref(route.params.deckId)
     const fileList = ref([])
     const loadingFile = ref(false)
     const pdfUrl = ref('')
@@ -149,7 +144,7 @@
 
     const deckSelect = ref({
         options: [],
-        value: route.params.deckId,
+        value: deckId.value,
         loading: true
     })
     const deckTags = ref({
@@ -166,10 +161,7 @@
     })
     const noteTags = ref([])
     const submittingNote = ref(false)
-    const frontPlaceholder = ref(`For a simple front/back card, just enter text for the front and back. 
     
-    For a fill-in-the-blank style card, write a sentence here, select the text you want to hide, and use the keyboard shortcut Cmd+Shift+C to hide it. The 'back' field can then be used to show extra content once the card is flipped.`)
-
     function onPDFScroll() {
         cropFrame.value.style.display = 'none'
     }
@@ -253,7 +245,7 @@
         for (let i = 0; i < value.length; i++) {
             if (currentDeckTags.includes(value[i])) continue
             try {
-                const result = await createTag(deckId.value, value[i])
+                const result = await deck.value.createTag(value[i])
                 value[i] = result[0].id
             } catch (error) {
             }
@@ -261,7 +253,7 @@
 
         //Reload the deck tags to include the new tags
         try {
-            const result = await loadDeckTags(deckId.value)
+            const result = await deck.value.loadTags()
             deckTags.value.options = result
             editor.value.tags = value
         } catch (error) {
@@ -275,7 +267,7 @@
     function loadDeckSelectOptions() {
         deckSelect.value.loading = true
         deckTags.value.loading = true
-        getDecks().then(result => {
+        fetchAllDecks().then(result => {
             deckSelect.value.options = result
             for (let i = 0; i < result.length; i++) {
                 if (result[i].id == deckId.value) {
@@ -286,7 +278,7 @@
 
         }).finally(() => deckSelect.value.loading = false)
 
-        loadDeckTags(deckId.value).then(result => {
+        deck.value.loadTags().then(result => {
             deckTags.value.options = result
         }).catch(error => {
 
@@ -330,16 +322,6 @@
         })
     }
 
-    function processFrontContent(text, next) {
-        const clozeRegexp = /{{c(\d)::(.+?)(?:(?:::)([^:]+)?)?}}/g;
-
-        text = text.replaceAll(clozeRegexp, (full, num, content, hint) => {
-            return `<span style='color: ${CLOZE_COLORS[num - 1]}; font-weight: bold'>[${hint ? hint : '...'}]</span>`
-        })
-
-        next(text)
-    }
-
     function addCloze(keepIndex) {
         
         //Get current cloze index
@@ -374,7 +356,7 @@
         for (let i = 0; i < editor.value.tags.length; i++) {
             if (noteTags.value.map(tag => tag.id).includes(editor.value.tags[i])) continue
             try {
-                const result = await addTagToNote(noteId, editor.value.tags[i])
+                const result = await notes.value.addTag(noteId, editor.value.tags[i])
             } catch (error) {
                 editor.value.tags = editor.value.tags.filter(tag => tag != editor.value.tags[i])
                 break
@@ -382,7 +364,7 @@
         }
 
         //Reload the note tags
-        noteTags.value = await loadNoteTags(noteId)
+        noteTags.value = await notes.value.loadTags(noteId)
 
         //Find tags to remove and remove them
         let tagsToRemove = []
@@ -393,7 +375,7 @@
                     tagsToRemove.push(noteTags.value[i].id)
                     continue
                 } 
-                const result = await deleteTagFromNote(noteId, noteTags.value[i].id)
+                const result = await notes.value.removeTag(noteId, noteTags.value[i].id)
                 tagsToRemove.push(noteTags.value[i].id)
             } catch (error) {
                 editor.value.tags.push(noteTags.value[i].id)
@@ -406,7 +388,9 @@
     }
 
     async function createNoteHandler(noteId) {
-        const result = await createNote(deckSelect.value.value, editor.value.frontContent, editor.value.backContent, noteId)
+        let result = null
+        if (noteId) result = await notes.value.editNote(noteId, editor.value.frontContent, editor.value.backContent)
+        else result = await notes.value.createNote(editor.value.frontContent, editor.value.backContent)
         
         if (!noteId) {
             editor.value.frontContent = ''

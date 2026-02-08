@@ -5,7 +5,7 @@ import Note from '../model/objects/Note'
 import Card from '../model/objects/Card'
 import { decode } from 'base64-arraybuffer'
 
-const { supabase, makeSupabaseFetch } = useSupabase()
+const { supabase, makeSupabaseFetch, getCurrentUserId } = useSupabase()
 
 export default () => {
 
@@ -23,10 +23,10 @@ export default () => {
             const extension = file.name.split('.').pop().toLowerCase()
             if (!(['jpeg', 'jpg', 'png'].includes(extension))) throw new Error('File must be PNG or JPG')
             const fileName = generate_uuid() + '.' + extension
-            const test = await supabase.storage.from('card-images').upload(`${supabase.auth.user().id}/deck_images/${fileName}`, file)
+            const test = await supabase.storage.from('card-images').upload(`${getCurrentUserId()}/deck_images/${fileName}`, file)
             if (test.error) throw new Error('Could not upload file')
 
-            const { data, er } = supabase.storage.from('card-images').getPublicUrl(`${supabase.auth.user().id}/deck_images/${fileName}`)
+            const { data, er } = supabase.storage.from('card-images').getPublicUrl(`${getCurrentUserId()}/deck_images/${fileName}`)
             if (er) throw new Error('Could not get file URL')
 
             publicURL = data.publicURL
@@ -52,7 +52,7 @@ export default () => {
 
         let updateObject = {
             title: title,
-            uid: supabase.auth.user().id,
+            uid: getCurrentUserId(),
             cover_image: publicURL
         }
 
@@ -107,7 +107,7 @@ export default () => {
 
         let publicURL = undefined
         const fileName = generate_uuid() + '.png'
-        const filePath = `${supabase.auth.user().id}/card_images/${fileName}`
+        const filePath = `${getCurrentUserId()}/card_images/${fileName}`
         const uploadInitial = await supabase.storage.from('card-images').upload(filePath, buffer, {
             contentType: 'image/png'
         })
@@ -128,7 +128,7 @@ export default () => {
             const extension = file.name.split('.').pop().toLowerCase()
             if (!(['jpeg', 'jpg', 'png'].includes(extension))) throw new Error('File must be PNG or JPG')
             const fileName = generate_uuid() + '.' + extension
-            const filePath = `${supabase.auth.user().id}/card_images/${fileName}`
+            const filePath = `${getCurrentUserId()}/card_images/${fileName}`
             const uploadInitial = await supabase.storage.from('card-images').upload(filePath, file)
 
             if (uploadInitial.error) throw new Error('Could not upload file')
@@ -150,7 +150,7 @@ export default () => {
             const extension = file.name.split('.').pop().toLowerCase()
             if (extension != 'pdf') throw new Error('File must be a PDF')
             const fileName = generate_uuid() + '.pdf'
-            const filePath = `${supabase.auth.user().id}/note-pdfs/${fileName}`
+            const filePath = `${getCurrentUserId()}/note-pdfs/${fileName}`
             const uploadInitial = await supabase.storage.from('note-pdfs').upload(filePath, file)
             console.log(uploadInitial.error)
             if (uploadInitial.error) throw new Error('Could not upload file')
@@ -313,7 +313,6 @@ export default () => {
         const result = await makeSupabaseFetch('get-next-card-v3', {
             deckId,
             filterTags: filterTags,
-            userJwt: supabase.auth.session().access_token,
             localTimestamp: new Date().toLocaleDateString('en-US')
         })
 
@@ -386,12 +385,12 @@ export default () => {
     }
 
     const getQuizzes = async (deckId) => {
-        const { data, error } = await supabase.from('quizzes').select('path, topics_list').eq('uid', supabase.auth.user().id).eq('deck_id', deckId)
+        const { data, error } = await supabase.from('quizzes').select('path, topics_list').eq('uid', getCurrentUserId()).eq('deck_id', deckId)
         return data
     }
 
     const getQuizPath = (quizName, deckId) => {
-        return `${supabase.auth.user().id}/${deckId}/${quizName.replace('.json', '')}`
+        return `${getCurrentUserId()}/${deckId}/${quizName.replace('.json', '')}`
     }
 
     const getNoteGroups = async (deckId) => {

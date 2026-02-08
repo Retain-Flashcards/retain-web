@@ -20,7 +20,7 @@ watch(() => selected.value, (newVal) => {
 
 
 watch(() => props.modelValue, (newVal) => {
-    console.log('CardMessage', newVal)
+    //console.log('CardMessage', newVal)
 })
 
 </script>

@@ -55,7 +55,6 @@ export const LoadableState = {
   
         // Update the stream with data
         if (this._value !== null) {
-            console.log('UPDATING')
           this._streamController.emit('loadableUpdate', new LoadableUpdate(LoadableState.DATA, null, this._value));
         }
       } catch (error) {
@@ -93,7 +92,6 @@ export const LoadableState = {
     }
   
     listenToStream(onData) {
-        console.log('onData', onData)
       const subscription = this._streamController.on('loadableUpdate', onData)
       if (this._value) this._streamController.emit('loadableUpdate', new LoadableUpdate(LoadableState.DATA, null, this._value))
         return subscription

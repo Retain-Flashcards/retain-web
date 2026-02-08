@@ -5,6 +5,6 @@
 </template>
 
 <script setup>
-import KeyBindingProvider from '../components/basic/KeyBindingProvider.vue'
+import KeyBindingProvider from '../components/basic/providers/KeyBindingProvider.vue'
 import Study from './Study.vue'
 </script>

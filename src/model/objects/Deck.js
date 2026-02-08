@@ -1,4 +1,4 @@
-import useSupabase from '../../composables/UseSupabase'
+import useSupabase from '../../composables/api/UseSupabase'
 
 const { supabase } = useSupabase()
 
@@ -6,8 +6,8 @@ export default class Deck {
     constructor(data) {
         this.title = data.title
         this.id = data.deck_id
-        this.reviewCount = data.review_count
-        this.newCount = data.new_count
+        this.reviewCount = data.review_left
+        this.newCount = data.new_left
         this.coverImage = data.cover_image
         this.pinned = data.pinned
         this.primaryColor = data.primary_color

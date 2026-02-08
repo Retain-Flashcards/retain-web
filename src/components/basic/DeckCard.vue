@@ -40,27 +40,25 @@
 
 </template>
 
-<script>
+<script setup>
+import { onMounted, onUpdated, ref } from 'vue'
 import { MoreFilled, Star, StarFilled, Connection } from '@element-plus/icons-vue'
 import { setThemeColor } from '../../utils'
- 
-export default {
-    props: ['onEdit', 'onShare', 'pinned', 'title', 'imgUrl', 'reviewCount', 'newCount', 'setPinned', 'primaryColor', 'shared'],
-    updated() {
-        if (this.primaryColor) setThemeColor(this.primaryColor, this.$refs.theContainer)
-    },
-    mounted() {
-        if (this.primaryColor) setThemeColor(this.primaryColor, this.$refs.theContainer)
-    },
-    methods: {
-        handleMoreCommand(command) {
-            if (command == 'edit') this.onEdit()
-            else this.onShare()
-        }
-    }
+
+const props = defineProps(['onEdit', 'onShare', 'pinned', 'title', 'imgUrl', 'reviewCount', 'newCount', 'setPinned', 'primaryColor', 'shared'])
+const theContainer = ref(null)
+
+onMounted(() => {
+    if (props.primaryColor) setThemeColor(props.primaryColor, theContainer.value)
+})
+onUpdated(() => {
+    if (props.primaryColor) setThemeColor(props.primaryColor, theContainer.value)
+})
+
+const handleMoreCommand = (command) => {
+    if (command == 'edit') props.onEdit()
+    else props.onShare()
 }
-
-
 
 </script>
 

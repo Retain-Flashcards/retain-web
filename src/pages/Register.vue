@@ -15,6 +15,9 @@
             <el-form-item prop='agree'>
                 <el-checkbox>I agree to the <el-link type='primary' href='https://retaincards.com/privacy-policy'>Privacy Policy</el-link> and <el-link type='primary' href='https://retaincards.com/terms-of-service'>Terms of Service</el-link>.</el-checkbox>
             </el-form-item>
+            <el-form-item prop='captcha'>
+                <captcha v-model='formData.captcha' />
+            </el-form-item>
             <el-form-item>
                 <el-button style='width: 100%;' type='primary' @click.prevent='onFormSubmit' :loading='formLoading'>Sign Up</el-button>
             </el-form-item>
@@ -35,8 +38,10 @@
     </style>
     
     <script>
-    import useAuthUser from '../composables/UseAuthUser'
+    import useAuthUser from '../composables/api/UseAuthUser'
     const { registerUser } = useAuthUser()
+
+    import Captcha from '../components/Captcha.vue'
     
     export default {
         data() {
@@ -44,7 +49,8 @@
                 formData: {
                     email: '',
                     password: '',
-                    confirmPassword: ''
+                    confirmPassword: '',
+                    captcha: ''
                 },
                 formLoading: false,
                 rules: {
@@ -68,8 +74,7 @@
 
                     if (valid) {
                         this.formLoading = true
-
-                        registerUser(this.formData.email, this.formData.password).then(() => {
+                        registerUser(this.formData.email, this.formData.password, this.formData.captcha).then(() => {
 
                             this.$router.push('/verify')
 
@@ -93,6 +98,9 @@
                     name: 'Login'
                 })
             }
+        },
+        components: {
+            Captcha
         }
     }
     

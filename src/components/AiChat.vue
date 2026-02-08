@@ -25,7 +25,7 @@
         </div>
 
         <div class='chat-input'>
-            <el-button type='primary' @click='acceptCards'>Accept Cards</el-button>
+            <brand-button type='primary' @click='acceptCards'>Accept Cards</brand-button>
             <el-input class='message-input' v-model='input' placeholder='Type a message...' @keyup.enter='() => sendMessage(input)' clearable>
                 <template #append>
                     <el-button type='primary' @click='() => sendMessage(input)' :icon='Promotion'></el-button>
@@ -36,20 +36,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUpdated, watch } from 'vue'
 import { Promotion, Crop } from '@element-plus/icons-vue'
 import ImageMessage from './ImageMessage.vue'
 import Message from './Message.vue'
 import CardMessage from './CardMessage.vue'
-import useSupabase from '../composables/UseSupabase'
-import { onUpdated } from 'vue'
+import BrandButton from './basic/BrandButton.vue'
+import useSupabase from '../composables/api/UseSupabase'
+import useNotes from '../composables/api/useNotes'
 
 const { makeSupabaseFetch } = useSupabase()
-import useFlashcards from '../composables/UseFlashcards'
-import { watch } from 'vue'
-const { createNote } = useFlashcards()
+
 
 const props = defineProps(['loading', 'imageUrl', 'deckId'])
+
+const { createNote } = useNotes(props.deckId)
 
 const messages = ref([])
 const aiIsLoading = ref(false)
@@ -69,7 +70,7 @@ const acceptCards = async () => {
             for (let card of message.cards) {
                 if (card.selected) {
                     cardPromises.push(
-                        createNote(props.deckId, card.frontContent, `![New Image](${props.imageUrl})`)
+                        createNote(card.frontContent, `![New Image](${props.imageUrl})`)
                     )
                 }
             }

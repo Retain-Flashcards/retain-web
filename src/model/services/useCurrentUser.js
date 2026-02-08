@@ -2,9 +2,7 @@ import { randomizeFilename } from '../../utils'
 import Deck from '../objects/Deck'
 import useSupabase from '../../composables/UseSupabase'
 
-const { supabase, makeSupabaseFetch } = useSupabase()
-
-const uid = supabase.auth.user().id
+const { supabase, makeSupabaseFetch, getCurrentUserId } = useSupabase()
 
 export default () => {
 
@@ -26,10 +24,10 @@ export default () => {
         if (file) {
             //First, upload the file and get the link
             const fileName = randomizeFilename(file.name)
-            const uploadResult = await supabase.storage.from('card-images').upload(`${uid}/deck_images/${fileName}`, file)
+            const uploadResult = await supabase.storage.from('card-images').upload(`${getCurrentUserId()}/deck_images/${fileName}`, file)
             if (uploadResult.error) throw new Error('Could not upload file')
 
-            const { data, er } = supabase.storage.from('card-images').getPublicUrl(`${uid}/deck_images/${fileName}`)
+            const { data, er } = supabase.storage.from('card-images').getPublicUrl(`${getCurrentUserId()}/deck_images/${fileName}`)
             if (er) throw new Error('Could not get file URL')
 
             publicURL = data.publicURL
@@ -55,7 +53,7 @@ export default () => {
 
         let updateObject = {
             title: title,
-            uid: uid,
+            uid: getCurrentUserId(),
             cover_image: publicURL
         }
 

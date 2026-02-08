@@ -1,34 +1,38 @@
 <template>
     <div>
-        <v-md-preview class='preview' :text="flipped ? card.backContent:card.frontContent" v-if='card' height='400px'></v-md-preview>
-        <div v-if='card && flipped && card.extraContent.length > 0' style='height: 2px; width: 100%; background: #EEE;'></div>
-        <v-md-preview class='preview' :text="card.extraContent" v-if='card && flipped && card.extraContent.length > 0' height='400px'></v-md-preview>
+        <card-study-view class='preview' :content="flipped ? card.backContent:card.frontContent" v-if='card' height='400px'></card-study-view>
+        <div v-if='card && flipped && card.extraContent.length > 0' style='height: 2px; width: 100%; background: #EEE; margin-top: 20px; margin-bottom: 20px;'></div>
+        <card-study-view class='preview' :content="card.extraContent" v-if='card && flipped && card.extraContent.length > 0' height='400px'></card-study-view>
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
+import CardStudyView from '../components/basic/cards/CardStudyView.vue'
 
-export default {
-    data() {
-        return {
-            card: {},
-            flipped: false
-        }
-    },
-    mounted() {
-        window.flipCard = this.flipCard
-        window.setCard = this.setCard
+const card = ref({})
+const flipped = ref(true)
 
-        StudyChannel.postMessage('ready')
-    },
-    methods: {
-        flipCard() {
-            this.flipped = true
-        },
-        setCard(data) {
-            this.card = data
-        }
+onMounted(() => {
+    window.flipCard = () => flipped.value = true
+    window.setCard = (data) => {
+        card.value = data
     }
-}
 
+    StudyChannel.postMessage('ready')
+})
 </script>
+
+<style scoped>
+.preview {
+    text-align: left;
+    background: #EEE;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 32px;
+    padding-bottom: 32px;
+    width: 100%;
+}
+</style>

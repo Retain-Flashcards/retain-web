@@ -3,6 +3,7 @@ export default class Card {
         this.id = data.id
         this.createdAt = data.created_at
         this.lastReviewed = data.last_reviewed
+        this.lastReviewTimestamp = data.last_review_timestamp
         this.learning = data.learning
         this.learningStep = data.learning_step
         this.noteId = data.note_id

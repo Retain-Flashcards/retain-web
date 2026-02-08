@@ -31,9 +31,9 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 import { ref, reactive, onMounted } from 'vue'
-import useFlashcards from '../composables/UseFlashcards'
+import useDeck from '../composables/api/useDeck'
 
-const { getQuiz } = useFlashcards()
+const { getQuiz } = useDeck(route.params.deckId)
 
 const route = useRoute()
 const router = useRouter()

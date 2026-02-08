@@ -188,7 +188,8 @@ export default async (req: Request, context: Context): Promise<Response> => {
   )
 }
 
-export const config = { path: "/study-card" }
+//Temporarily Disabled
+//export const config = { path: "/study-card" }
 
 // To invoke:
 // curl -i --location --request POST 'http://localhost:54321/functions/v1/' \

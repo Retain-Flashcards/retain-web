@@ -1,4 +1,4 @@
-import useSupabase from '../../composables/UseSupabase'
+import useSupabase from '../../composables/api/UseSupabase'
 
 const { supabase } = useSupabase()
 
@@ -17,7 +17,6 @@ export default class Note {
             given_deck_id: this.id
          })
 
-         console.log(data)
     }
 
     export() {
@@ -26,7 +25,8 @@ export default class Note {
             backContent: this.backContent,
             id: this.id,
             deckId: this.deckId,
-            active: this.active
+            active: this.active,
+            createdAt: this.createdAt
         }
     }
 }

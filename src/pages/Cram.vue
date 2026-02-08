@@ -1,71 +1,108 @@
 <template>
-
     <div class='content-container'>
-        <el-header v-loading='loading' v-if='deck' style='padding: 0px;'>
-            <div style='display: flex; align-items: center; margin-top: 20px; padding-bottom: 20px;'>
-                <div class='flex-spacer'>
-                    <div class='return-link' @click='returnToDeck' style='margin-left: 10px; display: flex; flex-direction: row; align-items: center;'>
-                        <el-icon style='padding-right: 10px;'><ArrowLeft /></el-icon>Return to deck
+        <loadable-provider :loadable='pageLoadable'>
+            <template #default='{loading}'>
+                <el-header v-loading='loading' v-if='deck' style='padding: 0px;'>
+                    <div style='display: flex; align-items: center; margin-top: 20px; padding-bottom: 20px;'>
+                        <div class='flex-spacer'>
+                            <return-link @click='returnToDeck'>Return to deck</return-link>
+                        </div>
+
+                        <!--Progress Indicator-->
+                        <span style='font-size: 20px; font-weight: bold;'>Cramming:</span>
+                        <span style='font-size: 20px; margin-left: 5px; color: var(--el-color-primary); font-weight: bold;'>{{ deck.title }}</span>
+                        <div class='flex-spacer' style='display: flex; flex-direction: row; justify-content: flex-end; padding-right: 30px;'>
+                            <h2 class='progress-text'>{{ studyLog.studied.length }} / {{  cards.length  }}</h2>
+                        </div>
                     </div>
-                </div>
-                <span style='font-size: 20px; font-weight: bold;'>Cramming:</span>
-                <span style='font-size: 20px; margin-left: 5px; color: var(--el-color-primary); font-weight: bold;'>{{ deck.title }}</span>
-                <div class='flex-spacer' style='display: flex; flex-direction: row; justify-content: flex-end; padding-right: 30px;'>
-                    <h2 class='progress-text'>{{ studyLog.studied.length }} / {{  cards.length  }}</h2>
-                </div>
-            </div>
-            <div class='progress-container'>
-                <div class='progress' ref='progressBar'></div>
-            </div>
-        </el-header>
-        
-        <el-main style='display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50%; margin: auto; margin-bottom: 100px;'>
-            
-            <div style='text-align: center;' v-if='studyLog.toReview.length == 0'>
-                <el-result icon="success" title="You're Finished!"></el-result>
-                <el-button type="primary" @click='resetCram'>Go again?</el-button>
-            </div>
-            <v-md-preview class='preview' :text="flipped ? card.backContent:card.frontContent" v-if='card' height='400px'></v-md-preview>
-            <el-divider v-if='card && flipped && card.extraContent.length > 0'></el-divider>
-            <v-md-preview class='preview' :text="card.extraContent" v-if='card && flipped && card.extraContent.length > 0' height='400px'></v-md-preview>
-        </el-main>
-        <footer class='bottom-bar'>
-            <div v-if='!flipped' style='display: flex; align-items: center; width: 100%; background: #EEE; padding-bottom: 0px; padding-top: 15px;'>
-                <div class='flex-spacer'></div>
-                <el-button type='primary' size='large' style='width: 50%;' @click='flipCard'>Flip</el-button>
-                <div class='flex-spacer'></div>
-            </div>
-            <div class='check-boxes' v-if='flipped'>
-                <div class='flex-spacer'></div>
-                <el-button style='flex: 1;' type='success' size='large' @click='() => studyCard(true)'><el-icon class="el-icon--right"><b><Check /></b></el-icon></el-button>
-                <el-button style='flex: 1;' type='danger' size='large' @click='() => studyCard(false)'><el-icon class="el-icon--right"><b><Close /></b></el-icon></el-button>
-                <div class='flex-spacer'></div>
-            </div>
-            <div style='width: 100%; text-align: center; font-size: 13px; margin-bottom: 0px; margin-top: 10px; color: #888;'>
-                <span v-if='!flipped'><KeyBindingIndicator>Spacebar</KeyBindingIndicator> to flip the card</span>
-                <span v-if='flipped'><KeyBindingIndicator>1</KeyBindingIndicator> = Correct,  <KeyBindingIndicator>2</KeyBindingIndicator> = Incorrect</span>
-            </div>
-        </footer>
+
+                    <!--Progress Bar-->
+                    <div class='progress-container'>
+                        <div class='progress' :style='{width: `${progress * 100}%`}'></div>
+                    </div>
+                </el-header>
+                
+                <el-main style='display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50%; margin: auto; margin-bottom: 100px;'>
+                    
+                    <!--Finish Screen-->
+                    <div style='text-align: center;' v-if='studyLog.toReview.length == 0'>
+                        <el-result icon="success" title="You're Finished!"></el-result>
+                        <brand-button type="primary" @click='resetCram'>Go again?</brand-button>
+                    </div>
+
+                    <!--Card Display-->
+                    <card-study-view class='preview' v-if='card' :content="flipped ? card.backContent:card.frontContent" height='400px'></card-study-view>
+                    <el-divider v-if='card && flipped && card.extraContent.length > 0'></el-divider>
+                    <card-study-view class='preview' v-if='card && flipped && card.extraContent.length > 0' :content="card.extraContent" height='400px'></card-study-view>
+                </el-main>
+
+                <!--Bottom Bar-->
+                <footer class='bottom-bar'>
+                    <!--Flip Button-->
+                    <div v-if='!flipped' style='display: flex; align-items: center; width: 100%; background: #EEE; padding-bottom: 0px; padding-top: 15px;'>
+                        <div class='flex-spacer'></div>
+                        <brand-button type='primary' size='large' style='width: 50%;' @click='flipCard'>Flip</brand-button>
+                        <div class='flex-spacer'></div>
+                    </div>
+
+                    <!--Result Score-->
+                    <div class='check-boxes' v-if='flipped'>
+                        <div class='flex-spacer'></div>
+                        <brand-button style='flex: 1;' type='success' size='large' @click='() => studyCard(true)'><el-icon class="el-icon--right"><b><Check /></b></el-icon></brand-button>
+                        <div style='width: 10px;'></div>
+                        <brand-button style='flex: 1;' type='error' size='large' @click='() => studyCard(false)'><el-icon class="el-icon--right"><b><Close /></b></el-icon></brand-button>
+                        <div class='flex-spacer'></div>
+                    </div>
+
+                    <!--Key Binding Indicators-->
+                    <div style='width: 100%; text-align: center; font-size: 13px; margin-bottom: 0px; margin-top: 10px; color: #888;'>
+                        <span v-if='!flipped'><KeyBindingIndicator>Spacebar</KeyBindingIndicator> to flip the card</span>
+                        <span v-if='flipped'><KeyBindingIndicator>1</KeyBindingIndicator> = Correct,  <KeyBindingIndicator>2</KeyBindingIndicator> = Incorrect</span>
+                    </div>
+                </footer>
+            </template>
+            <template #loading>
+                <el-skeleton style='margin: 50px;'></el-skeleton>
+            </template>
+            <template #error>
+                <error-page message='There was a problem loading the deck. Please try again.'></error-page>
+            </template>
+        </loadable-provider>
     </div>
-    
 </template>
 
 <script setup>
 import { onMounted, ref, computed, reactive, watch, onBeforeMount, onBeforeUnmount } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import useFlashcards from '../composables/UseFlashcards'
-import { setThemeColor } from '../utils'
-import { ElMessage } from 'element-plus'
+
+//UI Components
 import KeyBindingIndicator from '../components/basic/KeyBindingIndicator.vue'
 import Card from '../model/objects/Card'
+import CardStudyView from '../components/basic/cards/CardStudyView.vue'
+import ReturnLink from '../components/basic/ReturnLink.vue'
+import LoadableProvider from '../components/basic/providers/LoadableProvider.vue'
+import ErrorPage from '../components/basic/errorHandling/ErrorPage.vue'
+import BrandButton from '../components/basic/BrandButton.vue'
 
-const { getDeck, getCramSession } = useFlashcards()
+//Composables
+import { useRoute, useRouter } from 'vue-router'
+import useDeck from '../composables/api/useDeck'
+import useDecks from '../composables/api/useDecks'
+import useNotificationService from '../composables/ui/useNotificationService'
+import useLoadable from '../composables/ui/useLoadable'
+
+//Utils
+import { setThemeColor } from '../utils'
 
 const route = useRoute()
 const router = useRouter()
 
+const { fetchDeck } = useDecks()
+const deckOperations = useDeck(route.params.deckId)
+
+const notificationService = useNotificationService()
+
 const loading = ref(true)
-const progressBar = ref()
+const progressBar = ref(null)
 
 const deck = ref(null)
 
@@ -84,31 +121,19 @@ const progress = computed(() => {
     return studyLog.studied.length / cards.value.length
 })
 
-watch(studyLog, (value, oldValue) => {
-    progressBar.value.style.width = `${progress.value * 100}%`
+const pageLoadable = useLoadable(async () => {
+    const result = await fetchDeck(route.params.deckId)
+    deck.value = result
+    setThemeColor(result.primaryColor, document.documentElement)
+    const cramSession = await deckOperations.getCramSession(route.params.cramId)
+    const cardsList = cramSession.map(item => new Card(item.cards))
+    cards.value = cardsList
+    studyLog.studied = []
+    studyLog.toReview = cardsList.slice(0)
+    setNextCard()
+}, {
+    autoload: true
 })
-
-const loadDeck = () => {
-    loading.value = true
-    getDeck(route.params.deckId).then(result => {
-        deck.value = result
-        setThemeColor(deck.value.primaryColor, document.documentElement)
-
-        loadCramSession()
-    }).finally(() => {
-        loading.value = false
-    })
-}
-
-const loadCramSession = () => {
-    getCramSession(route.params.cramId).then(result => {
-        const cardsList = result.map(item => new Card(item.cards))
-        cards.value = cardsList
-        studyLog.studied = []
-        studyLog.toReview = cardsList.slice(0)
-        setNextCard()
-    })
-}
 
 const setNextCard = () => {
     flipped.value = false
@@ -123,9 +148,7 @@ const studyCard = (correct) => {
         const currentCard = studyLog.toReview.shift()
         studyLog.toReview.push(currentCard)
 
-        ElMessage.success({
-            message: 'Moved to Back of Deck!'
-        })
+        notificationService.success('Moved to Back of Deck!')
     }
     
     setNextCard()
@@ -165,10 +188,6 @@ const resetCram = () => {
     setNextCard()
 }
 
-onMounted(() => {
-    loadDeck()
-}) 
-
 onBeforeMount(() => {
     window.addEventListener('keyup', keyListener)
 })
@@ -188,6 +207,7 @@ onBeforeUnmount(() => {
     align-items: center;
     justify-content: center;
     padding-top: 32px;
+    padding-bottom: 32px;
     width: 100%;
 }
 

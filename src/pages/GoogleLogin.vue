@@ -5,7 +5,7 @@
 </template>
 
 <script>
-    import useAuthUser from '../composables/UseAuthUser'
+    import useAuthUser from '../composables/api/UseAuthUser'
     const { logInWithGoogle } = useAuthUser()
 
     export default {

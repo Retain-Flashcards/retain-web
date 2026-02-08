@@ -54,7 +54,9 @@
 </template>
 
 <script setup>
-import useFlashcards from '../composables/UseFlashcards'
+import useDecks from '../composables/api/useDecks'
+import useDeck from '../composables/api/useDeck'
+import useNotes from '../composables/api/useNotes'
 import { Plus, ArrowLeft } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { setThemeColor } from '../utils'
@@ -68,7 +70,9 @@ const route = useRoute()
 const buildingQuiz = ref(true)
 const generating = ref(false)
 
-const { getDeck, getDeckNotes, deleteNote, resetNote, generateAIQuiz } = useFlashcards()
+const { fetchDeck } = useDecks()
+const deckOperations = useDeck(route.params.deckId)
+const notesOperations = useNotes(route.params.deckId)
 
 const searchValue = ref('')
 const deck = ref(null)
@@ -105,7 +109,7 @@ const onTableCurrentPageChange = (newPage) => {
 }
 
 const loadDeck = () => {
-    getDeck(route.params.deckId).then(_deck => {
+    fetchDeck(route.params.deckId).then(_deck => {
         deck.value = _deck
         setThemeColor(deck.value.primaryColor, document.documentElement)
 
@@ -137,7 +141,7 @@ const loadNotes = async () => {
 
     do {
         try {
-            let result = await getDeckNotes(deck.value, page)
+            let result = await notesOperations.fetchDeckNotes(page)
             const { notes, count } = result
             table.notes.push(...notes.map( item => item.export() ))
             table.noteCount = count
@@ -166,8 +170,7 @@ const generateQuiz = () => {
         return selectedNotes[note]
     })
     
-
-    generateAIQuiz(referenceNoteIds, deck.value.id).then((result) => {
+    deckOperations.generateAIQuiz(referenceNoteIds).then((result) => {
 
         const filePath = result.qaFilePath
         router.push({

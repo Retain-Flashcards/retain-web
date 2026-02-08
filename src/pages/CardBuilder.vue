@@ -1,253 +1,303 @@
 <template>
-
 <div class='content'>
+
     <div class='breadcrumb' style='margin-left: 20px;margin-bottom: 30px;'>
-        <div class='return-link' @click='() => { this.$router.push({ name: "View Deck", params: { deckId: this.deckId } }) }'>
-            <el-icon style='padding-right: 10px;'><ArrowLeft /></el-icon>Return to deck
-        </div>
+        <return-link @click='() => { router.push({ name: "View Deck", params: { deckId: deckId } }) }'>
+            Return to deck
+        </return-link>
     </div>
+
+    <!--Edit/Add Card Header-->
     <div class='header'>
-        <h1>{{ this.noteId ? 'Edit':'Add'}} Card</h1>
+        <h1>{{ noteId ? 'Edit':'Add'}} Card</h1>
         <div class='flex-spacer'></div>
-        <span style='margin-right: 10px;'>To deck: </span>
-        <el-select v-model='deckSelect.value' placeholder='to deck...' :loading='deckSelect.loading' @change='onDeckSelectChange' style='width: 200px'>
-            <el-option v-for='item in deckSelect.options' :key='item.id' :label='item.title' :value='item.id'>
 
-            </el-option>
-        </el-select>
+        <!--Deck selector if you're adding cards (easy switching)-->
+        <template v-if='!noteId'>
+            <span style='margin-right: 10px;'>To deck: </span>
+            <loadable-state-provider :loadable='deckSelectLoadable' v-slot='{ loading, data: options}'>
+                <el-select v-model='deckId' placeholder='to deck...' :loading='loading' @change='() => {}' style='width: 200px'>
+                    <el-option v-for='item in options' :key='item.id' :label='item.title' :value='item.id'></el-option>
+                </el-select>
+            </loadable-state-provider>
+        </template>
+
+        <!--Save/Add Button-->
+        <brand-button style='margin-left: 10px;' type='primary' @click='saveNote' :disabled='editorLoading'>{{ noteId ? 'Save':'Add' }}</brand-button>
     </div>
 
-    <el-main class='main-content' v-loading='submittingNote'>
+    <el-main class='main-content'>
         <div id='tags'>
             <el-main>
                 <h2>Tags</h2>
-                <el-select-v2 
-                    v-model='editor.tags' 
-                    :loading='editor.tagsLoading' 
-                    multiple 
-                    filterable 
-                    allow-create 
-                    placeholder='Add tags...' 
-                    style='width: 100%;' 
-                    @change='onTagsChanged'
-                    tag-type='danger'
-                    :options='deckTags.options'
-                    :props='{label: "name", value: "id"}'
-                    no-data-text='Start Typing to Create a Tag...'>
-                    <template #default='{ item }'>
-                        <span>{{ item.name }}</span>
-                    </template>
-                    <!--<template #tag>
-                        {{ item }}
-                        <el-tag v-for="tag in value" :key="tag.id" type='primary'/>
-                    </template>-->
-                    <!--<el-option v-for='tag in deckTags.options' :key='tag.id' :label='tag.name' :value='tag.id'>
+                <loadable-state-provider :loadable='tagsLoadable' v-slot='{ loading, data: tagOptions }'>
+                    <el-select-v2 
+                        v-model='tags' 
+                        :loading='loading' 
+                        multiple 
+                        filterable 
+                        allow-create 
+                        placeholder='Add tags...' 
+                        style='width: 100%;' 
+                        @change='() => {}'
+                        tag-type='danger'
+                        :options='tagOptions'
+                        :props='{label: "name", value: "id"}'
+                        no-data-text='Start Typing to Create a Tag...'>
+                        <template #default='{ item }'>
+                            <span>{{ item.name }}</span>
+                        </template>
+                    </el-select-v2>
+                </loadable-state-provider>
+            </el-main>
+        </div>
 
-                    </el-option>-->
-                </el-select-v2>
-            </el-main>
-        </div>
-        <div id='frontEditor'>
-            <el-main v-loading='editor.frontLoading'>
-                <div style='display: flex; width: 100%; align-items: center;'>
-                    <h2>Front</h2>
-                    <div class='flex-spacer'></div>
-                    <el-button type='primary' :disabled='submittingNote' @click='submitNote'>{{ this.noteId ? 'Save':'Add'}} Card</el-button>
-                </div>
-                <v-md-editor class='frontEditor' ref='frontEditor' v-model="editor.frontContent" height="400px" :placeholder='frontPlaceholder' autofocus right-toolbar='preview' :disabled-menus='[]' @upload-image='uploadFrontImage' :before-preview-change='processFrontContent'></v-md-editor>
-            </el-main>
-        </div>
-        <div id='backEditor'>
-            <el-main style='margin-top: 50px;' v-loading='editor.backLoading'>
-                <h2>Back</h2>
-                <v-md-editor id='backEditor' v-model="editor.backContent" height="400px" placeholder='Add Content...' right-toolbar='preview' :disabled-menus='[]' @upload-image='uploadBackImage'></v-md-editor>
-            </el-main>
-        </div>
+        <!--Main Content Editor-->
+        <loadable-provider :loadable='noteLoadable'>
+            <template #default='{ loading, data: note }'>
+                <KeyBindingProvider>
+                    <div class='double-editor' v-loading='loading || editorLoading'>
+
+                        <!--Formatting Toolbar-->
+                        <div class='toolbar-container'>
+                            <h3 style='justify-self: flex-start;'>Front Side</h3>
+                            <formatting-toolbar :link-handler='linkHandler' :image-handler='imageHandler'></formatting-toolbar>
+                            <h3 style='justify-self: flex-end; text-align: right;'>Back Side</h3>
+                        </div>
+                        
+
+                        <div class='editor-container'>
+                            <div id='frontEditor'>   
+                                <el-container>
+                                    <!--KeyBindingProvider allows for keyboard shortcuts-->
+                                    <KeyBindingProvider>
+                                        <card-editor :cloze-enabled='true' :controller='frontEditorController'></card-editor>
+                                    </KeyBindingProvider>
+                                </el-container>
+                            </div>
+                            <div id='backEditor'> 
+                                <el-container>
+                                    <!--KeyBindingProvider allows for keyboard shortcuts-->
+                                    <KeyBindingProvider>
+                                        <card-editor :controller='backEditorController'></card-editor>
+                                    </KeyBindingProvider>
+                                </el-container>
+                            </div>
+                            
+                        </div>
+
+                        <!--Link Modal-->
+                        <el-dialog v-model='linkModal.isOpen' title='Insert Link' @close='linkModal.state.cancel()'>
+                            <el-form-item label='Link URL'>
+                                <el-input v-model='linkModal.state.url'></el-input>
+                            </el-form-item>
+                            <el-form-item>
+                                <brand-button type='primary' @click='() => linkModal.state.callback()'>Save</brand-button>
+                            </el-form-item>
+                        </el-dialog>
+                    </div>
+                </KeyBindingProvider>
+            </template>
+            <template #loading>
+                <el-skeleton :rows='5'></el-skeleton>
+            </template>
+            <template #error>
+                <error-page message='Failed to load note' ></error-page>
+            </template>
+        </loadable-provider>
     </el-main>
-
-    <el-footer style='display: flex; margin-top: 20px;'>
-        <div class='flex-spacer'></div>
-        <el-button type='primary' :disabled='submittingNote' @click='submitNote'>{{ this.noteId ? 'Save':'Add'}} Card</el-button>
-
-    </el-footer>
 
 </div>
 
 </template>
 
-<script>
-import useFlashcards from '../composables/UseFlashcards'
+<script setup>
+import { ref, watch, onMounted, computed } from 'vue'
+
+//UI Components
+import LoadableStateProvider from '../components/basic/providers/LoadableStateProvider.vue'
+import LoadableProvider from '../components/basic/providers/LoadableProvider.vue'
+import CardEditor from '../components/basic/cards/CardEditor.vue'
+import FormattingToolbar from '../components/basic/cards/FormattingToolbar.vue'
+import KeyBindingProvider from '../components/basic/providers/KeyBindingProvider.vue'
+import ReturnLink from '../components/basic/ReturnLink.vue'
+import ErrorPage from '../components/basic/errorHandling/ErrorPage.vue'
+import BrandButton from '../components/basic/BrandButton.vue'
+
+//Composables
+import { useRouter, useRoute} from 'vue-router'
+import useLoadable from '../composables/ui/useLoadable'
+import useDecks from '../composables/api/useDecks'
+import useDeck from '../composables/api/useDeck'
+import useModal from '../composables/ui/useModal'
+import useStorage from '../composables/api/useStorage'
+import useNotes from '../composables/api/useNotes'
+import useCardEditor from '../composables/ui/useCardEditor'
+import useNotificationService from '../composables/ui/useNotificationService'
+
+//Utils
 import { setThemeColor } from '../utils'
 
-const { getDecks, uploadImage, createNote, loadNote, deleteNote, loadNoteTags, addTagToNote, loadDeckTags, createTag, deleteTagFromNote } = useFlashcards()
+const { uploadImage } = useStorage()
 
-const CLOZE_COLORS = ['red', 'orange', 'green', 'blue', 'purple']
+const router = useRouter()
+const route = useRoute()
 
-export default {
-    setup() {
+const notificationService = useNotificationService()
+
+//Data
+const deckId = ref(route.params.deckId)
+const noteId = ref(route.params.noteId)
+
+const { fetchAllDecks } = useDecks()
+
+const deck = computed(() => useDeck(deckId.value))
+const notes = computed(() => useNotes(deckId.value))
+
+const tags = ref([])
+
+const frontEditorController = useCardEditor('')
+const backEditorController = useCardEditor('')
+
+//Loadables
+const deckSelectLoadable = useLoadable(async () => {
+    return await fetchAllDecks()
+}, {
+    initialValue: [], 
+    autoload: true,
+    onError: (e) => {}
+})
+
+const tagsLoadable = useLoadable(async () => {
+    const results = await deck.value.loadTags()
+    return results
+}, {
+    initialValue: [], 
+    autoload: true,
+    onError: (e) => notificationService.error('Failed to load tags')
+})
+
+watch(deck, () => tagsLoadable.load())
+
+const noteLoadable = useLoadable(async () => {
+    if (!noteId.value) return null
+    const result = await notes.value.fetchNote(noteId.value)
+    frontEditorController.setContent(result.frontContent)
+    backEditorController.setContent(result.backContent)
+    return result
+}, {
+    initialValue: null, 
+    autoload: true
+})
+
+const saveNote = async () => {
+    editorLoading.value = true
+    try {
+        if (!noteId.value) {
+            await notes.value.createNote(frontEditorController.getClozeContent(), backEditorController.getClozeContent())
+            frontEditorController.setContent('')
+            backEditorController.setContent('')
+        }
+        else {
+            await notes.value.editNote(noteId.value, frontEditorController.getClozeContent(), backEditorController.getClozeContent())
+        }
+    } catch(e) {
+        notificationService.error('Failed to save note')
+    }
+    finally {
+        editorLoading.value = false
+    }
+}
+
+//Update theme color with deck selection
+watch([deckSelectLoadable.currentState, deckId], (newVals) => {
+    const options = newVals[0].value
+    if (options) {
+        for (const deck of options) {
+            if (deck.id == deckId.value) setThemeColor(deck.primaryColor, document.documentElement)
+        }
+    }
+})
+
+const editorLoading = ref(false)
+
+const linkModal = useModal({ url: '' })
+
+async function linkHandler() {
+    const promise = new Promise((resolve, reject) => {
+        editorLoading.value = true
+        linkModal.openWithState({ url: '', callback: () => {
+            resolve()
+            editorLoading.value = false
+            linkModal.close()
+        }, cancel: () => {
+            reject() 
+            editorLoading.value = false
+        }})
+    })
+
+    try {
+        await promise
+        const url = linkModal.state.url
+        return url
+    } catch(e) {
+        return undefined
+    }
+    
+}
+
+async function imageHandler() {
+    const inputElement = document.createElement('input')
+    inputElement.type = 'file'
+    inputElement.id = 'fileInput'
+    inputElement.accept = 'png,jpg,jpeg'
+
+    const promise = new Promise((resolve, reject) => {
+        editorLoading.value = true
         
-    },
-    created() {
-        window.addEventListener('keydown', this.keyListener)
-    },
-    destroyed() {
-        window.removeEventListener('keydown', this.keyListener)
-    },
-    mounted() {
-        this.loadDeckSelectOptions()
-        console.log(this.$refs.frontEditor)
 
-        const textareas = document.getElementsByTagName('textarea')
-        for (let i = 0; i < textareas.length; i++) {
-            textareas[i].spellcheck = true
-        }
+        inputElement.click()
 
-        if (this.noteId) this.loadExistingNote()
-    },  
-    data() {
-        return {
-            deckId: this.$route.params.deckId,
-            deckSelect: {
-                options: [],
-                value: this.$route.params.deckId,
-                loading: true
-            },
-            deckTags: {
-                loading: true,
-                options: []
-            },
-            editor: {
-                frontContent: '',
-                frontLoading: false,
-                backContent: '',
-                backLoading: false,
-                tagsLoading: false,
-                tags: []
-            },
-            noteTags: [],
-            submittingNote: false,
-            noteId: this.$route.params.noteId,
-            frontPlaceholder: `For a simple front/back card, just enter text for the front and back. 
-
-For a fill-in-the-blank style card, write a sentence here, select the text you want to hide, and use the keyboard shortcut Cmd+Shift+C to hide it. The 'back' field can then be used to show extra content once the card is flipped.`
-        }
-    },
-    methods: {
-        keyListener(e) {
-            console.log(e)
-            if ((e.metaKey || e.keyCode == 91) && e.shiftKey && e.key.toLowerCase() == 'c') {
-                e.preventDefault()
-                console.log('YES')
-                const id = e.target?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.id
-                if (id == 'frontEditor') this.addCloze(false)
+        inputElement.addEventListener('change', (e) => {
+            const file = e.target.files[0]
+            if (!file) {
+                reject()
+                editorLoading.value = false
+            } else {
+                uploadImage(file).then((url) => {
+                    resolve(url)
+                }).catch((e) => {
+                    reject()
+                }).finally(() => {
+                    editorLoading.value = false
+                })
             }
-            else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() == 'c') {
-                e.preventDefault()
-                const id = e.target?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.id
-                if (id == 'frontEditor') this.addCloze(true)
-            }
+        })
 
-        }, 
-        loadExistingNote() {
-            this.submittingNote = true
-            loadNote(this.noteId).then(result => {
-                this.editor.frontContent = result.frontContent
-                this.editor.backContent = result.backContent
-
-                this.editor.tagLoading = true
-                loadNoteTags(this.noteId).then(tags => {
-                    this.editor.tags = tags.map(tag => tag.id)
-                    this.noteTags = tags
-                }).catch(error => {
-                    console.error(error)
-                }).finally(() => this.editor.tagLoading = false)
-            }).catch(error => {
-
-            }).finally(() => {
-                this.submittingNote = false
-            })
-        },  
-        logValue(value) {
-            console.log(value)
-        },
-        async onTagsChanged(value) {
-
-            this.deckTags.loading = true
-
-            //Check to see if there are any new tags; if so, add them to the deck
-            const currentDeckTags = this.deckTags.options.map(tag => tag.id)
-            
-            //If there are any new tags, load the tag selector and add the new tags to the deck
-            for (let i = 0; i < value.length; i++) {
-                if (currentDeckTags.includes(value[i])) continue
-                try {
-                    const result = await createTag(this.deckId, value[i])
-                    value[i] = result[0].id
-                } catch (error) {
+        window.addEventListener('focus', (e) => {
+            setTimeout(() => {
+                if (!inputElement.value) {
+                    reject()
+                    editorLoading.value = false
                 }
-            }
+            }, 500)
+        }, { once: true })
 
-            //Reload the deck tags to include the new tags
-            try {
-                const result = await loadDeckTags(this.deckId)
-                this.deckTags.options = result
-                this.editor.tags = value
-            } catch (error) {
-                this.editor.tags = this.editor.tags.filter(tag => currentDeckTags.includes(tag))
-            }
+    })
+    try {
+        const url = await promise
+        if (inputElement) inputElement.remove()
+        return url
+    } catch(e) {
+        if (inputElement) inputElement.remove()
+    }
 
-            //Next, sync the editor tags with the ones on the note
-
-            this.deckTags.loading = false
-
-        },
-
-        loadDeckSelectOptions() {
-            this.deckSelect.loading = true
-            this.deckTags.loading = true
-            getDecks().then(result => {
-                this.deckSelect.options = result
-                for (let i = 0; i < result.length; i++) {
-                    if (result[i].id == this.deckId) {
-                        setThemeColor(result[i].primaryColor, document.documentElement)
-                    }
-                }
-            }).catch(error => {
-
-            }).finally(() => this.deckSelect.loading = false)
-
-            loadDeckTags(this.deckId).then(result => {
-                this.deckTags.options = result
-            }).catch(error => {
-
-            }).finally(() => this.deckTags.loading = false)
-            
-        },
-        onDeckSelectChange(value) {
-            this.deckId = value
-            this.$router.push({ 
-                name: 'Create Cards',
-                params: {
-                    deckId: value
-                }
-            })
-            this.loadDeckSelectOptions()
-        },
-
-        uploadFrontImage(event, insertImage, files) {
-            if (files.length > 0) this.uploadImage(true, insertImage, files[0])
-        },
-
-        uploadBackImage(event, insertImage, files) {
-            if (files.length > 0) this.uploadImage(false, insertImage, files[0])
-        },
-
-        uploadImage(isFront, insertImage, file) {
+    
+    /*uploadImage(isFront, insertImage, file) {
             if (isFront) this.editor.frontLoading = true
             else this.editor.backLoading = true
 
             uploadImage(file).then(imageUrl => {
-                console.log(imageUrl)
                 insertImage({
 
                     url: imageUrl,
@@ -260,104 +310,7 @@ For a fill-in-the-blank style card, write a sentence here, select the text you w
                 if (isFront) this.editor.frontLoading = false
                 else this.editor.backLoading = false
             })
-        },
-
-        processFrontContent(text, next) {
-            const clozeRegexp = /{{c(\d)::(.+?)(?:(?:::)([^:]+)?)?}}/g;
-
-            text = text.replaceAll(clozeRegexp, (full, num, content, hint) => {
-                return `<span style='color: ${CLOZE_COLORS[num - 1]}; font-weight: bold'>[${hint ? hint : '...'}]</span>`
-            })
-
-            next(text)
-        },
-
-        addCloze(keepIndex) {
-
-            //Get current cloze index
-            const clozeRegexp = /{{c(\d)::(.+?)(?:(?:::)([^:]+)?)?}}/g;
-            const occurences = [...this.editor.frontContent.matchAll(clozeRegexp)]
-            const clozeNums = occurences.map(match => Number(match[1]))
-            
-            let currentIndex = 1
-
-            if (clozeNums.length > 0) currentIndex = Math.max(...clozeNums) + (keepIndex ? 0:1)
-    
-
-            this.$refs.frontEditor.insert((selected) => {
-                const prefix = `{{c${currentIndex}::`
-                const suffix = '}}'
-                const content = selected || ''
-
-                return {
-                    text: `${prefix}${content}${suffix}`,
-                    selected: content
-                }
-            })
-        },
-
-        async submitNote() {
-            
-            this.submittingNote = true
-
-            let noteId = this.noteId
-
-            if (this.noteId) {
-                try {
-                    await deleteNote(this.noteId)
-                    await this.createNote(this.noteId)
-                } catch (error) {
-                    this.submittingNote = false
-                }
-            } 
-            else noteId = await this.createNote()
-
-            //Find new tags and add them
-            for (let i = 0; i < this.editor.tags.length; i++) {
-                if (this.noteTags.map(tag => tag.id).includes(this.editor.tags[i])) continue
-                try {
-                    const result = await addTagToNote(noteId, this.editor.tags[i])
-                } catch (error) {
-                    this.editor.tags = this.editor.tags.filter(tag => tag != this.editor.tags[i])
-                    break
-                }
-            }
-
-            //Reload the note tags
-            this.noteTags = await loadNoteTags(noteId)
-
-            //Find tags to remove and remove them
-            let tagsToRemove = []
-            for (let i = 0; i < this.noteTags.length; i++) {
-                if (this.editor.tags.includes(this.noteTags[i].id)) continue
-                try {
-                    if (this.noteTags[i].id == undefined) {
-                        tagsToRemove.push(this.noteTags[i].id)
-                        continue
-                    } 
-                    const result = await deleteTagFromNote(noteId, this.noteTags[i].id)
-                    tagsToRemove.push(this.noteTags[i].id)
-                } catch (error) {
-                    this.editor.tags.push(this.noteTags[i].id)
-                    console.error(error)
-                }
-            }
-            if (this.noteId) this.noteTags = this.noteTags.filter(tag => !tagsToRemove.includes(tag.id))
-            else this.noteTags = []
-
-        },
-        async createNote(noteId) {
-            const result = await createNote(this.deckSelect.value, this.editor.frontContent, this.editor.backContent, noteId)
-            
-            if (!noteId) {
-                this.editor.frontContent = ''
-                this.editor.backContent = ''
-            }
-            this.submittingNote = false
-
-            return result[0].note_id
-        }
-    }
+        },*/
 }
 
 </script>
@@ -378,6 +331,44 @@ For a fill-in-the-blank style card, write a sentence here, select the text you w
     border-bottom: var(--el-color-primary) solid 3px;
     margin-left: 20px;
     margin-right: 20px;
+}
+
+.editor-container {
+    display: flex;
+    box-sizing: border-box;
+    width: 100%;
+    overflow: hidden;
+}
+
+.double-editor {
+    border: solid 2px #EEE;
+    border-radius: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: 20px;
+}
+
+.editor-headers {
+    width: 100%;
+    display: flex;
+    border-bottom: solid 1px black;
+}
+
+.editor-headers h3 {
+    flex: 1;
+    text-align: center;
+}
+
+#frontEditor {
+    flex: 1;
+    border-right: solid 1px #EEE;
+}
+
+#backEditor {
+    flex: 1;
+    border-left: solid 1px #EEE;
 }
 
 .main-content {
@@ -403,5 +394,18 @@ For a fill-in-the-blank style card, write a sentence here, select the text you w
 
 h2 {
     margin-bottom: 20px;
+}
+
+.toolbar-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: solid 2px #EEE;
+}
+
+.toolbar-container h3 {
+    flex: 1;
+    margin: 15px 25px;
+    color: rgb(85, 85, 85)/*var(--el-color-primary-light-4)*/;
 }
 </style>

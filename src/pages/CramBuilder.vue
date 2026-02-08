@@ -20,11 +20,13 @@
                             <el-table-column type='selection'></el-table-column>
                             <el-table-column label='Front Content' style='flex: 1'>
                                 <template v-slot='scope'>
-                                    <p v-html='scope.row.frontContent'></p>
+                                    <card-content-display :controller='scope.row.frontContentController'></card-content-display>
                                 </template>
                             </el-table-column>
-                            <el-table-column label='Back Content' style='flex: 1' prop='backContent'>
-                                
+                            <el-table-column label='Back Content' style='flex: 1'>
+                                <template v-slot='scope'>
+                                    <card-content-display :controller='scope.row.backContentController'></card-content-display>
+                                </template>
                             </el-table-column>
                         </el-table>
                         <div class='timeline-graphic'>
@@ -39,13 +41,15 @@
         </div>
         <div class='bottom-bar'>
             <div class='flex-spacer'></div>
-            <el-button type='primary' size='large' @click='startStudy'>Let's Study!<el-icon class="el-icon--right"><b><Right /></b></el-icon></el-button>
+            <brand-button icon-position='right' size='large' icon='fa-arrow-right' type='primary' @click='startStudy'>Let's Study!</brand-button>
         </div>
     </div>
     </template>
     
 <script setup>
-import useFlashcards from '../composables/UseFlashcards'
+import useDecks from '../composables/api/useDecks'
+import useDeck from '../composables/api/useDeck'
+import useNotes from '../composables/api/useNotes'
 import { Right } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { setThemeColor } from '../utils'
@@ -53,11 +57,17 @@ import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router' 
 import { generate } from '@vue/compiler-core'
 import Note from '../model/objects/Note'
+import CardContentDisplay from '../components/basic/cards/CardContentDisplay.vue'
+import BrandButton from '../components/basic/BrandButton.vue'
+import useCardEditor from '../composables/ui/useCardEditor'
 
-const { getNoteGroups, getDeck, createCramSession } = useFlashcards()
+const { fetchDeck } = useDecks()
 
 const router = useRouter()
 const route = useRoute()
+
+const deckOperations = useDeck(route.params.deckId)
+const notesOperations = useNotes(route.params.deckId)
 
 const noteGroups = ref([])
 
@@ -75,7 +85,7 @@ const deck = ref(null)
 const loading = ref(true)
 
 const loadDeck = () => {
-    getDeck(route.params.deckId).then(_deck => {
+    fetchDeck(route.params.deckId).then(_deck => {
         deck.value = _deck
         setThemeColor(deck.value.primaryColor, document.documentElement)
 
@@ -86,15 +96,26 @@ const loadDeck = () => {
 }
 
 const loadNotes = async () => {
-    await getNoteGroups(deck.value.id).then(result => {
+    function createNoteObject(note_json) {
+        const obj = new Note(note_json).export()
+        const frontContentController = useCardEditor(obj.frontContent, true)
+        const backContentController = useCardEditor(obj.backContent, true)
+        return {
+            ...obj,
+            frontContentController,
+            backContentController
+        }
+    }
+
+    await deckOperations.getNoteGroups().then(result => {
         noteGroups.value = []
 
         let temp = []
         for (let i = 0; i < result.length; i++) {
-            if (result[i].group_label == null) temp.push(new Note(result[i]))
+            if (result[i].group_label == null) temp.push(createNoteObject(result[i]))
             else {
                 noteGroups.value.push(temp)
-                temp = [ new Note(result[i])  ]
+                temp = [ createNoteObject(result[i])  ]
             }
         }
 
@@ -109,8 +130,7 @@ const startStudy = () => {
     }
 
     loading.value = true
-    
-    createCramSession(deck.value.id, consolidatedArray.map(item => item.id)).then(result => {
+    deckOperations.createCramSession(consolidatedArray.map(item => item.id)).then(result => {
         router.push({
             name: 'Cram',
             params: {

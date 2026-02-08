@@ -39,13 +39,6 @@ function canvasFromCropRect(cropRect) {
         const cropTop = cropRect.top
         const cropBottom = cropRect.bottom
 
-        console.log(
-            'Canvas top:', canvasTop,
-            'Canvas bottom:', canvasBottom,
-            'Crop top:', cropTop,
-            'Crop bottom:', cropBottom
-        )
-
         if (cropTop >= canvasTop && cropBottom <= canvasBottom) {
             return canvas
         }
@@ -56,7 +49,6 @@ function canvasFromCropRect(cropRect) {
 
 function screenshotFromCropRect(cropRect) {
     const canvas = canvasFromCropRect(cropRect)
-    console.log('Canvas', canvas)
     if (canvas) {
         const canvasRect = canvas.canvas.getBoundingClientRect()
         const topOffset = cropRect.top - canvasRect.top
@@ -122,8 +114,6 @@ const renderPdf = async () => {
 }
 
 onMounted(() => {
-    console.log('Setting up PDF viewer')
-    console.log(props.controller)
     loadingContainer.value.style.height = props.controller.height + 'px'
     container.value.style.height = props.controller.height + 'px'
 

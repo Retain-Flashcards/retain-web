@@ -1,73 +1,70 @@
 <template>
     <div style='height: 100%;'>
-        <div v-if='isAuthenticated' style='height: 100%;display: flex;flex-direction: column;'>
-            <Navbar id='navbar' :authenticated='true'/>
-            <div id='theloader' style='display: flex; flex: 1; max-width: 100%; padding: 0px;' v-loading='globalLoader'>
-                <div id='page-content'>
-                    <router-view />
+        <notification-provider>
+            <div v-if='isAuthenticated' style='height: 100%;display: flex;flex-direction: column;'>
+                <Navbar id='navbar' :authenticated='true'/>
+                <div id='theloader' style='display: flex; flex: 1; max-width: 100%; padding: 0px; overflow-y: auto; overflow-x: hidden; position: relative;' v-loading='globalLoader'>
+                    <div id='page-content'>
+                        <error-boundary @error-received='errorPage = true'>
+                            <error-page v-if='errorPage' message='Something went wrong.'></error-page>
+                            <router-view v-else />
+                        </error-boundary>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div v-else style='height: 100%; flex: 1;'>
-            <Navbar id='navbar'/>
-            <KeyBindingProvider>
-            <el-row align='middle' justify='center' style='flex: 1; height: 100%;'>
-                <el-col :span='8'></el-col>
-                <el-col :span='8'>
-                    
-                        <router-view />
-                </el-col>
-                <el-col :span='8'></el-col>
-            </el-row>
-            </KeyBindingProvider>
-        </div>
+            <div v-else style='height: 100%; flex: 1;'>
+                <Navbar id='navbar'/>
+                <KeyBindingProvider>
+                <el-row align='middle' justify='center' style='flex: 1; height: 100%;'>
+                    <el-col :span='8'></el-col>
+                    <el-col :span='8'>                        
+                            <router-view/>
+                    </el-col>
+                    <el-col :span='8'></el-col>
+                </el-row>
+                </KeyBindingProvider>
+            </div>
+        </notification-provider>
     </div>
 </template>
 
-<script>
-import useAuthUser from './composables/UseAuthUser'
-import useGlobalLoader from './composables/UseGlobalLoader'
+<script setup>
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import useAuthUser from './composables/api/UseAuthUser'
+import useGlobalLoader from './composables/ui/UseGlobalLoader'
 import Navbar from './components/Navbar.vue'
-import Sidebar from './components/Sidebar.vue'
-import KeyBindingProvider from './components/basic/KeyBindingProvider.vue'
-const { userIsLoggedIn, getUser } = useAuthUser()
+import KeyBindingProvider from './components/basic/providers/KeyBindingProvider.vue'
+import NotificationProvider from './components/NotificationProvider.vue'
+import ErrorBoundary from './components/basic/errorHandling/ErrorBoundary.vue'
+import ErrorPage from './components/basic/errorHandling/ErrorPage.vue'
+
+import useNotificationService from './composables/ui/useNotificationService'
+
+const notificationService = useNotificationService()
+
+const { userIsLoggedIn } = useAuthUser()
 
 const { globalLoader } = useGlobalLoader()
 
-export default {
-    setup() {
-        return {
-            globalLoader
-        }
-    }, 
-    data() {
-        return {
-            reloading: false
-        }
-    },
-    mounted() {
-        this.reloading = true
-    },
-    methods: {
-        handleGoogleCredentials(response) {
-            console.log(response)
-        }
-    },      
-    computed: {
-        isAuthenticated() {
-            this.reloading = false
+const reloading = ref(false)
 
-            const loggedIn = userIsLoggedIn()
+const errorPage = ref(false)
 
-            return userIsLoggedIn()
-        }
-    },
-    components: {
-        Navbar,
-        Sidebar,
-        KeyBindingProvider
-    }
+const handleGoogleCredentials = (response) => {
+    console.log(response)
 }
+
+const isAuthenticated = computed(() => {
+    reloading.value = false
+    return userIsLoggedIn()
+})
+
+const handleMounted = () => {
+    reloading.value = true
+}
+
+onMounted(handleMounted)
+
 </script>
 
 <style>

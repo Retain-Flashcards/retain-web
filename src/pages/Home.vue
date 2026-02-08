@@ -1,60 +1,108 @@
 <template>
     <div style='margin: 30px;'>
+
+        <!--Header-->
         <div id='homepage-header'>
             <h1>Your Decks</h1>
             <div class='flex-spacer'/>
-            <el-button :icon='Plus' type='primary' style='margin-right: 20px;' @click='() => editDeckModal.openWithState(undefined)'>Create New Deck</el-button>
+            <brand-button icon='fa-add' type='primary' style='margin-right: 20px;' @click='() => editDeckModal.openWithState(undefined)'>Create New Deck</brand-button>
         </div>
 
+
+        <!--Decks-->
         <LoadableProvider :loadable='homeScreenDecksLoadable'>
+
             <template #default='{ data, loading }'>
-                <el-main v-loading='loading'>
+                <el-main>
+                    <loading-overlay v-if='loading'/>
                     <div style='display: flex; flex-direction: row; flex-wrap: wrap;'>
-                        <DeckCard :shared='deck.shared' :primaryColor='deck.primaryColor' :setPinned='(pinned) => setDeckPinned(deck.id, pinned)' :pinned='deck.pinned' @click='() => onDeckSelected(deck)' :on-edit='() => editDeck(deck)' :on-share='() => shareDeckClicked(deck)' :title='deck.title' v-for='deck in data.pinnedDecks' :img-url='deck.coverImage' :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' :review-count='deck.reviewCount' :new-count='deck.newCount'/>
+                        <!--Pinned Decks-->
+                        <DeckCard 
+                            :shared='deck.shared' 
+                            :primaryColor='deck.primaryColor' 
+                            :setPinned='(pinned) => setDeckPinned(deck.id, pinned)' 
+                            :pinned='deck.pinned' 
+                            @click='() => onDeckSelected(deck)' 
+                            :on-edit='() => editDeck(deck)' 
+                            :on-share='() => shareDeckClicked(deck)' 
+                            :title='deck.title' 
+                            v-for='deck in data.pinnedDecks' 
+                            :img-url='deck.coverImage' 
+                            :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' 
+                            :review-count='deck.reviewCount' 
+                            :new-count='deck.newCount'/>
+                        
+                        <!--Divider, if there are pinned decks-->
                         <el-divider v-if='data.pinnedDecks.length > 0'></el-divider>
-                        <DeckCard :shared='deck.shared' :primaryColor='deck.primaryColor' :setPinned='(pinned) => setDeckPinned(deck.id, pinned)' :pinned='deck.pinned' @click='() => onDeckSelected(deck)' :on-edit='() => editDeck(deck)' :on-share='() => shareDeckClicked(deck)' :title='deck.title' v-for='deck in data.otherDecks' :img-url='deck.coverImage' :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' :review-count='deck.reviewCount' :new-count='deck.newCount'/>
+                        
+                        <!--Other Decks-->
+                        <DeckCard 
+                            :shared='deck.shared' 
+                            :primaryColor='deck.primaryColor' 
+                            :setPinned='(pinned) => setDeckPinned(deck.id, pinned)' 
+                            :pinned='deck.pinned' 
+                            @click='() => onDeckSelected(deck)' 
+                            :on-edit='() => editDeck(deck)' 
+                            :on-share='() => shareDeckClicked(deck)' 
+                            :title='deck.title' 
+                            v-for='deck in data.otherDecks' 
+                            :img-url='deck.coverImage' 
+                            :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' 
+                            :review-count='deck.reviewCount' 
+                            :new-count='deck.newCount'/>
                     </div>
+
+                    <!--No Decks Placeholder-->
                     <div v-if='data.allDecks.length == 0' style='width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;'>
                         <el-result icon="info" title="No Decks" subTitle="Create your first one now!">
                         </el-result>
-                        <el-button :icon='Plus' type='primary' @click='() => editDeckModal.open()' round>Create New Deck</el-button>
+                        <brand-button icon='fa-add' type='primary' @click='() => editDeckModal.open()'>Create New Deck</brand-button>
                     </div>
                 </el-main>  
             </template>
 
+            <!--Error-->
             <template #error>
-                ERROR
+                <error-page message='A problem occurred while loading your decks.'></error-page>
             </template>
         </LoadableProvider>
 
+        <!--Edit Deck Modal-->
         <el-dialog
-            :title="editDeckModal.state() ? 'Edit Deck': 'Create New Deck'"
-            v-model="editDeckModal.isOpen.value"
+            :title="editDeckModal.state ? 'Edit Deck': 'Create New Deck'"
+            v-model="editDeckModal.isOpen"
             class='dialog'
             @close='() => editDeckModal.close()'>
             
-            <EditDeckForm :on-complete='onNewDeckFormCompletion' :editing-deck='editDeckModal.state()'/>
+            <!--Form-->
+            <EditDeckForm :on-complete='onNewDeckFormCompletion' :editing-deck='editDeckModal.state'/>
 
         </el-dialog>
 
+        <!--Share Deck Modal-->
         <el-dialog
-            :title="shareDeckModal.state().deck && `Sharing ${shareDeckModal.state().deck.title}`"
-            v-model="shareDeckModal.isOpen.value"
+            :title="shareDeckModal.state.deck && `Sharing ${shareDeckModal.state.deck.title}`"
+            v-model="shareDeckModal.isOpen"
             class='dialog'
             @close='() => shareDeckModal.close()'>
+
+            <!--Loadable to handle sharing state-->
             <LoadableStateProvider :loadable='shareDeckLoadable' v-slot='{ loading, data, error }'>
                 <el-form v-loading='loading'>
+                    <!--Email-->
                     <el-form-item label='Email'>
-                        <el-input v-model='shareDeckModal.state().email' placeholder='Enter email to share to...'></el-input>
+                        <el-input v-model='shareDeckModal.state.email' placeholder='Enter email to share to...'></el-input>
                     </el-form-item>
+                    <!--Role-->
                     <el-form-item label='Role'>
-                        <el-radio-group v-model='shareDeckModal.state().role'>
+                        <el-radio-group v-model='shareDeckModal.state.role'>
                             <el-radio-button label='Viewer'/>
                             <el-radio-button label='Editor'/>
                         </el-radio-group>
                     </el-form-item>
+                    <!--Share Button-->
                     <el-form-item>
-                        <el-button type='primary' @click='() => shareDeckLoadable.load()'>Share</el-button>
+                        <brand-button type='primary' @click='() => shareDeckLoadable.load()'>Share</brand-button>
                     </el-form-item>
                 </el-form>
             </LoadableStateProvider>
@@ -65,22 +113,30 @@
 
 <script setup>
 import { onMounted } from 'vue'
-import LoadableProvider from '../components/basic/LoadableProvider.vue'
-import LoadableStateProvider from '../components/basic/LoadableStateProvider.vue'
-import { Plus } from '@element-plus/icons-vue'
+import LoadableProvider from '../components/basic/providers/LoadableProvider.vue'
+import LoadableStateProvider from '../components/basic/providers/LoadableStateProvider.vue'
 import DeckCard from '../components/basic/DeckCard.vue'
+import EditDeckForm from '../components/basic/EditDeckForm.vue'
+import ErrorPage from '../components/basic/errorHandling/ErrorPage.vue'
+import AppSpinner from '../components/basic/AppSpinner.vue'
+import LoadingOverlay from '../components/basic/LoadingOverlay.vue'
+import BrandButton from '../components/basic/BrandButton.vue'
+
 import { setThemeColor } from '../utils'
 import { ElMessage } from 'element-plus'
-import EditDeckForm from '../components/basic/EditDeckForm.vue'
 
-import useDecks from '../composables/useDecks'
-import useLoadable from '../composables/useLoadable'
-import useModal from '../composables/useModal'
+
+import useDecks from '../composables/api/useDecks'
+import useLoadable from '../composables/ui/useLoadable'
+import useModal from '../composables/ui/useModal'
 import { useRouter } from 'vue-router'
+import useNotificationService from '../composables/ui/useNotificationService'
 
 const { fetchAllDecks, setPinned, shareDeck } = useDecks()
 const router = useRouter()
+const notificationService = useNotificationService()
 
+//Loadables
 const homeScreenDecksLoadable = useLoadable(
     async () => {
         const result = await fetchAllDecks()
@@ -97,21 +153,24 @@ const homeScreenDecksLoadable = useLoadable(
         }
         return data
     },
-    { pinnedDecks: [], otherDecks: [], allDecks: [] }
+    { initialValue: { pinnedDecks: [], otherDecks: [], allDecks: [] } }
 )
 
 const shareDeckLoadable = useLoadable(async () => {
     const modalData = shareDeckModal.value()
+
     await shareDeck(modalData.deck.id, modalData.email, modalData.role)
-    ElMessage({
-        message: 'Your deck has been shared!',
-        type: 'success'
-    })
+
+    notificationService.success('Your deck has been shared!')
+}, {
+    onError: (error) => notificationService.error(error)
 })
 
 const pinDeckLoadable = useLoadable(async (prevValue, deckId, pinned) => {
     await setPinned(deckId, pinned)
     homeScreenDecksLoadable.load()
+}, {
+    onError: (error) => notificationService.error(error)
 })
 
 const editDeckModal = useModal(undefined)

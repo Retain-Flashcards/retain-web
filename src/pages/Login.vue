@@ -8,6 +8,11 @@
         <el-form-item label='Password'>
             <el-input @keyup.enter.native='onFormSubmit' placeholder='Password' v-model='formData.password' type='password' :disabled='formLoading'/>
         </el-form-item>
+        
+        <el-form-item prop='captcha'>
+            <captcha v-model='formData.captcha' />
+        </el-form-item>
+
         <el-form-item>
             <el-button type='primary' @click.prevent='onFormSubmit' :loading='formLoading'>Log In</el-button>
         </el-form-item>
@@ -28,7 +33,9 @@ el-input {
 </style>
 
 <script>
-import useAuthUser from '../composables/UseAuthUser'
+import Captcha from '../components/Captcha.vue'
+
+import useAuthUser from '../composables/api/UseAuthUser'
 const { loginEmailPassword, userIsLoggedIn, reloadAuth } = useAuthUser()
 
 export default {
@@ -42,7 +49,8 @@ export default {
         return {
             formData: {
                 email: '',
-                password: ''
+                password: '',
+                captcha: ''
             },
             formLoading: false
         }
@@ -53,7 +61,7 @@ export default {
 
             this.formLoading = true
 
-            loginEmailPassword(this.formData.email, this.formData.password).then((res) => {
+            loginEmailPassword(this.formData.email, this.formData.password, this.formData.captcha).then((res) => {
                 this.$router.push({ name: 'Home' })
 
             }).catch(console.error).finally(() => this.formLoading = false)
@@ -64,6 +72,9 @@ export default {
                 name: 'Register'
             })
         }
+    },
+    components: {
+        Captcha
     }
 }
 
