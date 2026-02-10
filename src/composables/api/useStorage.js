@@ -7,7 +7,7 @@ export default function useStorage() {
 
     const uploadPNGFromDataURL = async (dataUrl) => {
         const base64 = dataUrl.replace(/^data:image\/?[A-z]*;base64,/,'')
-        const buffer = decode(base64)
+        const buffer = atob(base64)
         const fileName = generate_uuid() + '.png'
         const filePath = `${getCurrentUserId()}/card_images/${fileName}`
 
@@ -16,13 +16,21 @@ export default function useStorage() {
         })
     }
 
+    const convertImageToBlob = async (dataUrl) => {
+        console.log(dataUrl)
+        const response = await fetch(dataUrl)
+        const blob = await response.blob()
+        return blob
+    }
+
     const uploadAndGetPublicUrl = async (bucket, path, toUpload, options) => {
         let publicUrl = undefined
         const uploadInitial = await supabase.storage.from(bucket).upload(path, toUpload, options)
         if (uploadInitial.error) throw new Error('Could not upload file')
         const { data, error } = supabase.storage.from(bucket).getPublicUrl(path)
+        console.log(data)
         if (error) throw new Error('Could not get file URL')
-        publicUrl = data.publicURL
+        publicUrl = data.publicUrl
         return publicUrl
     }
 
@@ -46,7 +54,7 @@ export default function useStorage() {
             if (extension != 'pdf') throw new Error('File must be a PDF')
             const fileName = generate_uuid() + '.pdf'
             const filePath = `${getCurrentUserId()}/note-pdfs/${fileName}`
-
+            console.log(filePath)
             return await uploadAndGetPublicUrl('note-pdfs', filePath, file)
         }
     }
@@ -55,7 +63,8 @@ export default function useStorage() {
         uploadPNGFromDataURL,
         uploadAndGetPublicUrl,
         uploadImage,
-        uploadPDF
+        uploadPDF,
+        convertImageToBlob
     }
 
 }

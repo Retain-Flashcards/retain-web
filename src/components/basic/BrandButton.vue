@@ -33,7 +33,7 @@ const spinnerStyles = {
 .brand-button {
     border: none;
     padding: 7px 15px;
-    border-radius: 5px;
+    border-radius: 7px;
     cursor: pointer;
     font-size: 16px;
     gap: 5px;
@@ -49,6 +49,11 @@ const spinnerStyles = {
     font-size: 18px;
 }
 
+.brand-button.small {
+    padding: 0px 10px;
+    font-size: 14px;
+}
+
 .brand-button.disabled {
     cursor: not-allowed;
 }
@@ -60,7 +65,7 @@ const spinnerStyles = {
 }
 
 .brand-button.primary.disabled { background-color: var(--el-color-primary-light-3); }
-.brand-button.primary:hover:not(.disabled) { background-color: var(--el-color-primary-shade-1); }
+.brand-button.primary:hover:not(.disabled) { background-color: var(--el-color-primary-light-3); }
 .brand-button.primary:active:not(.disabled) { background-color: var(--el-color-primary-dark-2); }
 
 
@@ -125,7 +130,7 @@ const spinnerStyles = {
 .brand-button.info:active:not(.disabled) { background-color: var(--el-color-info-light-3); }
  
 .brand-button.info.plain {
-    background-color: var(--el-color-info-light-9);
+    background-color: white;
     border: 1px solid var(--el-color-info);
     color: var(--el-color-info);
 }

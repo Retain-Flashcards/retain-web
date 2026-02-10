@@ -1,14 +1,13 @@
 <template>
 <el-main v-loading='props.loading'>
-    <EditorCanvas :content='contentTree'></EditorCanvas>
+    <div v-html='html'></div>
 </el-main>
 </template>
 
 <script setup>
-import EditorCanvas from './EditorCanvas'
+import { computed, unref } from 'vue'
 
 const props = defineProps(['loading', 'controller'])
 
-const { contentTree } = props.controller
-
+const html = computed(() => unref(props.controller.htmlContent))
 </script>

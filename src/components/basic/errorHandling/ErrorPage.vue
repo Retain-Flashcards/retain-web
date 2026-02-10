@@ -14,7 +14,7 @@ import { inject } from 'vue'
 import { WarnTriangleFilled } from '@element-plus/icons-vue'
 import BrandButton from '../BrandButton.vue';
 const props = defineProps(['message', 'disableRetry'])
-const loadable = inject('loadable')
+const loadable = inject('loadable', null)
 </script>
 
 <style scoped></style>

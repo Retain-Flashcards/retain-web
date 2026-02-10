@@ -1,7 +1,7 @@
 <template>
 <div class='content'>
 
-    <div class='breadcrumb' style='margin-left: 20px;margin-bottom: 30px;'>
+    <div class='breadcrumb' style='margin-left: 20px;'>
         <return-link @click='() => { router.push({ name: "View Deck", params: { deckId: deckId } }) }'>
             Return to deck
         </return-link>
@@ -9,7 +9,7 @@
 
     <!--Edit/Add Card Header-->
     <div class='header'>
-        <h1>{{ noteId ? 'Edit':'Add'}} Card</h1>
+        <h2>{{ noteId ? 'Edit':'Add'}} Card</h2>
         <div class='flex-spacer'></div>
 
         <!--Deck selector if you're adding cards (easy switching)-->
@@ -21,15 +21,12 @@
                 </el-select>
             </loadable-state-provider>
         </template>
-
-        <!--Save/Add Button-->
-        <brand-button style='margin-left: 10px;' type='primary' @click='saveNote' :disabled='editorLoading'>{{ noteId ? 'Save':'Add' }}</brand-button>
     </div>
 
     <el-main class='main-content'>
         <div id='tags'>
-            <el-main>
-                <h2>Tags</h2>
+            <el-main class='tags-container'>
+                <h3>Tags</h3>
                 <loadable-state-provider :loadable='tagsLoadable' v-slot='{ loading, data: tagOptions }'>
                     <el-select-v2 
                         v-model='tags' 
@@ -55,48 +52,77 @@
         <!--Main Content Editor-->
         <loadable-provider :loadable='noteLoadable'>
             <template #default='{ loading, data: note }'>
-                <KeyBindingProvider>
-                    <div class='double-editor' v-loading='loading || editorLoading'>
-
-                        <!--Formatting Toolbar-->
-                        <div class='toolbar-container'>
-                            <h3 style='justify-self: flex-start;'>Front Side</h3>
-                            <formatting-toolbar :link-handler='linkHandler' :image-handler='imageHandler'></formatting-toolbar>
-                            <h3 style='justify-self: flex-end; text-align: right;'>Back Side</h3>
+                <div class='layout-container'>
+                    <div class='pdf-panel' :class='{ collapsed: !isPdfPanelOpen }'>
+                        <div class='pdf-panel-inner'>
+                            <pdf-box @screenshot='copyImageFromDataUrl'></pdf-box>
+                            <div class='suggested-cards-container' v-if='displayingSuggestedCards'>
+                                <div class='suggested-cards-header'>
+                                    <span class='suggested-cards-title'><font-awesome-icon icon="fa-wand-magic-sparkles"/> AI Card Suggestions</span>
+                                    <span class='suggested-cards-hint'>(hover to preview)</span>
+                                    <span style='flex: 1;'></span>
+                                    <span class='suggested-cards-close' @click='closeSuggestedCards'><font-awesome-icon icon='fa-close'></font-awesome-icon></span>
+                                </div>
+                                <div class='suggested-cards-list'>
+                                    <loadable-provider :loadable='suggestedCardLoadable'>
+                                        <template #default='{ loading, data: cards }'>
+                                            <card-message v-for='(card, index) in cards' :key='index' :content='card' @click='useSuggestedCard' @startPreview='startPreview' @endPreview='endPreview'></card-message>
+                                        </template>
+                                        <template #loading>
+                                            <app-spinner />
+                                        </template>
+                                    </loadable-provider>
+                                </div>
+                            </div>
                         </div>
-                        
-
+                    </div>
+                    <KeyBindingProvider>
                         <div class='editor-container'>
-                            <div id='frontEditor'>   
-                                <el-container>
+                            <!--Formatting Toolbar-->
+                            <div class='toolbar-container'>
+                                <div style='flex: 1; display: flex;'>
+                                    <brand-button :icon='isPdfPanelOpen ? "fa-regular fa-square-caret-left" : "fa-regular fa-square-caret-right"' :type='isPdfPanelOpen ? "primary" : "info"' :plain='true' size='small' @click='isPdfPanelOpen = !isPdfPanelOpen'>{{ isPdfPanelOpen ? '': 'Reference Notes' }}</brand-button>
+                                    <div style='flex: 1;'></div>
+                                </div>
+                                <formatting-toolbar :link-handler='linkHandler' :image-handler='imageHandler'></formatting-toolbar>
+                                
+                                <div style='flex: 1; display: flex;'>
+                                    <div style='flex: 1;'></div>
+                                    <!--Save/Add Button-->
+                                    <brand-button style='margin-left: 10px;' type='primary' @click='saveNote' :disabled='editorLoading'>{{ noteId ? 'Save':'Add' }} Card</brand-button>
+                                </div>
+                            </div>
+                            <div class='editor'>
+                            <h3>Front Side</h3>
+                                <div id='frontEditor'>   
                                     <!--KeyBindingProvider allows for keyboard shortcuts-->
-                                    <KeyBindingProvider>
+                                    <KeyBindingProvider>                                        
                                         <card-editor :cloze-enabled='true' :controller='frontEditorController'></card-editor>
                                     </KeyBindingProvider>
-                                </el-container>
+                                </div>
                             </div>
-                            <div id='backEditor'> 
-                                <el-container>
+                            <div class='editor'>
+                                <h3>Back Side</h3>
+                                <div id='backEditor'> 
                                     <!--KeyBindingProvider allows for keyboard shortcuts-->
                                     <KeyBindingProvider>
                                         <card-editor :controller='backEditorController'></card-editor>
                                     </KeyBindingProvider>
-                                </el-container>
+                                </div>
                             </div>
-                            
-                        </div>
 
-                        <!--Link Modal-->
-                        <el-dialog v-model='linkModal.isOpen' title='Insert Link' @close='linkModal.state.cancel()'>
-                            <el-form-item label='Link URL'>
-                                <el-input v-model='linkModal.state.url'></el-input>
-                            </el-form-item>
-                            <el-form-item>
-                                <brand-button type='primary' @click='() => linkModal.state.callback()'>Save</brand-button>
-                            </el-form-item>
-                        </el-dialog>
-                    </div>
-                </KeyBindingProvider>
+                            <!--Link Modal-->
+                            <el-dialog v-model='linkModal.isOpen' title='Insert Link' @close='linkModal.state.cancel()'>
+                                <el-form-item label='Link URL'>
+                                    <el-input v-model='linkModal.state.url'></el-input>
+                                </el-form-item>
+                                <el-form-item>
+                                    <brand-button type='primary' @click='() => linkModal.state.callback()'>Save</brand-button>
+                                </el-form-item>
+                            </el-dialog>
+                        </div>
+                    </KeyBindingProvider>
+                </div>
             </template>
             <template #loading>
                 <el-skeleton :rows='5'></el-skeleton>
@@ -123,6 +149,9 @@ import KeyBindingProvider from '../components/basic/providers/KeyBindingProvider
 import ReturnLink from '../components/basic/ReturnLink.vue'
 import ErrorPage from '../components/basic/errorHandling/ErrorPage.vue'
 import BrandButton from '../components/basic/BrandButton.vue'
+import PdfBox from '../components/PdfBox.vue'
+import CardMessage from '../components/CardMessage.vue'
+import AppSpinner from '../components/basic/AppSpinner.vue'
 
 //Composables
 import { useRouter, useRoute} from 'vue-router'
@@ -132,13 +161,14 @@ import useDeck from '../composables/api/useDeck'
 import useModal from '../composables/ui/useModal'
 import useStorage from '../composables/api/useStorage'
 import useNotes from '../composables/api/useNotes'
+import useCards from '../composables/api/useCards'
 import useCardEditor from '../composables/ui/useCardEditor'
 import useNotificationService from '../composables/ui/useNotificationService'
 
 //Utils
 import { setThemeColor } from '../utils'
 
-const { uploadImage } = useStorage()
+const { uploadImage, convertImageToBlob } = useStorage()
 
 const router = useRouter()
 const route = useRoute()
@@ -153,11 +183,21 @@ const { fetchAllDecks } = useDecks()
 
 const deck = computed(() => useDeck(deckId.value))
 const notes = computed(() => useNotes(deckId.value))
+const cardsOperations = computed(() => useCards(deckId.value))
 
 const tags = ref([])
+const isPdfPanelOpen = ref(true)
+const displayingSuggestedCards = ref(false)
 
 const frontEditorController = useCardEditor('')
 const backEditorController = useCardEditor('')
+
+const preview = ref({
+    active: false,
+    lastScreenshot: null,
+    cachedFrontContent: null,
+    cachedBackContent: null
+})
 
 //Loadables
 const deckSelectLoadable = useLoadable(async () => {
@@ -188,6 +228,15 @@ const noteLoadable = useLoadable(async () => {
 }, {
     initialValue: null, 
     autoload: true
+})
+
+const suggestedCardLoadable = useLoadable(async (_, url) => {
+    const cards = await cardsOperations.value.generateCards(url)
+    displayingSuggestedCards.value = true
+    return cards
+}, {
+    initialValue: [], 
+    autoload: false
 })
 
 const saveNote = async () => {
@@ -313,12 +362,61 @@ async function imageHandler() {
         },*/
 }
 
+async function copyImageFromDataUrl(url) {
+    const blob = await convertImageToBlob(url)
+    const clipboardItem = new ClipboardItem({ [blob.type]: blob })
+    navigator.clipboard.write([clipboardItem])
+
+    preview.value.lastScreenshot = url
+
+    //Load the cards
+    suggestedCardLoadable.load(url)
+}
+
+function closeSuggestedCards() { displayingSuggestedCards.value = false }
+
+function startPreview(cardContent) {
+    preview.value.active = true
+    preview.value.cachedFrontContent = frontEditorController.getClozeContent()
+    preview.value.cachedBackContent = backEditorController.getClozeContent()
+
+    const backContent = preview.value.lastScreenshot ? `![Image](${preview.value.lastScreenshot})` : ''
+    frontEditorController.setContent(cardContent)
+    backEditorController.setContent(backContent)
+}
+
+function endPreview() { 
+    preview.value.active = false
+
+    if (preview.value.cachedFrontContent != null) frontEditorController.setContent(preview.value.cachedFrontContent)
+    if (preview.value.cachedBackContent != null) backEditorController.setContent(preview.value.cachedBackContent)
+    preview.value.cachedFrontContent = null
+    preview.value.cachedBackContent = null
+}
+
+function useSuggestedCard(cardContent) {
+    const backContent = preview.value.lastScreenshot ? `![Image](${preview.value.lastScreenshot})` : ''
+    
+    frontEditorController.setContent(cardContent)
+    backEditorController.setContent(backContent)
+
+    preview.value.active = false
+    preview.value.cachedFrontContent = null
+    preview.value.cachedBackContent = null
+}
+
 </script>
 
 <style scoped>
 
 .content {
-    margin: 40px;
+    margin: 10px;
+}
+
+.tags-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
 .header h1 {
@@ -333,18 +431,113 @@ async function imageHandler() {
     margin-right: 20px;
 }
 
-.editor-container {
+.layout-container {
     display: flex;
-    box-sizing: border-box;
-    width: 100%;
+    flex-direction: row;
+    height: calc(100vh - 250px);
+    margin-bottom: 60px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.pdf-panel {
+    width: 50%;
+    min-width: 0;
+    align-self: stretch;
+    overflow: hidden;
+    transition: width 0.3s ease, margin 0.3s ease, opacity 0.3s ease;
+    margin-right: 20px;
+}
+
+.pdf-panel-inner {
+    width: calc(50vw - 60px);
+    height: 100%;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.suggested-cards-container {
+    position: absolute;
+    bottom: 10px;
+    left: 25%;
+    right: 25%;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    border: solid 1px var(--el-color-primary);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
-.double-editor {
-    border: solid 2px #EEE;
-    border-radius: 20px;
+.suggested-cards-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    color: var(--el-color-primary);
+}
+
+.suggested-cards-title {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.suggested-cards-title i {
+    margin-right: 4px;
+    color: var(--el-color-primary);
+}
+
+.suggested-cards-hint {
+    font-size: 10px;
+    color: #929292;
+    font-style: italic;
+}
+
+.suggested-cards-close {
+    cursor: pointer;
+    font-size: 10px;
+    color: #929292;
+    border-radius: 10px;
+    padding: 4px;
+}
+
+.suggested-cards-close:hover {
+    background-color: rgba(158, 158, 158, 0.1);
+}
+
+.suggested-cards-list {
+    max-height: 100px;
+    overflow-y: auto;
+    padding: 0 4px 4px;
+}
+
+.pdf-panel.collapsed {
+    width: 0;
+    margin-right: 0;
+    opacity: 0;
+}
+
+.editor-container {
+    display: flex;
+    flex-direction: column;
     box-sizing: border-box;
+    flex: 1;
+    max-width: 800px;
+    margin: 0 auto;
     overflow: hidden;
+    height: 100%;
+}
+
+.editor {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.double-editor {
+    
+    
+    
     margin-left: 20px;
     margin-right: 20px;
     margin-top: 20px;
@@ -364,11 +557,18 @@ async function imageHandler() {
 #frontEditor {
     flex: 1;
     border-right: solid 1px #EEE;
+    border: solid 2px #EEE;
+    border-radius: 20px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
 }
 
 #backEditor {
     flex: 1;
-    border-left: solid 1px #EEE;
+    border-right: solid 1px #EEE;
+    border: solid 2px #EEE;
+    border-radius: 20px;
+    box-sizing: border-box;
 }
 
 .main-content {
@@ -397,15 +597,16 @@ h2 {
 }
 
 .toolbar-container {
+    width: 100%;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    border-bottom: solid 2px #EEE;
+    box-sizing: border-box;
+    overflow: hidden;
+    margin-bottom: 20px;
 }
 
-.toolbar-container h3 {
-    flex: 1;
-    margin: 15px 25px;
+.editor-container h3 {
+    margin-top: 10px;
+    margin-bottom: 7px;
     color: rgb(85, 85, 85)/*var(--el-color-primary-light-4)*/;
 }
 </style>

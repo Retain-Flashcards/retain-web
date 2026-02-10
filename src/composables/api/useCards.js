@@ -217,9 +217,39 @@ export default function useCards(deckId) {
         return data
     }
 
+    const generateCards = async (imageDataUrl) => {
+        const messages = [{
+            role: "user",
+            content: [
+            {
+                type: "image_url",
+                image_url: {
+                url: imageDataUrl
+                }
+            },
+            {
+                type: "text",
+                text: "This is the image"
+            }
+            ]
+        }]
+
+        const result = await makeSupabaseFetch('generate-cards', {
+            imageUrl: imageDataUrl,
+            messages: messages,
+            localTimestamp: new Date().toLocaleDateString('en-US')
+        })
+
+        if (result.cards && result.cards.length > 0) return result.cards
+
+
+        return []
+    }
+
     return {
         fetchNextCard,
         studyCard,
-        createCards
+        createCards,
+        generateCards
     }
 }

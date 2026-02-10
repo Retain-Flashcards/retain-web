@@ -1,24 +1,24 @@
 <template>
-<el-card id='login-card'>
+<SoftCard id='login-card'>
     <h2>Log In</h2>
-    <el-form :model='formData' label-position='top'>
-        <el-form-item label='Email'>
-            <el-input placeholder='Email' v-model='formData.email' :disabled='formLoading'/>
-        </el-form-item>
-        <el-form-item label='Password'>
-            <el-input @keyup.enter.native='onFormSubmit' placeholder='Password' v-model='formData.password' type='password' :disabled='formLoading'/>
-        </el-form-item>
+    <SoftForm :model='formData' label-position='top'>
+        <SoftFormItem label='Email'>
+            <SoftInput placeholder='Email' v-model='formData.email' :disabled='loginLoadable.isLoading'/>
+        </SoftFormItem>
+        <SoftFormItem label='Password'>
+            <SoftInput @keyup.enter='onFormSubmit' placeholder='Password' v-model='formData.password' type='password' :disabled='loginLoadable.isLoading' show-password/>
+        </SoftFormItem>
         
-        <el-form-item prop='captcha'>
-            <captcha v-model='formData.captcha' />
-        </el-form-item>
+        <SoftFormItem prop='captcha'>
+            <Captcha v-model='formData.captcha' />
+        </SoftFormItem>
 
-        <el-form-item>
-            <el-button type='primary' @click.prevent='onFormSubmit' :loading='formLoading'>Log In</el-button>
-        </el-form-item>
+        <SoftFormItem>
+            <BrandButton type='primary' @click='onFormSubmit' :loading='loginLoadable.isLoading'>Log In</BrandButton>
+        </SoftFormItem>
         <p>Don't have an account? <el-link @click='goToRegister' type='primary'>Sign up</el-link></p>
-    </el-form>
-</el-card>
+    </SoftForm>
+</SoftCard>
 </template>
 
 <style scoped>
@@ -26,56 +26,47 @@
     text-align: center;
     padding: 10px;
 }
-
-el-input {
-    margin-bottom: 10px;
-}
 </style>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import Captcha from '../components/Captcha.vue'
-
+import BrandButton from '../components/basic/BrandButton.vue'
+import { SoftCard, SoftForm, SoftFormItem, SoftInput } from '../components/basic/soft-ui'
 import useAuthUser from '../composables/api/UseAuthUser'
+import useLoadable from '../composables/ui/useLoadable'
+import useNotificationService from '../composables/ui/useNotificationService'
+
+const router = useRouter()
+const notificationService = useNotificationService()
 const { loginEmailPassword, userIsLoggedIn, reloadAuth } = useAuthUser()
 
-export default {
-    mounted() {
-        reloadAuth()
-        if (userIsLoggedIn()) {
-            this.$router.replace({ name: "Home" })
-        }
-    },
-    data() {
-        return {
-            formData: {
-                email: '',
-                password: '',
-                captcha: ''
-            },
-            formLoading: false
-        }
-    },
+const formData = ref({
+    email: '',
+    password: '',
+    captcha: ''
+})
 
-    methods: {
-        onFormSubmit() {
+const loginLoadable = useLoadable(async () => {
+    await loginEmailPassword(formData.value.email, formData.value.password, formData.value.captcha)
+    router.push({ name: 'Home' })
+}, { 
+    onError: (e) => notificationService.error(e.message || 'Login failed. Please check your credentials.')
+})
 
-            this.formLoading = true
-
-            loginEmailPassword(this.formData.email, this.formData.password, this.formData.captcha).then((res) => {
-                this.$router.push({ name: 'Home' })
-
-            }).catch(console.error).finally(() => this.formLoading = false)
-
-        },
-        goToRegister() {
-            this.$router.push({
-                name: 'Register'
-            })
-        }
-    },
-    components: {
-        Captcha
-    }
+function onFormSubmit() {
+    loginLoadable.load()
 }
 
+function goToRegister() {
+    router.push({ name: 'Register' })
+}
+
+onMounted(() => {
+    reloadAuth()
+    if (userIsLoggedIn()) {
+        router.replace({ name: 'Home' })
+    }
+})
 </script>

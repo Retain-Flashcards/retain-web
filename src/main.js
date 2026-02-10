@@ -40,6 +40,9 @@ import 'equal-vue/dist/style.css'
 import './styles/element-plus-theme.scss'
 import './styles/index.css'
 
+//Custom Elements
+import './components/basic/cards/ClozeIndicatorElement.js'
+
 import StudyWrapper from './pages/StudyWrapper.vue'
 
 //Auth functions

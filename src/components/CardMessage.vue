@@ -1,63 +1,59 @@
 <template>
-    <div class='card-container'>
-        <el-checkbox v-model='selected' size='large' class='card-selected' :disabled='props.disabled'></el-checkbox>
-        <div class='card-content' @input="emit('update:modelValue', { ...props.modelValue, frontContent: $event.target.innerText })" contenteditable>
-            {{ props.modelValue.frontContent }}
-        </div>
+    <div class='card-item' @click="emit('click', props.content)" @mouseenter='emit("startPreview", props.content)' @mouseleave='emit("endPreview")'>
+        <span class='quick-add' @click.prevent='emit("addCard")'><font-awesome-icon icon='fa-add'></font-awesome-icon></span>
+        <span class='card-text'>{{ props.content }}</span>
     </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-const props = defineProps(['modelValue', 'disabled'])
-const emit = defineEmits(['update:modelValue'])
 
-const selected = ref(props.modelValue.selected)
-
-watch(() => selected.value, (newVal) => {
-    emit('update:modelValue', { ...props.modelValue, selected: newVal })
-})
-
-
-watch(() => props.modelValue, (newVal) => {
-    //console.log('CardMessage', newVal)
-})
+const props = defineProps(['content', 'disabled'])
+const emit = defineEmits(['click', 'addCard', 'startPreview', 'endPreview'])
 
 </script>
 
 <style scoped>
 
-.card-container {
-    border: 2px solid #f5f5f5;
-    border-radius: 10px;
-    padding: 10px;
-    line-height: 25px;
+.card-item {
     display: flex;
     align-items: center;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    gap: 8px;
 }
 
-.card-container:focus {
-    outline: none;
+.card-item:hover {
+    background-color: rgba(0, 0, 0, 0.04);
 }
 
-.el-checkbox.card-selected {
-    margin-right: 10px;
+.card-checkbox {
+    flex-shrink: 0;
 }
 
-[contenteditable]:focus {
-    outline: 0px solid transparent;
+.card-text {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 13px;
+    color: #333;
+    line-height: 1.4;
 }
 
-textarea {
-    border: none;
-    resize: none;
-    font-size: 16px;
-    padding: 10px;
-    line-height: 25px;
-    field-sizing: content;
+.quick-add {
+    font-size: 10px;
+    background-color: var(--el-color-success-light-8);
+    color: var(--el-color-success);
+    border-radius: 4px;
+    padding: 4px;
 }
 
-textarea:focus {
-    outline: none;
+.quick-add:hover {
+    background-color: var(--el-color-success-light-5);
+    color: var(--el-color-success);
 }
+
 </style>

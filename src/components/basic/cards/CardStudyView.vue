@@ -1,26 +1,24 @@
 <template>
     <div class='preview'>
         <div class='preview-wrapper'>
-            <div class='content-wrapper'>
-                <EditorCanvas :content='displayData.contentTree.value'></EditorCanvas>
-            </div>
+            <div class='content-wrapper' v-html='displayHtml'></div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { watch } from 'vue'
-import EditorCanvas from './EditorCanvas'
+import { ref, watch, unref } from 'vue'
 import useCardEditor from '../../../composables/ui/useCardEditor'
             
 const props = defineProps(['content'])
 
 const displayData = useCardEditor(props.content, true)
+const displayHtml = ref(unref(displayData.htmlContent))
 
 watch(() => props.content, (newContent) => {
     displayData.setContent(newContent)
+    displayHtml.value = unref(displayData.htmlContent)
 })
-
 </script>
 
 <style scoped>

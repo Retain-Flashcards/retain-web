@@ -1,6 +1,6 @@
 <template>
 <div class='viewer-container' ref='loadingContainer' v-loading='isLoading'>
-    <div class='pdf-viewer' @scroll='emit("scroll")' style='width: 100%; overflow-y: scroll;' ref='container'>
+    <div class='pdf-viewer' @scroll='emit("scroll")' style='width: 100%;' ref='container'>
     </div>
 
 </div>
@@ -51,16 +51,17 @@ function screenshotFromCropRect(cropRect) {
     const canvas = canvasFromCropRect(cropRect)
     if (canvas) {
         const canvasRect = canvas.canvas.getBoundingClientRect()
-        const topOffset = cropRect.top - canvasRect.top
-        const leftOffset = cropRect.left - canvasRect.left
+        const scale = (window.devicePixelRatio || 1) * SCREENSHOT_SCALE
+        const topOffset = (cropRect.top - canvasRect.top) * scale
+        const leftOffset = (cropRect.left - canvasRect.left) * scale
         const canvasContext = canvas.canvas.getContext('2d', {
             willReadFrequently: true
         })
-        const imageData = canvasContext.getImageData(leftOffset, topOffset, cropRect.width, cropRect.height)
+        const imageData = canvasContext.getImageData(leftOffset, topOffset, cropRect.width * scale, cropRect.height * scale)
 
         const tempCanvas = document.createElement('canvas')
-        tempCanvas.width = cropRect.width
-        tempCanvas.height = cropRect.height
+        tempCanvas.width = cropRect.width * scale
+        tempCanvas.height = cropRect.height * scale
         const tempContext = tempCanvas.getContext('2d', {
             willReadFrequently: true
         })
@@ -71,10 +72,14 @@ function screenshotFromCropRect(cropRect) {
     return null
 }
 
+// Extra scale multiplier for higher resolution screenshots
+// Increase this value (e.g., 3 or 4) if images still look fuzzy when enlarged
+const SCREENSHOT_SCALE = 2
+
 const renderPdf = async () => {
     const pdf = await loadPdf()
 
-    //const outputScale = window.devicePixelRatio || 1
+    const outputScale = (window.devicePixelRatio || 1) * SCREENSHOT_SCALE
     let promises = []
     canvases = []
 
@@ -82,13 +87,13 @@ const renderPdf = async () => {
         const page = await pdf.getPage(i + 1)
         const pageViewport = page.getViewport({ scale: 1 })
         const scale = container.value.offsetWidth / pageViewport.width
-        const scaledViewport = page.getViewport({ scale })
+        const scaledViewport = page.getViewport({ scale: scale * outputScale })
 
         const canvas = document.createElement('canvas')
         canvas.style.width = '100%'
-        canvas.style.height = 'auto'
+
         canvas.height = scaledViewport.height
-        canvas.width = container.value.offsetWidth
+        canvas.width = scaledViewport.width
         container.value.appendChild(canvas)
 
         canvases.push(
@@ -114,8 +119,8 @@ const renderPdf = async () => {
 }
 
 onMounted(() => {
-    loadingContainer.value.style.height = props.controller.height + 'px'
-    container.value.style.height = props.controller.height + 'px'
+    //loadingContainer.value.style.height = props.controller.height + 'px'
+    //container.value.style.height = props.controller.height + 'px'
 
     props.controller.attach(screenshotFromCropRect)
 
@@ -128,7 +133,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.viewer-container {
+    height: 100%;
+}
+
 .pdf-viewer {
+    max-height: 100%;
     cursor: crosshair;
 }
 </style>

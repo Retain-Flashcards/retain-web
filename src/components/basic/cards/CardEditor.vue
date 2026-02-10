@@ -1,10 +1,8 @@
 <template>
-<el-container v-loading='props.loading'>
+<el-container v-loading='props.loading' class='card-editor-loading-container'>
     <div class='card-editor-container'>
         <div class='card-content-container'>
-            <div ref='divEl' :id='elId' :class='`card-editor ${props.clozeEnabled ? "cloze-enabled" : ""}`' contenteditable :key='renderKey' v-memo='[renderKey, contentTree]'>
-                <EditorCanvas :content='contentTree'></EditorCanvas>
-            </div>
+            <div ref='editorEl' :id='elId' :class='`card-editor ${props.clozeEnabled ? "cloze-enabled" : ""}`' contenteditable></div>
         </div>
         <div class='cloze-toolbar' v-if='props.clozeEnabled'>
             <cloze-button v-for="n in nextClozeN" :n="n" :color-class='clozeColorClass((Math.floor(Number(n))) % CLOZE_COLORS.length)' @add-cloze='(n) => handleAddCloze(n)'></cloze-button>
@@ -15,15 +13,17 @@
 </template>
 
 <script setup>
+import { ref, onMounted, watch } from 'vue'
 import { useKeyDownBinding } from '../../../composables/keybindings'
 import ClozeButton from './ClozeButton.vue'
-import EditorCanvas from './EditorCanvas'
 import { generate_uuid } from '../../../utils'
 
 const props = defineProps(['loading', 'clozeEnabled', 'controller'])
 
 //ID to identify the editor element for the controller
 const elId = generate_uuid()
+
+const editorEl = ref(null)
 
 //Inform the controller of what the element is
 props.controller.setElId(elId)
@@ -32,7 +32,21 @@ const handleAddCloze = (n) => {
     addCloze(n)
 }
 
-const { clozeColorClass, contentTree, addCloze, nextClozeN, renderKey } = props.controller
+const { clozeColorClass, addCloze, nextClozeN, removeCloze } = props.controller
+
+// Set up event delegation for cloze removal
+onMounted(() => {
+    if (editorEl.value) {
+        editorEl.value.addEventListener('remove-cloze', (e) => {
+            removeCloze(e.detail.key)
+        })
+
+        // Set initial content if the composable already has HTML
+        if (props.controller.htmlContent.value) {
+            editorEl.value.innerHTML = props.controller.htmlContent.value
+        }
+    }
+})
 
 //Keybindings for processing cloze
 if (props.clozeEnabled) {
@@ -57,6 +71,11 @@ const CLOZE_COLORS = [
 
 
 <style>
+
+.card-editor-loading-container {
+    height: 100%;
+}
+
 .card-editor {
     line-height: 30px;
     width: 100%;
@@ -76,11 +95,11 @@ const CLOZE_COLORS = [
 
 .card-editor-container {
     background-color: white;
-    /*padding: 20px;*/
-    height: 400px;
+    flex: 1;
     width: 100%;
     overflow: hidden;
     position: relative;
+    border-radius: 18px;
 }
 
 .card-content-container {
@@ -117,7 +136,7 @@ const CLOZE_COLORS = [
 }
 
 .card-editor img {
-    width: 100%;
-    border: solid 1px #eee;
+    max-width: 50%;
+    border: solid 1px #505050;
 }
 </style>

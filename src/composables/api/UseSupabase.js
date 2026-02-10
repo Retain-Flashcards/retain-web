@@ -25,6 +25,7 @@ const getCurrentUserId = () => cachedUser?.id
 
 export default function useSupabase() {
     const makeSupabaseFetch = async (functionName, data) => {
+        console.log('Making fetch for function: ', functionName)
         // v2: session() → use cached session or fetch async
         const token = cachedSession?.access_token
         
@@ -36,7 +37,6 @@ export default function useSupabase() {
             },
             body: JSON.stringify(data)
         })
-
         return await result.json()
     }
 

@@ -66,8 +66,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
   )
 }
 
-//Temporarily Disabled
-//export const config = { path: "/generate-cards" }
+export const config = { path: "/generate-cards" }
 
 // To invoke:
 // curl -i --location --request POST 'http://localhost:54321/functions/v1/' \
