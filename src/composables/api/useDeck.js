@@ -112,22 +112,24 @@ export default function useDeck(deckId) {
     }
 
     const getStudySettings = async (dailyNewLimit, dailyReviewLimit) => {
-        const { data, error } = await supabase.from('daily_review_counters').select('*').eq('deck', deckId).eq('day', new Date().toISOString().split('T')[0])
+        const { data, error } = await supabase.from('daily_review_counters').select('*').eq('deck', deckId).eq('day', standardDateString(new Date())).eq('uid', getCurrentUserId())
         if (error) throw error
 
-        if (data.length == 0 || (data[0].new_limit == null && data[0].review_limit == null)) {
-            return {
-                newLimit: dailyNewLimit,
-                reviewLimit: dailyReviewLimit, 
-                today: false
-            }
+        let settings = {
+            defaultNewLimit: dailyNewLimit,
+            defaultReviewLimit: dailyReviewLimit,
+            todayNewLimit: null,
+            todayReviewLimit: null,
         }
 
-        return {
-            newLimit: data[0].new_limit || dailyNewLimit,
-            reviewLimit: data[0].review_limit || dailyReviewLimit,
-            today: true
+        if (data.length == 0 || (data[0].new_limit == null && data[0].review_limit == null)) {
+            return settings
         }
+
+        settings.todayNewLimit = data[0].new_limit
+        settings.todayReviewLimit = data[0].review_limit
+
+        return settings
     }
 
     const setTodayStudySettings = async (newLimit, reviewLimit) => {
@@ -135,6 +137,7 @@ export default function useDeck(deckId) {
             deck: deckId,
             new_limit: newLimit,
             review_limit: reviewLimit,
+            uid: getCurrentUserId(),
             day: standardDateString(new Date())
         }).select()
 
@@ -148,7 +151,6 @@ export default function useDeck(deckId) {
             daily_new_limit: newLimit,
             daily_review_limit: reviewLimit
         }).eq('deck_id', deckId)
-
         if (error) throw error
 
         return data

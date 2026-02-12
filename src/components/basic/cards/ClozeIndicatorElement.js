@@ -7,6 +7,8 @@ const CLOZE_COLORS = {
     'clz-purple': { bg: '#f0e1ff', fg: '#9123ff' },
 }
 
+import katexCss from 'katex/dist/katex.min.css?inline'
+
 const STYLES = `
 :host {
     display: inline;
@@ -147,23 +149,10 @@ class ClozeIndicatorElement extends HTMLElement {
         const displayOnly = this.hasAttribute('display-only')
         const colors = CLOZE_COLORS[colorClass] || CLOZE_COLORS['clz-red']
 
-        this.shadowRoot.innerHTML = `
-            <style>
-                ${STYLES}
-            </style>
-            <style id="host-style">
-                :host {
-                    background-color: ${colors.bg};
-                    color: ${colors.fg};
-                }
-            </style>
-            <span class="control">
-                <span class="num">${n}</span>
-                ${!displayOnly ? '<span class="close">x</span>' : ''}
-            </span>
-            <span class="text" ${!displayOnly ? 'contenteditable="plaintext-only"' : ''}>${initialText}</span>
-            ${(!displayOnly || hint) ? `<span class="hint-wrapper">[<input type="text" class="hint" placeholder="hint" value="${hint}" ${displayOnly ? 'readonly' : ''}>]</span>` : ''}
-        `
+        const hintHtml = (!displayOnly || hint) ? `<span class="hint-wrapper">[<input type="text" class="hint" placeholder="hint" value="${hint}" ${displayOnly ? 'readonly' : ''}>]</span>` : ''
+        const closeHtml = !displayOnly ? '<span class="close">x</span>' : ''
+
+        this.shadowRoot.innerHTML = `<style>${katexCss}</style><style>${STYLES}</style><style id="host-style">:host{background-color:${colors.bg};color:${colors.fg};}</style><span class="control"><span class="num">${n}</span>${closeHtml}</span><span class="text" ${!displayOnly ? 'contenteditable="plaintext-only"' : ''}>${initialText}</span>${hintHtml}`
 
         // Attach close button handler
         const closeBtn = this.shadowRoot.querySelector('.close')

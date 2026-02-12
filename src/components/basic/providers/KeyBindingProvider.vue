@@ -55,13 +55,13 @@ function keyDownListener(e) {
 
 
 function addKeyUpBinding(key, callback, exclusive) {
-    if (!keyUpBindings[key] || exclusive) keyUpBindings[key] = []
-    keyUpBindings[key].push(callback) 
+    if (!keyUpBindings[key.toLowerCase()] || exclusive) keyUpBindings[key.toLowerCase()] = []
+    keyUpBindings[key.toLowerCase()].push(callback) 
 }
 
 function addKeyDownBinding(key, callback, exclusive) {
-    if (!keyDownBindings[key] || exclusive) keyDownBindings[key] = []
-    keyDownBindings[key].push(callback)
+    if (!keyDownBindings[key.toLowerCase()] || exclusive) keyDownBindings[key.toLowerCase()] = []
+    keyDownBindings[key.toLowerCase()].push(callback)
 }
 
 provide('addKeyUpBinding', addKeyUpBinding)

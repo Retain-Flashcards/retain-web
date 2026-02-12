@@ -158,18 +158,13 @@
                         <!--Table Header-->
                         <section-layout>
                             <template #header>
-                                <h3>All Notes ({{ tableState.noteCount }})</h3>
+                                <h3>All Cards ({{ tableState.noteCount }})</h3>
                             </template>
 
                             <template #actions>
-                                <!--AI Card Builder-->
-                                <brand-button icon='fa-wand-magic-sparkles' type='primary' :plain='true' @click='aiCardBuilder'>
-                                    Try our new AI Card Builder
-                                </brand-button>
-                                
                                 <!--Regular Card Builder-->
                                 <brand-button icon='fa-add' type='primary' @click='createNotes'>
-                                    Add Notes
+                                    Add Cards
                                 </brand-button> 
                             </template>
                         </section-layout>
@@ -226,33 +221,41 @@
 
 
                         <!--Settings Modal-->
-                        <modal :modal='settingsModal' title='Study Settings' v-slot='{ state }'>
-                            <LoadableStateProvider :loadable='studySettingsLoadable' v-slot='{ loading, data: deckSettings}'>
-                                <div style='display: flex; flex-direction: column; align-items: center;'>
-                                    <el-form label-position='top' style='width: 100%;' v-loading='loading'> 
-                                        <el-form-item label='New Limit'>
-                                            <el-input v-model='state.newLimit' type='number'></el-input>
-                                        </el-form-item>
-                                        <el-form-item label='Review Limit'>
-                                            <el-input v-model='state.reviewLimit' type='number'></el-input>
-                                        </el-form-item>
+                        <SoftDialog :modal='settingsModal' title='Study Settings' v-slot='{ state }'>
+                            <loadable-provider :loadable='studySettingsLoadable'>
+                                <template #error>
+                                    <error-page message='Failed to load study settings'></error-page>
+                                </template>
+                                <template #loading>
+                                    <app-spinner></app-spinner>
+                                </template>
+                                <template #default='{ loading, data: deckSettings }'>
+                                    <div style='display: flex; flex-direction: column; align-items: center;'>
+                                        <SoftForm label-position='top' style='width: 100%;'> 
+                                            <SoftFormItem label='New Limit'>
+                                                <SoftInput v-model='state.newLimitContent' type='number'></SoftInput>
+                                            </SoftFormItem>
+                                            <SoftFormItem label='Review Limit'>
+                                                <SoftInput v-model='state.reviewLimitContent' type='number'></SoftInput>
+                                            </SoftFormItem>
 
-                                        <!--Mode-->
-                                        <el-form-item>
-                                            <el-radio-group v-model='state.mode'>
-                                                <el-radio-button label='defaults'>Set as Deck Defaults</el-radio-button>
-                                                <el-radio-button label='today'>Just For Today</el-radio-button>   
-                                            </el-radio-group>
-                                        </el-form-item>
+                                            <!--Mode-->
+                                            <SoftFormItem>
+                                                <el-radio-group v-model='state.currentMode' @change='handleSwitchSettingsMode'>
+                                                    <el-radio-button label='defaults' value='defaults'>Set as Deck Defaults</el-radio-button>
+                                                    <el-radio-button label='today' value='today'>Just For Today</el-radio-button>   
+                                                </el-radio-group>
+                                            </SoftFormItem>
 
-                                        <!--Save Button-->
-                                        <el-form-item>
-                                            <brand-button type='primary' @click='saveSettings'>Save</brand-button>
-                                        </el-form-item>
-                                    </el-form>
-                                </div>
-                            </LoadableStateProvider>
-                        </modal>
+                                            <!--Save Button-->
+                                            <SoftFormItem>
+                                                <brand-button type='primary' @click='saveSettings'>Save</brand-button>
+                                            </SoftFormItem>
+                                        </SoftForm>
+                                    </div>
+                                </template>
+                            </loadable-provider>
+                        </SoftDialog>
                     </LoadableStateProvider>
                 </div>
                 
@@ -271,7 +274,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 
 //UI components
 import LoadableProvider from '../components/basic/providers/LoadableProvider.vue'
@@ -285,6 +288,11 @@ import SectionLayout from '../components/basic/SectionLayout.vue'
 import Modal from '../components/basic/Modal.vue'
 import LoadingOverlay from '../components/basic/LoadingOverlay.vue'
 import BrandButton from '../components/basic/BrandButton.vue'
+import SoftDialog from '../components/basic/soft-ui/SoftDialog.vue'
+import SoftForm from '../components/basic/soft-ui/SoftForm.vue'
+import SoftFormItem from '../components/basic/soft-ui/SoftFormItem.vue'
+import SoftInput from '../components/basic/soft-ui/SoftInput.vue'
+import AppSpinner from '../components/basic/AppSpinner.vue'
 
 //Composables
 import useDeck from '../composables/api/useDeck.js'
@@ -330,10 +338,32 @@ const tableState = ref({
 
 //Modals
 const settingsModal = useModal({
-    newLimit: 20,
-    reviewLimit: 200,
-    mode: 'defaults'
+    newLimitContent: 20,
+    reviewLimitContent: 200,
+    currentMode: 'defaults',
+    previousMode: null
 })
+
+//Switch dynamically based on mode
+function handleSwitchSettingsMode() {
+    const newState = settingsModal.state
+    if (newState.currentMode != newState.previousMode && studySettingsLoadable.value) {
+        newState.previousMode = newState.currentMode
+        if (newState.currentMode == 'defaults') {
+            settingsModal.state = {
+                ...newState,
+                newLimitContent: studySettingsLoadable.value.defaultNewLimit,
+                reviewLimitContent: studySettingsLoadable.value.defaultReviewLimit
+            }
+        } else {
+            settingsModal.state = {
+                ...newState,
+                newLimitContent: studySettingsLoadable.value.todayNewLimit || studySettingsLoadable.value.defaultNewLimit,
+                reviewLimitContent: studySettingsLoadable.value.todayReviewLimit || studySettingsLoadable.value.defaultReviewLimit
+            }
+        }
+    }
+}
 
 //Loadables
 const deckLoadable = useLoadable(async (prevValue, tagFilter = []) => {
@@ -359,7 +389,7 @@ const notesLoadable = useLoadable(async () => {
         return note
     })]
     tableState.value.noteCount = count
-}, { onError: () => notificationService.error('Failed to load notes') })
+}, { onError: () => notificationService.error('Failed to load cards') })
 
 const cramSessionsLoadable = useLoadable(async () => {
     if (!deckLoadable.value) return []
@@ -383,18 +413,27 @@ const quizzesLoadable = useLoadable(async () => {
 
 const studySettingsLoadable = useLoadable(async (prevValue, deck) => {
     const result = await getStudySettings(deck.daily_new_limit, deck.daily_review_limit)
-    return {
-        ...prevValue,
-        newLimit: result.newLimit,
-        reviewLimit: result.reviewLimit,
-        mode: result.today ? 'today' : 'defaults'
+
+    if (result.todayNewLimit != null && result.todayReviewLimit != null) {
+        settingsModal.state.newLimitContent = result.todayNewLimit
+        settingsModal.state.reviewLimitContent = result.todayReviewLimit
+        settingsModal.state.previousMode = null
+        settingsModal.state.currentMode = 'today'
+
     }
+    else {
+        settingsModal.state.newLimitContent = result.defaultNewLimit
+        settingsModal.state.reviewLimitContent = result.defaultReviewLimit
+        settingsModal.state.previousMode = null
+        settingsModal.state.currentMode = 'defaults'
+    }
+    return result
 },{
     initialValue: {
-        editing: false,
-        newLimit: 20,
-        reviewLimit: 200,
-        mode: 'defaults'
+        defaultNewLimit: 20,
+        defaultReviewLimit: 200,
+        todayNewLimit: null,
+        todayReviewLimit: null
     },
     onError: () => notificationService.error('A problem occurred while loading study settings')
 })
@@ -402,20 +441,27 @@ const studySettingsLoadable = useLoadable(async (prevValue, deck) => {
 const saveSettings = async () => {
     const newSettings = settingsModal.state
     studySettingsLoadable.loadWithFunction(async () => {
-        if (newSettings.mode == 'defaults') await setDeckStudySettings(Number(newSettings.newLimit), Number(newSettings.reviewLimit))
-        else if (newSettings.mode == 'today') {
-            await setTodayStudySettings(Number(newSettings.newLimit), Number(newSettings.reviewLimit))
+        let updatedSettings = studySettingsLoadable.value
+        if (newSettings.currentMode == 'defaults') {
+            await setDeckStudySettings(Number(newSettings.newLimitContent), Number(newSettings.reviewLimitContent))
+            updatedSettings.defaultNewLimit = Number(newSettings.newLimitContent)
+            updatedSettings.defaultReviewLimit = Number(newSettings.reviewLimitContent)
+        }
+        else if (newSettings.currentMode == 'today') {
+            await setTodayStudySettings(Number(newSettings.newLimitContent), Number(newSettings.reviewLimitContent))
+            updatedSettings.todayNewLimit = Number(newSettings.newLimitContent)
+            updatedSettings.todayReviewLimit = Number(newSettings.reviewLimitContent)
         }
         reloadDeckCount()
 
         notificationService.success('Study settings saved successfully!')
-        return newSettings
+        return updatedSettings
     })
 }
 
 
 //Methods
-function openSettingsDialog() { settingsModal.openWithState(studySettingsLoadable.value) }
+function openSettingsDialog() { settingsModal.open() }
 function reloadDeckCount() { deckLoadable.loadSilently(tags.value.selected) }
 function notesCount() {
     let count = 0

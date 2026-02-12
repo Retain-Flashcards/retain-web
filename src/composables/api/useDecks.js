@@ -4,13 +4,14 @@ import Deck from '../../model/objects/Deck'
 
 const { supabase, makeSupabaseFetch, getCurrentUserId } = useSupabase()
 const { uploadAndGetPublicUrl } = useStorage()
+import { generate_uuid } from '../../utils'
 
 export default function useDecks() {
 
     const fetchAllDecks = async () => {
-        const { data, error } = await supabase.from('decks_with_new_review_counts').select('*').order('created_at', { ascending: false })
+        const { data, error } = await supabase.from('decks_with_new_review_counts').select('*')
         if (error) throw new Error(error)
-        return data.map(deck => new Deck(deck))
+        return data.map(deck => new Deck(deck)).sort((a, b) => b.createdAt - a.createdAt)
     }
 
     const setDeck = async (title, file, primaryColor, deckId) => {

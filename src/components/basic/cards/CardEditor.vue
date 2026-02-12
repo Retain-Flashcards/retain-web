@@ -110,19 +110,18 @@ const CLOZE_COLORS = [
     top: 20px;
     bottom: 20px;
     padding-right: 20px;
-    max-height: 100%;
+}
+
+.card-editor-container:has(.cloze-toolbar) .card-content-container {
+    bottom: 55px;
 }
 
 .cloze-toolbar {
     position: absolute;
     bottom: 0px;
     width: 100%;
-    max-width: 100%;
     left: 0px;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 10px;
-    padding-top: 10px;
+    padding: 10px;
     box-sizing: border-box;
     overflow-x: auto;
     display: flex;
@@ -133,6 +132,7 @@ const CLOZE_COLORS = [
 
 .cloze-toolbar-spacer {
     width: 50px;
+    flex-shrink: 0;
 }
 
 .card-editor img {

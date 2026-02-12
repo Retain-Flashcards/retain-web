@@ -34,7 +34,7 @@
                         multiple 
                         filterable 
                         allow-create 
-                        placeholder='Add tags...' 
+                        placeholder='Use tags to further organize your cards within the deck' 
                         style='width: 100%;' 
                         @change='() => {}'
                         tag-type='danger'
@@ -53,35 +53,42 @@
         <loadable-provider :loadable='noteLoadable'>
             <template #default='{ loading, data: note }'>
                 <div class='layout-container'>
-                    <div class='pdf-panel' :class='{ collapsed: !isPdfPanelOpen }'>
-                        <div class='pdf-panel-inner'>
-                            <pdf-box @screenshot='copyImageFromDataUrl'></pdf-box>
-                            <div class='suggested-cards-container' v-if='displayingSuggestedCards'>
-                                <div class='suggested-cards-header'>
-                                    <span class='suggested-cards-title'><font-awesome-icon icon="fa-wand-magic-sparkles"/> AI Card Suggestions</span>
-                                    <span class='suggested-cards-hint'>(hover to preview)</span>
-                                    <span style='flex: 1;'></span>
-                                    <span class='suggested-cards-close' @click='closeSuggestedCards'><font-awesome-icon icon='fa-close'></font-awesome-icon></span>
-                                </div>
-                                <div class='suggested-cards-list'>
-                                    <loadable-provider :loadable='suggestedCardLoadable'>
-                                        <template #default='{ loading, data: cards }'>
-                                            <card-message v-for='(card, index) in cards' :key='index' :content='card' @click='useSuggestedCard' @startPreview='startPreview' @endPreview='endPreview'></card-message>
-                                        </template>
-                                        <template #loading>
-                                            <app-spinner />
-                                        </template>
-                                    </loadable-provider>
+                    <div v-if='!noteId' class='pdf-panel' :class='{ collapsed: !isPdfPanelOpen }'>
+                        <KeyBindingProvider>
+                            <div class='pdf-panel-inner'>
+                                <pdf-box @screenshot='copyImageFromDataUrl'></pdf-box>
+                                <div class='suggested-cards-container' v-if='displayingSuggestedCards'>
+                                    <div class='suggested-cards-header'>
+                                        <span class='suggested-cards-title'><font-awesome-icon icon="fa-wand-magic-sparkles"/> AI Card Suggestions</span>
+                                        <span class='suggested-cards-hint'>(hover to preview)</span>
+                                        <span style='flex: 1;'></span>
+                                        <span class='suggested-cards-close' @click='closeSuggestedCards'><font-awesome-icon icon='fa-close'></font-awesome-icon></span>
+                                    </div>
+                                    <div class='suggested-cards-list'>
+                                        <loadable-provider :loadable='suggestedCardLoadable'>
+                                            <template #default='{ loading, data: cards }'>
+                                                <card-message v-for='(card, index) in cards' :key='index' :content='card' @add-card='addSuggestedCard' @click='useSuggestedCard' @startPreview='startPreview' @endPreview='endPreview'></card-message>
+                                            </template>
+                                            <template #error>
+                                                <div class='suggested-cards-error'>
+                                                    <span>An error occurred while generating cards.</span>
+                                                </div>
+                                            </template>
+                                            <template #loading>
+                                                <app-spinner size='small'/>
+                                            </template>
+                                        </loadable-provider>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </KeyBindingProvider>
                     </div>
                     <KeyBindingProvider>
                         <div class='editor-container'>
                             <!--Formatting Toolbar-->
                             <div class='toolbar-container'>
                                 <div style='flex: 1; display: flex;'>
-                                    <brand-button :icon='isPdfPanelOpen ? "fa-regular fa-square-caret-left" : "fa-regular fa-square-caret-right"' :type='isPdfPanelOpen ? "primary" : "info"' :plain='true' size='small' @click='isPdfPanelOpen = !isPdfPanelOpen'>{{ isPdfPanelOpen ? '': 'Reference Notes' }}</brand-button>
+                                    <brand-button v-if='!noteId' :icon='isPdfPanelOpen ? "fa-regular fa-square-caret-left" : "fa-regular fa-square-caret-right"' :type='isPdfPanelOpen ? "primary" : "info"' :plain='true' size='small' @click='isPdfPanelOpen = !isPdfPanelOpen'>{{ isPdfPanelOpen ? '': 'Reference Notes' }}</brand-button>
                                     <div style='flex: 1;'></div>
                                 </div>
                                 <formatting-toolbar :link-handler='linkHandler' :image-handler='imageHandler'></formatting-toolbar>
@@ -128,7 +135,7 @@
                 <el-skeleton :rows='5'></el-skeleton>
             </template>
             <template #error>
-                <error-page message='Failed to load note' ></error-page>
+                <error-page message='Failed to load card' ></error-page>
             </template>
         </loadable-provider>
     </el-main>
@@ -186,7 +193,7 @@ const notes = computed(() => useNotes(deckId.value))
 const cardsOperations = computed(() => useCards(deckId.value))
 
 const tags = ref([])
-const isPdfPanelOpen = ref(true)
+const isPdfPanelOpen = ref(false)
 const displayingSuggestedCards = ref(false)
 
 const frontEditorController = useCardEditor('')
@@ -217,7 +224,9 @@ const tagsLoadable = useLoadable(async () => {
     onError: (e) => notificationService.error('Failed to load tags')
 })
 
-watch(deck, () => tagsLoadable.load())
+watch(deckId, (_) => {
+    tagsLoadable.load()
+}, { immediate: true})
 
 const noteLoadable = useLoadable(async () => {
     if (!noteId.value) return null
@@ -250,8 +259,11 @@ const saveNote = async () => {
         else {
             await notes.value.editNote(noteId.value, frontEditorController.getClozeContent(), backEditorController.getClozeContent())
         }
+
+        notificationService.success('Card saved successfully')
     } catch(e) {
-        notificationService.error('Failed to save note')
+        console.log(e)
+        notificationService.error('Failed to save card')
     }
     finally {
         editorLoading.value = false
@@ -259,14 +271,17 @@ const saveNote = async () => {
 }
 
 //Update theme color with deck selection
-watch([deckSelectLoadable.currentState, deckId], (newVals) => {
-    const options = newVals[0].value
+watch(deckSelectLoadable.currentState, (newVals) => {
+    const options = newVals.data
     if (options) {
         for (const deck of options) {
-            if (deck.id == deckId.value) setThemeColor(deck.primaryColor, document.documentElement)
+            if (deck.id == deckId.value) {
+                setThemeColor(deck.primaryColor, document.documentElement)
+                break
+            }
         }
     }
-})
+}, { immediate: true })
 
 const editorLoading = ref(false)
 
@@ -369,6 +384,8 @@ async function copyImageFromDataUrl(url) {
 
     preview.value.lastScreenshot = url
 
+    displayingSuggestedCards.value = true
+
     //Load the cards
     suggestedCardLoadable.load(url)
 }
@@ -403,6 +420,12 @@ function useSuggestedCard(cardContent) {
     preview.value.active = false
     preview.value.cachedFrontContent = null
     preview.value.cachedBackContent = null
+}
+
+function addSuggestedCard(cardContent) {
+    suggestedCardLoadable.value = suggestedCardLoadable.value.filter((card) => card !== cardContent)
+    if (suggestedCardLoadable.value.length == 0) closeSuggestedCards()
+    saveNote()
 }
 
 </script>
@@ -490,7 +513,6 @@ function useSuggestedCard(cardContent) {
 .suggested-cards-hint {
     font-size: 10px;
     color: #929292;
-    font-style: italic;
 }
 
 .suggested-cards-close {
@@ -509,6 +531,14 @@ function useSuggestedCard(cardContent) {
     max-height: 100px;
     overflow-y: auto;
     padding: 0 4px 4px;
+}
+
+.suggested-cards-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--el-color-danger);
 }
 
 .pdf-panel.collapsed {

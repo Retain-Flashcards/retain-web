@@ -2,13 +2,13 @@
     <Teleport to="body">
         <Transition name="soft-dialog-fade">
             <div 
-                v-if="modelValue" 
+                v-if="modal.isOpen" 
                 class="soft-dialog-overlay"
                 @click.self="handleOverlayClick"
             >
                 <Transition name="soft-dialog-zoom">
                     <div 
-                        v-if="modelValue"
+                        v-if="modal.isOpen"
                         :class="['soft-dialog', { 'soft-dialog--fullscreen': fullscreen }, sizeClass]"
                         :style="customStyle"
                     >
@@ -30,7 +30,7 @@
 
                         <!-- Body -->
                         <div class="soft-dialog__body">
-                            <slot></slot>
+                            <slot :state='modal.state'></slot>
                         </div>
 
                         <!-- Footer -->
@@ -46,11 +46,12 @@
 
 <script setup>
 import { computed, watch, onMounted, onUnmounted } from 'vue'
+import Modal from '../Modal.vue'
 
 const props = defineProps({
-    modelValue: {
-        type: Boolean,
-        default: false
+    modal: {
+        type: Object,
+        required: true
     },
     title: {
         type: String,
@@ -95,7 +96,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['update:modelValue', 'open', 'opened', 'close', 'closed'])
+const emit = defineEmits(['open', 'opened', 'close', 'closed'])
 
 const sizeClass = computed(() => {
     if (props.fullscreen) return ''
@@ -120,7 +121,7 @@ function handleClose() {
 }
 
 function closeDialog() {
-    emit('update:modelValue', false)
+    props.modal.close()
     emit('close')
 }
 
@@ -167,7 +168,6 @@ onUnmounted(() => {
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -235,7 +235,7 @@ onUnmounted(() => {
     height: 36px;
     border: none;
     background-color: #f4f6f8;
-    border-radius: 7px;
+    border-radius: 36px;
     cursor: pointer;
     color: #909399;
     font-size: 16px;
@@ -245,9 +245,8 @@ onUnmounted(() => {
 }
 
 .soft-dialog__close:hover {
-    background-color: #e9ecf0;
+    background-color: #ced0d4;
     color: #606266;
-    transform: scale(1.05);
 }
 
 .soft-dialog__close:active {

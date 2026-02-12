@@ -1,15 +1,15 @@
 <template>
 <LoadableStateProvider :loadable='submitFormLoadable' v-slot='{ loading: submitLoading }'>
 <LoadableStateProvider :loadable='deleteDeckLoadable' v-slot='{ loading: deleteLoading }'>
-    <el-form :model='formData' ref='theForm' label-position='top' :disabled='submitLoading || deleteLoading' :rules='rules'>
-
-        <el-form-item label='Deck Title' :required='true' prop='title'>
-            <el-input v-model='formData.title'></el-input>
-        </el-form-item>
-        <el-form-item label='Color'>
+    
+    <SoftForm :model='formData' label-position='top'>
+        <SoftFormItem label='Deck Title' :required='true' prop='title'>
+            <SoftInput v-model='formData.title'></SoftInput>
+        </SoftFormItem>
+        <SoftFormItem label='Color'>
             <el-color-picker v-model='formData.primaryColor' :predefine='predefinedColors'></el-color-picker>
-        </el-form-item>
-        <el-form-item label='Cover Image' prop='coverImage'>
+        </SoftFormItem>
+        <SoftFormItem label='Cover Image' prop='coverImage'>
             <div style='width: 100%; display: flex; flex-direction: column; align-items: center;'>
                 <img v-if='editingDeck && editingDeck.coverImage' :src='editingDeck.coverImage' style='max-width: 100%; width: 70%; margin: 20px; border-radius: 20px;'/>
                 <el-upload drag v-model:file-list="formData.coverImageFiles" thumbnail-mode :auto-upload='false' action='' list-type='picture' :multiple='false' :style='{ display: "flex", flex: 1, width: "100%" }'>
@@ -22,24 +22,23 @@
                     <div class='flex-spacer'></div>
                 </el-upload>
             </div>
-        </el-form-item>
+        </SoftFormItem>
 
-        <el-form-item>
-            <brand-button style='margin-right: 10px;' type='primary' @click='submitNewDeckForm' :loading='submitLoading || deleteLoading'>{{ editingDeck ? 'Save':'Create' }} Deck</brand-button>
-            <el-popconfirm
-                v-if='editingDeck'
-                confirm-button-type='danger'
-                title="Delete this deck?"
+        <SoftFormItem>
+            <div style='display: flex; gap: 10px;'>
+                <brand-button style='margin-right: 10px;' type='primary' @click='submitNewDeckForm' :loading='submitLoading || deleteLoading'>{{ editingDeck ? 'Save':'Create' }} Deck</brand-button>
+                <el-popconfirm
+                    v-if='editingDeck'
+                    confirm-button-type='danger'
+                    title="Delete this deck?"
                 @confirm='() => deleteDeckLoadable.load()'>
-                <template #reference>
-                    <brand-button type='error' slot='reference' :loading='submitLoading || deleteLoading'>Delete Deck</brand-button>
-                </template>
-            </el-popconfirm>
-        </el-form-item>
-        
-            
-
-    </el-form>
+                    <template #reference>
+                        <brand-button type='error' slot='reference' :loading='submitLoading || deleteLoading'>Delete Deck</brand-button>
+                    </template>
+                </el-popconfirm>
+            </div>
+        </SoftFormItem>
+    </SoftForm>
 </LoadableStateProvider>
 </LoadableStateProvider>
 
@@ -49,6 +48,9 @@
 import { onMounted, onUpdated, ref } from 'vue';
 
 import BrandButton from './BrandButton.vue'
+import SoftForm from './soft-ui/SoftForm.vue'
+import SoftFormItem from './soft-ui/SoftFormItem.vue'
+import SoftInput from './soft-ui/SoftInput.vue'
 
 
 import useDecks from '../../composables/api/useDecks'
@@ -107,6 +109,7 @@ const submitFormLoadable = useLoadable(async () => {
 
         props.onComplete(result)
     } catch(error) {
+        console.log(error)
         notificationService.error('Something went wrong. Please try again.')
     }
 

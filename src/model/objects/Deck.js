@@ -15,6 +15,7 @@ export default class Deck {
         this.shared = data.shared
         this.daily_new_limit = data.daily_new_limit
         this.daily_review_limit = data.daily_review_limit
+        this.createdAt = data.created_at
     }
 
     async getNextCard() {

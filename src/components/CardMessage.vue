@@ -1,6 +1,6 @@
 <template>
     <div class='card-item' @click="emit('click', props.content)" @mouseenter='emit("startPreview", props.content)' @mouseleave='emit("endPreview")'>
-        <span class='quick-add' @click.prevent='emit("addCard")'><font-awesome-icon icon='fa-add'></font-awesome-icon></span>
+        <span class='quick-add' @click.prevent='emit("addCard", props.content)'><font-awesome-icon icon='fa-add'></font-awesome-icon></span>
         <span class='card-text'>{{ props.content }}</span>
     </div>
 </template>

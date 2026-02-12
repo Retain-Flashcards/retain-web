@@ -29,7 +29,25 @@ export default function useCardEditor(initialContent = '', displayOnly = false) 
         let newString = contentString.replaceAll(clozeRegexp, (_, n, text, hint) => {
             const colorClass = n > 0 ? CLOZE_COLORS[n - 1] : 'clz-red'
             const key = generateKey()
-            return `<cloze-indicator n="${n}" color-class="${colorClass}" item-key="${key}" hint="${hint ?? ''}" text="${text}" ${isDisplayOnly ? 'display-only' : ''}></cloze-indicator>`
+            
+            let processedText = text
+            let processedHint = hint ?? ''
+
+            if (isDisplayOnly) {
+                // Render KaTeX inside cloze text/hint
+                const renderMath = (str) => {
+                    return str.replaceAll(/\$\$(.+?)\$\$/g, (_, math) => {
+                        try {
+                            return katex.renderToString(math, { throwOnError: false })
+                        } catch(e) { return math }
+                    })
+                }
+
+                processedText = renderMath(processedText).replaceAll('"', '&quot;')
+                processedHint = renderMath(processedHint).replaceAll('"', '&quot;')
+            }
+
+            return `<cloze-indicator n="${n}" color-class="${colorClass}" item-key="${key}" hint="${processedHint}" text="${processedText}" ${isDisplayOnly ? 'display-only' : ''}></cloze-indicator>`
         })
 
         // KaTeX math rendering (display only)
@@ -139,7 +157,13 @@ export default function useCardEditor(initialContent = '', displayOnly = false) 
         if (range.collapsed) return
 
         const rangeContents = range.extractContents()
-        if (rangeContents.textContent.trim() == '') return
+        const rawText = rangeContents.textContent
+        const trimmedText = rawText.trim()
+        if (trimmedText == '') return
+
+        // Detect leading/trailing whitespace that was extracted
+        const leadingSpace = rawText.match(/^\s+/)?.[0] || ''
+        const trailingSpace = rawText.match(/\s+$/)?.[0] || ''
 
         // Create the Custom Element
         const clozeEl = document.createElement('cloze-indicator')
@@ -147,10 +171,16 @@ export default function useCardEditor(initialContent = '', displayOnly = false) 
         clozeEl.setAttribute('color-class', n > 0 ? CLOZE_COLORS[n - 1] : 'clz-red')
         clozeEl.setAttribute('item-key', generateKey())
         clozeEl.setAttribute('hint', '')
+        clozeEl.setAttribute('text', trimmedText)
 
-        // Set selected text as attribute
-        clozeEl.setAttribute('text', rangeContents.textContent.trim())
+        // Insert cloze, then re-insert any stripped whitespace around it
         range.insertNode(clozeEl)
+        if (trailingSpace) {
+            clozeEl.after(document.createTextNode(trailingSpace))
+        }
+        if (leadingSpace) {
+            clozeEl.before(document.createTextNode(leadingSpace))
+        }
 
         const parent = anchorParent.closest('.card-editor')
         updateNextClozeN(parent)

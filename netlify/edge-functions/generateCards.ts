@@ -6,16 +6,32 @@ import "https://deno.land/x/xhr@0.1.2/mod.ts"
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts"
 import OpenAI from "https://deno.land/x/openai@v4.69.0/mod.ts"
 import type { Context } from "https://edge.netlify.com";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.4'
  
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') as string
+const SUPABASE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string
+
 export default async (req: Request, context: Context): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
+
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+  )
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) throw new Error('No user') 
 
   const { messages, imageUrl } = await req.json()
 
@@ -46,8 +62,6 @@ export default async (req: Request, context: Context): Promise<Response> => {
     frequency_penalty: 0,
     presence_penalty: 0
   })
-
-  console.log(response)
 
   const full_response = JSON.parse( response.choices[0].message.content )
 

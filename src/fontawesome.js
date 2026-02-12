@@ -20,7 +20,8 @@ import {
     faWandMagicSparkles,
     faArrowRight,
     faPaperPlane,
-    faClose
+    faClose,
+    faFileArrowUp
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
@@ -29,7 +30,7 @@ import {
     faSquareCaretRight
 } from '@fortawesome/free-regular-svg-icons'
 
-library.add(faClose, faBold, faSquareCaretLeft, faSquareCaretRight, faPaperPlane, faArrowRight, faAlarmClock, faWandMagicSparkles, faGear, faStopwatch, faItalic, faStrikethrough, faHeading, faUnderline, faListUl, faListOl, faLink, faImage, faSuperscript, faSubscript, faAdd, faPlusMinus, faRefresh)
+library.add(faClose, faFileArrowUp, faBold, faSquareCaretLeft, faSquareCaretRight, faPaperPlane, faArrowRight, faAlarmClock, faWandMagicSparkles, faGear, faStopwatch, faItalic, faStrikethrough, faHeading, faUnderline, faListUl, faListOl, faLink, faImage, faSuperscript, faSubscript, faAdd, faPlusMinus, faRefresh)
 
 export default function registerFaIcons(app) {
     app.component('font-awesome-icon', FontAwesomeIcon)

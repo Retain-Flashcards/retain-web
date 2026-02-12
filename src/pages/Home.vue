@@ -68,45 +68,45 @@
         </LoadableProvider>
 
         <!--Edit Deck Modal-->
-        <el-dialog
+        <SoftDialog
             :title="editDeckModal.state ? 'Edit Deck': 'Create New Deck'"
-            v-model="editDeckModal.isOpen"
+            :modal='editDeckModal'
             class='dialog'
             @close='() => editDeckModal.close()'>
             
             <!--Form-->
             <EditDeckForm :on-complete='onNewDeckFormCompletion' :editing-deck='editDeckModal.state'/>
 
-        </el-dialog>
+        </SoftDialog>
 
         <!--Share Deck Modal-->
-        <el-dialog
+        <SoftDialog
             :title="shareDeckModal.state.deck && `Sharing ${shareDeckModal.state.deck.title}`"
-            v-model="shareDeckModal.isOpen"
+            :modal='shareDeckModal'
             class='dialog'
             @close='() => shareDeckModal.close()'>
 
             <!--Loadable to handle sharing state-->
             <LoadableStateProvider :loadable='shareDeckLoadable' v-slot='{ loading, data, error }'>
-                <el-form v-loading='loading'>
+                <SoftForm v-loading='loading' :model='shareDeckModal.state'>
                     <!--Email-->
-                    <el-form-item label='Email'>
+                    <SoftFormItem label='Email'>
                         <el-input v-model='shareDeckModal.state.email' placeholder='Enter email to share to...'></el-input>
-                    </el-form-item>
+                    </SoftFormItem>
                     <!--Role-->
-                    <el-form-item label='Role'>
+                    <SoftFormItem label='Role'>
                         <el-radio-group v-model='shareDeckModal.state.role'>
                             <el-radio-button label='Viewer'/>
                             <el-radio-button label='Editor'/>
                         </el-radio-group>
-                    </el-form-item>
+                    </SoftFormItem>
                     <!--Share Button-->
-                    <el-form-item>
+                    <SoftFormItem>
                         <brand-button type='primary' @click='() => shareDeckLoadable.load()'>Share</brand-button>
-                    </el-form-item>
-                </el-form>
+                    </SoftFormItem>
+                </SoftForm>
             </LoadableStateProvider>
-        </el-dialog>
+        </SoftDialog>
     </div>
     
 </template>
@@ -121,6 +121,9 @@ import ErrorPage from '../components/basic/errorHandling/ErrorPage.vue'
 import AppSpinner from '../components/basic/AppSpinner.vue'
 import LoadingOverlay from '../components/basic/LoadingOverlay.vue'
 import BrandButton from '../components/basic/BrandButton.vue'
+import SoftDialog from '../components/basic/soft-ui/SoftDialog.vue'
+import SoftForm from '../components/basic/soft-ui/SoftForm.vue'
+import SoftFormItem from '../components/basic/soft-ui/SoftFormItem.vue'
 
 import { setThemeColor } from '../utils'
 import { ElMessage } from 'element-plus'

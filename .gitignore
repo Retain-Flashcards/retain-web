@@ -30,3 +30,7 @@ pnpm-debug.log*
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+dist/
+frontend/dist/
+.env*

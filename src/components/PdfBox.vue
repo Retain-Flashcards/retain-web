@@ -15,7 +15,7 @@
                 <h4>Upload PDF Here</h4>
                 <input type='file' @change='uploadPDFHandler' style='display: none;' ref='fileInput' accept='application/pdf' />
                 <p style='width: 50%'>Once you upload your PDF, you can select a region to screenshot and add to your cards.</p>
-                <brand-button type='primary' style='margin-top: 20px;' @click='clickFileUpload'>Upload PDF</brand-button>
+                <brand-button type='primary' style='margin-top: 20px;' @click='clickFileUpload' icon='file-arrow-up'>Upload PDF</brand-button>
             </div>
             <div v-else @mousedown='beginCrop' @mousemove='updateCrop' @mouseup='endCrop' style='position: relative; overflow-y: auto; max-height: 100%;'>
                 <div style='height: 100%;'>
@@ -41,6 +41,7 @@ import useLoadable from '../composables/ui/useLoadable'
 import useStorage from '../composables/api/useStorage'
 import useNotificationService from '../composables/ui/useNotificationService'
 import PDFViewerController from '../model/PdfViewerController'
+import { useKeyDownBinding } from '../composables/keybindings'
 
 const {
     uploadImage,
@@ -57,6 +58,8 @@ const fileInput = ref(null)
 function clickFileUpload() {
     fileInput.value.click()
 }
+
+useKeyDownBinding('Escape', cancelCrop)
 
 const fileList = ref([])
 const pdfUrl = ref('')
@@ -78,7 +81,6 @@ const cropRect = ref({
 const pdfLoadable = useLoadable(async () => {
     const file = fileList.value[0]
     const url = await uploadPDF(file)
-    console.log(url)
     pdfUrl.value = url
 })
 
@@ -108,9 +110,10 @@ function takeScreenshot() {
 
 function beginCrop(event) {
     cropFrame.value.style.display = 'block'
-    const rect = cropFrame.value.parentElement.getBoundingClientRect()
-    cropRect.value.startX = event.clientX - rect.left
-    cropRect.value.startY = event.clientY - rect.top
+    const parent = cropFrame.value.parentElement
+    const rect = parent.getBoundingClientRect()
+    cropRect.value.startX = event.clientX - rect.left + parent.scrollLeft
+    cropRect.value.startY = event.clientY - rect.top + parent.scrollTop
     cropRect.value.endX = cropRect.value.startX
     cropRect.value.endY = cropRect.value.startY
     cropRect.value.isDragging = true
@@ -118,19 +121,29 @@ function beginCrop(event) {
 
 function updateCrop(event) {
     if (cropRect.value.isDragging == false) return
-    const rect = cropFrame.value.parentElement.getBoundingClientRect()
-    cropRect.value.endX = event.clientX - rect.left
-    cropRect.value.endY = event.clientY - rect.top
+    const parent = cropFrame.value.parentElement
+    const rect = parent.getBoundingClientRect()
+    cropRect.value.endX = event.clientX - rect.left + parent.scrollLeft
+    cropRect.value.endY = event.clientY - rect.top + parent.scrollTop
 }
 
 function endCrop(event) {
-    const rect = cropFrame.value.parentElement.getBoundingClientRect()
-    cropRect.value.endX = event.clientX - rect.left
-    cropRect.value.endY = event.clientY - rect.top
+    if (!cropRect.value.isDragging) return
+    const parent = cropFrame.value.parentElement
+    const rect = parent.getBoundingClientRect()
+    cropRect.value.endX = event.clientX - rect.left + parent.scrollLeft
+    cropRect.value.endY = event.clientY - rect.top + parent.scrollTop
     cropRect.value.isDragging = false
     takeScreenshot()
     cropFrame.value.style.display = 'none'
     notificationService.success('Screenshot copied to clipboard')
+}
+
+function cancelCrop() {
+    if (cropFrame.value) {
+        cropFrame.value.style.display = 'none'
+        cropRect.value.isDragging = false
+    }
 }
 
 function uploadPDFHandler(event) {
@@ -148,9 +161,10 @@ onMounted(() => {
 #frame {
     width: 100px;
     height: 100px;
-    background-color: black;
+    background-color: var(--el-color-primary);
     opacity: 0.4;
     position: absolute;
     cursor: pointer;
+    border-radius: 3px;
 }
 </style>

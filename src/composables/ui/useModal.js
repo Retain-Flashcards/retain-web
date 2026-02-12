@@ -17,6 +17,7 @@ export default function useModal(initialState) {
 
     return {
         get state() { return state.value },
+        set state(value) { state.value = value },
         close,
         open,
         openWithState,

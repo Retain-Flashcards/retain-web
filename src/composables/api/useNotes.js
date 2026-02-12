@@ -45,14 +45,15 @@ export default function useNotes(deckId) {
 
 
         //Create or set the note
-        const { data, error } = await supabase.from('notes').insert([
+        const response = await supabase.from('notes').insert([
             noteContent
-        ])
+        ]).select()
 
-        if (error) throw new Error('Could not create note')
+
+        if (response.error) throw new Error('Could not create note')
 
         //Get the note
-        const note = data[0]
+        const note = response.data[0]
 
         //Generate the necessary cards
         let cards = []

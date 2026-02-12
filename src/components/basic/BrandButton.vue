@@ -50,7 +50,7 @@ const spinnerStyles = {
 }
 
 .brand-button.small {
-    padding: 0px 10px;
+    padding: 5px 10px;
     font-size: 14px;
 }
 

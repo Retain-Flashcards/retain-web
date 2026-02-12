@@ -3,23 +3,29 @@ import { ref, onMounted } from 'vue'
 export default function useLoadable(loadingFunction, options = { initialValue: null, autoload: false, onError: null, onData: null }) {
 
     const currentState = ref({
-        value: options.initialValue,
+        data: options.initialValue,
         status: 'not-started',
         error: null
     })
 
     const _setValue = (value) => {
         if (value.error) {
-            currentState.value.status = 'error'
-            currentState.value.error = value.error
+            currentState.value = {
+                ...currentState.value,
+                status: 'error',
+                error: value.error
+            }
             if (options.onError) {
                 options.onError(value.error)
             }
         }
         else {
-            currentState.value.value = value.value
-            currentState.value.status = 'data'
-            currentState.value.error = null
+            currentState.value = {
+                ...currentState.value,
+                status: 'data',
+                error: null,
+                data: value.value
+            }
             if (options.onData) {
                 options.onData(value.value)
             }
@@ -30,7 +36,7 @@ export default function useLoadable(loadingFunction, options = { initialValue: n
         currentState.value.status = 'loading'
         
         try {
-            const result = await loadingFunction(currentState.value.value,...args)
+            const result = await loadingFunction(currentState.value.data,...args)
 
             _setValue({
                 value: result,
@@ -53,7 +59,7 @@ export default function useLoadable(loadingFunction, options = { initialValue: n
     const loadSilently = async (...args) => {
 
         try {
-            const result = await loadingFunction(currentState.value.value,...args)
+            const result = await loadingFunction(currentState.value.data,...args)
 
             _setValue({
                 value: result,
@@ -77,7 +83,7 @@ export default function useLoadable(loadingFunction, options = { initialValue: n
         currentState.value.status = 'loading'
         
         try {
-            const result = await newLoadFunction(currentState.value.value)
+            const result = await newLoadFunction(currentState.value.data)
 
             _setValue({
                 value: result,
@@ -101,10 +107,10 @@ export default function useLoadable(loadingFunction, options = { initialValue: n
         currentState.value.status = 'loading'
         
         try {
-            await newLoadFunction(currentState.value.value)
+            await newLoadFunction(currentState.value.data)
             currentState.value.status = 'data'
             if (options.onData) {
-                options.onData(currentState.value.value)
+                options.onData(currentState.value.data)
             }
 
         } catch(error) {
@@ -129,7 +135,8 @@ export default function useLoadable(loadingFunction, options = { initialValue: n
         loadWithFunction,
         loadWithVoidFunction,
         get error() { return currentState.value.error },
-        get value() { return currentState.value.value },
+        get value() { return currentState.value.data },
+        set value(newValue) { currentState.value.data = newValue },
         get status() { return currentState.value.status },
         get isLoading() { return currentState.value.status == 'loading' }
     }

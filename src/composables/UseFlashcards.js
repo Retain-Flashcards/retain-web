@@ -152,7 +152,6 @@ export default () => {
             const fileName = generate_uuid() + '.pdf'
             const filePath = `${getCurrentUserId()}/note-pdfs/${fileName}`
             const uploadInitial = await supabase.storage.from('note-pdfs').upload(filePath, file)
-            console.log(uploadInitial.error)
             if (uploadInitial.error) throw new Error('Could not upload file')
 
             const { data, error } = supabase.storage.from('note-pdfs').getPublicUrl(filePath)
@@ -397,7 +396,6 @@ export default () => {
         const { data, error } = await supabase.rpc('get_timeline', {
             given_deck_id: deckId
         })
-        console.log(error)
         return data
     }
 
