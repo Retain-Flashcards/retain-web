@@ -71,7 +71,6 @@
         <SoftDialog
             :title="editDeckModal.state ? 'Edit Deck': 'Create New Deck'"
             :modal='editDeckModal'
-            class='dialog'
             @close='() => editDeckModal.close()'>
             
             <!--Form-->
@@ -83,7 +82,6 @@
         <SoftDialog
             :title="shareDeckModal.state.deck && `Sharing ${shareDeckModal.state.deck.title}`"
             :modal='shareDeckModal'
-            class='dialog'
             @close='() => shareDeckModal.close()'>
 
             <!--Loadable to handle sharing state-->
@@ -97,7 +95,9 @@
                     <SoftFormItem label='Role'>
                         <el-radio-group v-model='shareDeckModal.state.role'>
                             <el-radio-button label='Viewer'/>
-                            <el-radio-button label='Editor'/>
+                            <el-radio-button label='Editor'>
+                                <premium-marker/> Editor
+                            </el-radio-button>
                         </el-radio-group>
                     </SoftFormItem>
                     <!--Share Button-->
@@ -112,7 +112,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, watch } from 'vue'
 import LoadableProvider from '../components/basic/providers/LoadableProvider.vue'
 import LoadableStateProvider from '../components/basic/providers/LoadableStateProvider.vue'
 import DeckCard from '../components/basic/DeckCard.vue'
@@ -124,6 +124,9 @@ import BrandButton from '../components/basic/BrandButton.vue'
 import SoftDialog from '../components/basic/soft-ui/SoftDialog.vue'
 import SoftForm from '../components/basic/soft-ui/SoftForm.vue'
 import SoftFormItem from '../components/basic/soft-ui/SoftFormItem.vue'
+import PremiumContent from '../components/PremiumContent.vue'
+import Paywall from '../components/Paywall.vue'
+import PremiumMarker from '../components/basic/PremiumMarker.vue'
 
 import { setThemeColor } from '../utils'
 import { ElMessage } from 'element-plus'
@@ -134,10 +137,12 @@ import useLoadable from '../composables/ui/useLoadable'
 import useModal from '../composables/ui/useModal'
 import { useRouter } from 'vue-router'
 import useNotificationService from '../composables/ui/useNotificationService'
+import usePremiumFeature from '../composables/api/usePremiumFeature'
 
 const { fetchAllDecks, setPinned, shareDeck } = useDecks()
 const router = useRouter()
 const notificationService = useNotificationService()
+const premiumFeature = usePremiumFeature()
 
 //Loadables
 const homeScreenDecksLoadable = useLoadable(
@@ -183,6 +188,15 @@ const shareDeckModal = useModal({
     role: 'Viewer'
 })
 
+watch(() => shareDeckModal.state.role, (newValue, oldValue) => {
+    if (newValue == 'Editor') {
+        premiumFeature.execute(() => {
+            
+        }, () => {
+            shareDeckModal.state.role = 'Viewer'
+        })
+    }
+})
 
 function onDeckSelected(deck) {
     router.push({

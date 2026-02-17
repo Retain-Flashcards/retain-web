@@ -1,16 +1,18 @@
 <template>
-    <div style='height: 100%;'>
+    <div v-if='!reloading' style='height: 100%;'>
         <notification-provider>
             <div v-if='isAuthenticated' style='height: 100%;display: flex;flex-direction: column;'>
                 <Navbar id='navbar' :authenticated='true'/>
-                <div id='theloader' style='display: flex; flex: 1; max-width: 100%; padding: 0px; overflow-y: auto; overflow-x: hidden; position: relative;' v-loading='globalLoader'>
-                    <div id='page-content'>
-                        <error-boundary @error-received='errorPage = true'>
-                            <error-page v-if='errorPage' message='Something went wrong.'></error-page>
-                            <router-view v-else />
-                        </error-boundary>
+                <paywall-provider>
+                    <div id='theloader' style='display: flex; flex: 1; max-width: 100%; padding: 0px; overflow-y: auto; overflow-x: hidden; position: relative;' v-loading='globalLoader'>
+                        <div id='page-content'>
+                            <error-boundary @error-received='errorPage = true'>
+                                <error-page v-if='errorPage' message='Something went wrong.'></error-page>
+                                <router-view v-else />
+                            </error-boundary>
+                        </div>
                     </div>
-                </div>
+                </paywall-provider>
             </div>
             <div v-else style='height: 100%; flex: 1;'>
                 <Navbar id='navbar'/>
@@ -26,6 +28,7 @@
             </div>
         </notification-provider>
     </div>
+    <app-spinner v-else/>
 </template>
 
 <script setup>
@@ -37,16 +40,18 @@ import KeyBindingProvider from './components/basic/providers/KeyBindingProvider.
 import NotificationProvider from './components/NotificationProvider.vue'
 import ErrorBoundary from './components/basic/errorHandling/ErrorBoundary.vue'
 import ErrorPage from './components/basic/errorHandling/ErrorPage.vue'
+import AppSpinner from './components/basic/AppSpinner.vue'
+import PaywallProvider from './components/PaywallProvider.vue'
 
 import useNotificationService from './composables/ui/useNotificationService'
 
 const notificationService = useNotificationService()
 
-const { userIsLoggedIn } = useAuthUser()
+const { userIsLoggedIn, user, setAuthStateChangedListener } = useAuthUser()
 
 const { globalLoader } = useGlobalLoader()
 
-const reloading = ref(false)
+const reloading = ref(true)
 
 const errorPage = ref(false)
 
@@ -56,11 +61,19 @@ const handleGoogleCredentials = (response) => {
 
 const isAuthenticated = computed(() => {
     reloading.value = false
-    return userIsLoggedIn()
+    return user.value
+})
+
+setAuthStateChangedListener((event, session) => {
+    if (event == 'SIGNED_OUT') {
+        router.push('/login')
+    }
+    else if (session?.user) {
+        reloading.value = false
+    }
 })
 
 const handleMounted = () => {
-    reloading.value = true
 }
 
 onMounted(handleMounted)

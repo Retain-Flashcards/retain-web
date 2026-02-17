@@ -164,7 +164,7 @@
                             <template #actions>
                                 <!--Regular Card Builder-->
                                 <brand-button icon='fa-add' type='primary' @click='createNotes'>
-                                    Add Cards
+                                    Create Cards
                                 </brand-button> 
                             </template>
                         </section-layout>

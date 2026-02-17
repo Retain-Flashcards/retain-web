@@ -21,16 +21,22 @@ import {
     faArrowRight,
     faPaperPlane,
     faClose,
-    faFileArrowUp
+    faFileArrowUp,
+    faStar,
+    faEllipsisV,
+    faPencil,
+    faTrash
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
     faAlarmClock,
     faSquareCaretLeft,
-    faSquareCaretRight
+    faSquareCaretRight,
+    faTrashCan,
+    faFile
 } from '@fortawesome/free-regular-svg-icons'
 
-library.add(faClose, faFileArrowUp, faBold, faSquareCaretLeft, faSquareCaretRight, faPaperPlane, faArrowRight, faAlarmClock, faWandMagicSparkles, faGear, faStopwatch, faItalic, faStrikethrough, faHeading, faUnderline, faListUl, faListOl, faLink, faImage, faSuperscript, faSubscript, faAdd, faPlusMinus, faRefresh)
+library.add(faClose, faFile, faPencil, faTrashCan, faEllipsisV, faStar, faFileArrowUp, faBold, faSquareCaretLeft, faSquareCaretRight, faPaperPlane, faArrowRight, faAlarmClock, faWandMagicSparkles, faGear, faStopwatch, faItalic, faStrikethrough, faHeading, faUnderline, faListUl, faListOl, faLink, faImage, faSuperscript, faSubscript, faAdd, faPlusMinus, faRefresh)
 
 export default function registerFaIcons(app) {
     app.component('font-awesome-icon', FontAwesomeIcon)

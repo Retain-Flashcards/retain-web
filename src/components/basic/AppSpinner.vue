@@ -56,8 +56,8 @@ const props = defineProps(['size', 'color'])
 }
 
 .spinner.medium {
-    width: 50px;
-    height: 50px;
+    width: 30px;
+    height: 30px;
 }
 
 .spinner.large {

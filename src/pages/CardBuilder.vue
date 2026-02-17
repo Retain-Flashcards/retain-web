@@ -9,7 +9,7 @@
 
     <!--Edit/Add Card Header-->
     <div class='header'>
-        <h2>{{ noteId ? 'Edit':'Add'}} Card</h2>
+        <h2>{{ noteId ? 'Edit Card':'Create Cards'}}</h2>
         <div class='flex-spacer'></div>
 
         <!--Deck selector if you're adding cards (easy switching)-->
@@ -56,29 +56,38 @@
                     <div v-if='!noteId' class='pdf-panel' :class='{ collapsed: !isPdfPanelOpen }'>
                         <KeyBindingProvider>
                             <div class='pdf-panel-inner'>
-                                <pdf-box @screenshot='copyImageFromDataUrl'></pdf-box>
+                                <pdf-box @screenshot='copyImageFromDataUrl' @pdf-closed='closeSuggestedCards'></pdf-box>
                                 <div class='suggested-cards-container' v-if='displayingSuggestedCards'>
-                                    <div class='suggested-cards-header'>
-                                        <span class='suggested-cards-title'><font-awesome-icon icon="fa-wand-magic-sparkles"/> AI Card Suggestions</span>
-                                        <span class='suggested-cards-hint'>(hover to preview)</span>
-                                        <span style='flex: 1;'></span>
-                                        <span class='suggested-cards-close' @click='closeSuggestedCards'><font-awesome-icon icon='fa-close'></font-awesome-icon></span>
-                                    </div>
-                                    <div class='suggested-cards-list'>
-                                        <loadable-provider :loadable='suggestedCardLoadable'>
-                                            <template #default='{ loading, data: cards }'>
-                                                <card-message v-for='(card, index) in cards' :key='index' :content='card' @add-card='addSuggestedCard' @click='useSuggestedCard' @startPreview='startPreview' @endPreview='endPreview'></card-message>
-                                            </template>
-                                            <template #error>
-                                                <div class='suggested-cards-error'>
-                                                    <span>An error occurred while generating cards.</span>
-                                                </div>
-                                            </template>
-                                            <template #loading>
-                                                <app-spinner size='small'/>
-                                            </template>
-                                        </loadable-provider>
-                                    </div>
+                                    <premium-content>
+                                        <div class='suggested-cards-header'>
+                                            <span class='suggested-cards-title'><font-awesome-icon icon="fa-wand-magic-sparkles"/> AI Card Suggestions</span>
+                                            <span class='suggested-cards-hint'>(hover to preview)</span>
+                                            <span style='flex: 1;'></span>
+                                            <span class='suggested-cards-close' @click='closeSuggestedCards'><font-awesome-icon icon='fa-close'></font-awesome-icon></span>
+                                        </div>
+
+                                        <div class='suggested-cards-list'>
+                                            <loadable-provider :loadable='suggestedCardLoadable'>
+                                                <template #default='{ loading, data: cards }'>
+                                                    <card-message v-for='(card, index) in cards' :key='index' :content='card' @add-card='addSuggestedCard' @click='useSuggestedCard' @startPreview='startPreview' @endPreview='endPreview'></card-message>
+                                                </template>
+                                                <template #error>
+                                                    <div class='suggested-cards-error'>
+                                                        <span>An error occurred while generating cards.</span>
+                                                    </div>
+                                                </template>
+                                                <template #loading>
+                                                    <app-spinner size='small'/>
+                                                </template>
+                                            </loadable-provider>
+                                        </div>
+
+                                        <template #nonSubscriber>
+                                            <div class='suggested-cards-promo'><font-awesome-icon icon="fa-wand-magic-sparkles" style='color: var(--el-color-primary)'/>Get AI Card Suggestions<div class='flex-spacer'></div><brand-button @click='upgrade' type='primary'><premium-marker/>Upgrade</brand-button></div>
+                                        </template>
+                                    </premium-content>
+                                    
+                                    
                                 </div>
                             </div>
                         </KeyBindingProvider>
@@ -88,7 +97,7 @@
                             <!--Formatting Toolbar-->
                             <div class='toolbar-container'>
                                 <div style='flex: 1; display: flex;'>
-                                    <brand-button v-if='!noteId' :icon='isPdfPanelOpen ? "fa-regular fa-square-caret-left" : "fa-regular fa-square-caret-right"' :type='isPdfPanelOpen ? "primary" : "info"' :plain='true' size='small' @click='isPdfPanelOpen = !isPdfPanelOpen'>{{ isPdfPanelOpen ? '': 'Reference Notes' }}</brand-button>
+                                    <brand-button v-if='!noteId' :icon='isPdfPanelOpen ? "fa-regular fa-square-caret-left" : "fa-regular fa-square-caret-right"' :type='isPdfPanelOpen ? "primary" : "info"' :plain='true' size='small' @click='isPdfPanelOpen = !isPdfPanelOpen'>{{ isPdfPanelOpen ? 'Close Notes': 'Open Notes' }}</brand-button>
                                     <div style='flex: 1;'></div>
                                 </div>
                                 <formatting-toolbar :link-handler='linkHandler' :image-handler='imageHandler'></formatting-toolbar>
@@ -159,6 +168,8 @@ import BrandButton from '../components/basic/BrandButton.vue'
 import PdfBox from '../components/PdfBox.vue'
 import CardMessage from '../components/CardMessage.vue'
 import AppSpinner from '../components/basic/AppSpinner.vue'
+import PremiumContent from '../components/PremiumContent.vue'
+import PremiumMarker from '../components/basic/PremiumMarker.vue'
 
 //Composables
 import { useRouter, useRoute} from 'vue-router'
@@ -171,16 +182,19 @@ import useNotes from '../composables/api/useNotes'
 import useCards from '../composables/api/useCards'
 import useCardEditor from '../composables/ui/useCardEditor'
 import useNotificationService from '../composables/ui/useNotificationService'
+import usePremiumFeature from '../composables/api/usePremiumFeature'
 
 //Utils
 import { setThemeColor } from '../utils'
 
-const { uploadImage, convertImageToBlob } = useStorage()
+const { uploadImage, convertImageToBlob, listNotePdfs } = useStorage()
 
 const router = useRouter()
 const route = useRoute()
 
 const notificationService = useNotificationService()
+
+const premiumFeature = usePremiumFeature()
 
 //Data
 const deckId = ref(route.params.deckId)
@@ -193,7 +207,7 @@ const notes = computed(() => useNotes(deckId.value))
 const cardsOperations = computed(() => useCards(deckId.value))
 
 const tags = ref([])
-const isPdfPanelOpen = ref(false)
+const isPdfPanelOpen = ref(true)
 const displayingSuggestedCards = ref(false)
 
 const frontEditorController = useCardEditor('')
@@ -227,6 +241,7 @@ const tagsLoadable = useLoadable(async () => {
 watch(deckId, (_) => {
     tagsLoadable.load()
 }, { immediate: true})
+
 
 const noteLoadable = useLoadable(async () => {
     if (!noteId.value) return null
@@ -387,7 +402,10 @@ async function copyImageFromDataUrl(url) {
     displayingSuggestedCards.value = true
 
     //Load the cards
-    suggestedCardLoadable.load(url)
+    premiumFeature.executeWithoutPaywall(() => {
+        console.log('Loading suggested cards')
+        suggestedCardLoadable.load(url)
+    })
 }
 
 function closeSuggestedCards() { displayingSuggestedCards.value = false }
@@ -426,6 +444,10 @@ function addSuggestedCard(cardContent) {
     suggestedCardLoadable.value = suggestedCardLoadable.value.filter((card) => card !== cardContent)
     if (suggestedCardLoadable.value.length == 0) closeSuggestedCards()
     saveNote()
+}
+
+function upgrade() {
+    premiumFeature.execute(() => {}, () => {})
 }
 
 </script>
@@ -467,7 +489,6 @@ function addSuggestedCard(cardContent) {
     width: 50%;
     min-width: 0;
     align-self: stretch;
-    overflow: hidden;
     transition: width 0.3s ease, margin 0.3s ease, opacity 0.3s ease;
     margin-right: 20px;
 }
@@ -490,6 +511,18 @@ function addSuggestedCard(cardContent) {
     border: solid 1px var(--el-color-primary);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+}
+
+.suggested-cards-promo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    color: black;
+}
+
+.flex-spacer {
+    flex: 1;
 }
 
 .suggested-cards-header {

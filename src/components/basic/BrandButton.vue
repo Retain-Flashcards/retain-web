@@ -1,5 +1,5 @@
 <template>
-    <button @click.prevent='emit("click")' :disabled='props.loading' :class='`brand-button ${props.size || ""} ${props.plain ? "plain" : ""} ${props.type || "primary"} ${props.loading ? "disabled" : ""}`'>
+    <button @click.prevent='emit("click")' :disabled='props.loading || props.disabled' :class='`brand-button ${props.size || ""} ${props.plain ? "plain" : ""} ${props.type || "primary"} ${props.loading || props.disabled ? "disabled" : ""}`'>
         <span :class='`brand-button__text ${props.loading ? "loading" : ""}`'>
             <font-awesome-icon :icon='props.icon' v-if='props.icon && (!props.iconPosition || props.iconPosition === "left")'></font-awesome-icon>
             <slot></slot>
@@ -14,7 +14,7 @@
 <script setup>
 import AppSpinner from './AppSpinner.vue'
 
-const props = defineProps(['icon', 'iconPosition', 'loading', 'type', 'plain', 'size'])
+const props = defineProps(['icon', 'iconPosition', 'loading', 'type', 'plain', 'size', 'disabled'])
 
 const emit = defineEmits(['click'])
 
@@ -130,7 +130,7 @@ const spinnerStyles = {
 .brand-button.info:active:not(.disabled) { background-color: var(--el-color-info-light-3); }
  
 .brand-button.info.plain {
-    background-color: white;
+    background-color: transparent;
     border: 1px solid var(--el-color-info);
     color: var(--el-color-info);
 }

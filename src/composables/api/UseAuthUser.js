@@ -4,11 +4,11 @@ import useSupabase from './UseSupabase'
 const { supabase } = useSupabase()
 
 export default function useAuthUser() {
-    const user = ref(null)
+    const user = ref(undefined)
 
     // v2: onAuthStateChange returns { data: { subscription } }
     supabase.auth.onAuthStateChange((event, session) => {
-        user.value = session?.user ?? null
+        user.value = session?.user ?? undefined
     })
 
     const reloadAuth = async () => {

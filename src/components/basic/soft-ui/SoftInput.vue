@@ -243,12 +243,12 @@ defineExpose({
 }
 
 .soft-input--small .soft-input__inner {
-    height: 32px;
+    height: 30px;
     font-size: 13px;
 }
 
 .soft-input--default .soft-input__inner {
-    height: 40px;
+    height: 35px;
     font-size: 14px;
 }
 
@@ -258,7 +258,7 @@ defineExpose({
 }
 
 .soft-input--large .soft-input__inner {
-    height: 48px;
+    height: 40px;
     font-size: 16px;
 }
 

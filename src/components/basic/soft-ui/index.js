@@ -14,3 +14,6 @@ export { default as SoftCard } from './SoftCard.vue'
 // Form components
 export { default as SoftForm } from './SoftForm.vue'
 export { default as SoftFormItem } from './SoftFormItem.vue'
+
+// Popover
+export { default as SoftPopover } from './SoftPopover.vue'

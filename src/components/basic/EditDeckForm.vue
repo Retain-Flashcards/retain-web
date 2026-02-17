@@ -109,7 +109,6 @@ const submitFormLoadable = useLoadable(async () => {
 
         props.onComplete(result)
     } catch(error) {
-        console.log(error)
         notificationService.error('Something went wrong. Please try again.')
     }
 

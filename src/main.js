@@ -50,7 +50,7 @@ const { userIsLoggedIn, setAuthStateChangedListener } = useAuthUser()
 
 //Vue Router routes
 const routes = [
-    { name: 'Home', path: '/', component: Home, meta: { requiresAuth: true } },
+    { name: 'Home', path: '/', component: Home },
     { name: 'Login', path: '/login', component: Login },
     { name: 'Google Login', path: '/google', component: GoogleLogin },
     { name: 'Register', path: '/register', component: Register },
@@ -89,7 +89,7 @@ const app = createApp(App)
 //Using
 app.use(router)
 app.use(Equal)
-app.use(ElementPlus)
+app.use(ElementPlus, { zIndex: 30000 })
 app.use(vueShortkey)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)

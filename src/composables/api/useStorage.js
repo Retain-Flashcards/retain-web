@@ -46,14 +46,39 @@ export default function useStorage() {
 
     }
 
-    const uploadPDF = async (file) => {
+    const uploadPDF = async (file, name = 'Test') => {
         if (file) {
             const extension = file.name.split('.').pop().toLowerCase()
             if (extension != 'pdf') throw new Error('File must be a PDF')
             const fileName = generate_uuid() + '.pdf'
             const filePath = `${getCurrentUserId()}/note-pdfs/${fileName}`
-            return await uploadAndGetPublicUrl('note-pdfs', filePath, file)
+            return await uploadAndGetPublicUrl('note-pdfs', filePath, file, { metadata: { title: name } })
         }
+    }
+
+    const listNotePdfs = async () => {
+        const { data, error } = await supabase.storage.from('note-pdfs').list(`${getCurrentUserId()}/note-pdfs`)
+        if (error) throw new Error('Could not list note PDFs')
+
+        //Now we need to get the metadata
+        const filesWithMetadata = await Promise.all(data.map(async (file) => {
+            const { data: metadata, error } = await supabase.storage.from('note-pdfs').info(`${getCurrentUserId()}/note-pdfs/${file.name}`)
+            if (error) throw new Error('Could not get file metadata')
+            return { ...file, user_metadata: metadata.metadata, filePath: `${getCurrentUserId()}/note-pdfs/${file.name}` }
+        }))
+        
+        return filesWithMetadata
+    }
+
+    const getPublicUrl = (filePath) => {
+        const { data, error } = supabase.storage.from('note-pdfs').getPublicUrl(filePath)
+        if (error) throw new Error('Could not get file URL')
+        return data.publicUrl
+    }
+
+    const deleteNote = async (filePath) => {
+        const { error } = await supabase.storage.from('note-pdfs').remove([filePath])
+        if (error) throw new Error('Could not delete file')
     }
 
     return {
@@ -61,7 +86,10 @@ export default function useStorage() {
         uploadAndGetPublicUrl,
         uploadImage,
         uploadPDF,
-        convertImageToBlob
+        convertImageToBlob,
+        listNotePdfs,
+        getPublicUrl,
+        deleteNote
     }
 
 }

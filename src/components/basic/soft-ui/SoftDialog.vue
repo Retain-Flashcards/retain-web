@@ -4,7 +4,8 @@
             <div 
                 v-if="modal.isOpen" 
                 class="soft-dialog-overlay"
-                @click.self="handleOverlayClick"
+                @mousedown.self="handleOverlayClick"
+                :style="{ zIndex: zIndex }"
             >
                 <Transition name="soft-dialog-zoom">
                     <div 
@@ -45,8 +46,11 @@
 </template>
 
 <script setup>
-import { computed, watch, onMounted, onUnmounted } from 'vue'
+import { computed, watch, onMounted, onUnmounted, ref } from 'vue'
 import Modal from '../Modal.vue'
+import useZIndex from '@/composables/ui/useZIndex'
+
+const { nextZIndex } = useZIndex()
 
 const props = defineProps({
     modal: {
@@ -98,6 +102,8 @@ const props = defineProps({
 
 const emit = defineEmits(['open', 'opened', 'close', 'closed'])
 
+const zIndex = ref(nextZIndex())
+
 const sizeClass = computed(() => {
     if (props.fullscreen) return ''
     return `soft-dialog--${props.size}`
@@ -137,8 +143,15 @@ function handleEscapeKey(event) {
     }
 }
 
+// Watch for modal opening to update z-index
+watch(() => props.modal.isOpen, (isOpen) => {
+    if (isOpen) {
+        zIndex.value = nextZIndex()
+    }
+}, { immediate: true })
+
 // Handle body scroll lock
-watch(() => props.modelValue, (newValue) => {
+watch(() => props.modal.isOpen, (newValue) => {
     if (props.lockScroll) {
         if (newValue) {
             document.body.style.overflow = 'hidden'
