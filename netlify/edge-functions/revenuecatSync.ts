@@ -53,8 +53,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
 
   return new Response(
     JSON.stringify({
-      status: 'success',
-      card: finalResult
+      status: 'success'
     }),
     { headers: { "Content-Type": "application/json", ...corsHeaders } },
   )
