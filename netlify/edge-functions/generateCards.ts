@@ -36,7 +36,13 @@ export default async (req: Request, context: Context): Promise<Response> => {
   const { data: userInfo } = await supabase.from('users').select('plan').eq('id', user.id).single()
 
   if (userInfo?.plan !== 'retain-pro') {
-    throw new Error('User is not a pro subscriber')
+    return new Response(
+      JSON.stringify({ 'error': 'User is not a pro subscriber' }),
+      {
+        status: 401,
+        headers: corsHeaders
+      }
+    )
   }
 
   const { messages, imageUrl } = await req.json()
