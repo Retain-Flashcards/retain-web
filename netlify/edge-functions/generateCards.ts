@@ -33,6 +33,12 @@ export default async (req: Request, context: Context): Promise<Response> => {
 
   if (!user) throw new Error('No user') 
 
+  const { data: userInfo } = await supabase.from('users').select('plan').eq('id', user.id).single()
+
+  if (userInfo?.plan !== 'retain-pro') {
+    throw new Error('User is not a pro subscriber')
+  }
+
   const { messages, imageUrl } = await req.json()
 
   const openai = new OpenAI({
