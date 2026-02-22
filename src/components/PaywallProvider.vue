@@ -23,6 +23,7 @@ function openPaywall(withPostFn, withDismissFn) {
 }
 
 function paywallSuccess() {
+    paywallModal.close()
     paywallModal.state.executeAfter()
 }
 

@@ -20,6 +20,7 @@ import Quiz from './pages/Quiz.vue'
 import CramBuilder from './pages/CramBuilder.vue'
 import Cram from './pages/Cram.vue'
 import AiCardBuilder from './pages/AiCardBuilder.vue'
+import AudioStudy from './pages/AudioStudy.vue'
 
 //UI Frameworks
 import Equal from 'equal-vue'
@@ -64,6 +65,7 @@ const routes = [
    /* { name: 'Quiz', path: '/deck/:deckId/quiz/:quizPath', component: Quiz}, */
     { name: 'Cram Builder', path: '/deck/:deckId/cram', component: CramBuilder },
     { name: 'Cram', path: '/deck/:deckId/cram/:cramId', component: Cram },
+    { name: 'Audio Study', path: '/deck/:deckId/audio-study', component: AudioStudy },
     /*{ name: 'AI Card Builder', path: '/deck/:deckId/cards/add-ai', component: AiCardBuilder }*/
 ]
 

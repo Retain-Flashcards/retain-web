@@ -663,7 +663,6 @@ h2 {
     width: 100%;
     display: flex;
     box-sizing: border-box;
-    overflow: hidden;
     margin-bottom: 20px;
 }
 

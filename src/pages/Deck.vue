@@ -53,6 +53,26 @@
                 <!--Main Study Button-->
                 <study-button :newCount='deck.newCount' :reviewCount='deck.reviewCount' @beginStudy='beginStudy'></study-button>
 
+                <!--Voice Study (Premium Beta)-->
+                <div class='voice-study-banner'>
+                    <div class='voice-study-banner__left'>
+                        <font-awesome-icon :icon="['fas', 'microphone']" class='voice-study-banner__icon' />
+                        <div>
+                            <div style='display: flex; align-items: center; gap: 8px;'>
+                                <span class='voice-study-banner__title'>Voice Study</span>
+                                <el-tag type='warning' size='small' round>Beta</el-tag>
+                            </div>
+                            <p class='voice-study-banner__subtitle'>Try our new AI-powered voice study experience</p>
+                        </div>
+                    </div>
+                    <premium-content>
+                        <brand-button type='primary' @click='beginAudioStudy'>Begin Session</brand-button>
+                        <template #nonSubscriber>
+                            <brand-button type='primary' @click='beginAudioStudy'><premium-marker /> Upgrade</brand-button>
+                        </template>
+                    </premium-content>
+                </div>
+
                 <!--Cram Sessions-->
                 <el-collapse class='due-container' style='margin-top: 0px;'>
                     <el-collapse-item>
@@ -293,6 +313,8 @@ import SoftForm from '../components/basic/soft-ui/SoftForm.vue'
 import SoftFormItem from '../components/basic/soft-ui/SoftFormItem.vue'
 import SoftInput from '../components/basic/soft-ui/SoftInput.vue'
 import AppSpinner from '../components/basic/AppSpinner.vue'
+import PremiumContent from '../components/PremiumContent.vue'
+import PremiumMarker from '../components/basic/PremiumMarker.vue'
 
 //Composables
 import useDeck from '../composables/api/useDeck.js'
@@ -304,7 +326,9 @@ import useLoadable from '../composables/ui/useLoadable.js'
 import useModal from '../composables/ui/useModal.js'
 import useCardEditor from '../composables/ui/useCardEditor.js'
 import useNotificationService from '../composables/ui/useNotificationService.js'
+import usePremiumFeature from '../composables/api/usePremiumFeature.js'
 const notificationService = useNotificationService()
+const premiumFeature = usePremiumFeature()
 const {
     fetchData,
     getQuizzes,
@@ -479,6 +503,11 @@ function openQuiz(quizName) {
     router.push({ name: 'Quiz', params: { deckId: route.params.deckId, quizPath: quizPath } })
 } 
 function beginStudy() { router.push({ name: 'Study Deck', params: { deckId: route.params.deckId }, query: { tags: tags.value.selected } }) }
+function beginAudioStudy() {
+    premiumFeature.execute(() => {
+        router.push({ name: 'Audio Study', params: { deckId: route.params.deckId } })
+    }, () => {})
+}
 function createNotes() { router.push({ name: 'Create Cards', params: { deckId: route.params.deckId } }) }
 function aiCardBuilder() { router.push({ name: 'AI Card Builder', params: { deckId: route.params.deckId } }) }
 
@@ -622,7 +651,39 @@ h2 {
     background-color: #EEE;
 }
 
+/* ── Voice Study Banner ───────────────────────────────────────── */
+.voice-study-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
 
+.voice-study-banner__left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.voice-study-banner__icon {
+    font-size: 22px;
+    color: var(--el-color-primary);
+}
+
+.voice-study-banner__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.voice-study-banner__subtitle {
+    font-size: 13px;
+    color: #888;
+    margin: 2px 0 0;
+}
 </style>
 
 <style>

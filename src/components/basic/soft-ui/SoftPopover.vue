@@ -32,8 +32,12 @@
 
 <script setup>
 import { ref, computed, provide, watch } from 'vue'
+import useZIndex from '@/composables/ui/useZIndex'
+
+const { nextZIndex } = useZIndex()
 
 const props = defineProps({
+// ... (props remain same)
     placement: {
         type: String,
         default: 'bottom-start' // bottom-start, bottom-end, bottom
@@ -61,6 +65,7 @@ const emit = defineEmits(['update:modelValue', 'select'])
 const isOpen = ref(false)
 const wrapper = ref(null)
 const selection = ref(undefined)
+const zIndex = ref(nextZIndex())
 
 provide('selection', selection)
 
@@ -69,13 +74,17 @@ watch(selection, () => {
 })
 
 const customStyle = computed(() => {
+    const style = { zIndex: zIndex.value }
     if (props.width) {
-        return { width: props.width }
+        style.width = props.width
     }
-    return {}
+    return style
 })
 
 function toggle() {
+    if (!isOpen.value) {
+        zIndex.value = nextZIndex()
+    }
     isOpen.value = !isOpen.value
 }
 
@@ -91,7 +100,7 @@ function handleItemClick(item) {
     }
 }
 
-// Click outside directive
+// ... (click outside directive remains same)
 const vClickOutside = {
     mounted(el, binding) {
         el.clickOutsideEvent = function(event) {
@@ -107,28 +116,23 @@ const vClickOutside = {
 }
 
 defineExpose({
-    open: () => isOpen.value = true,
+    open: () => {
+        zIndex.value = nextZIndex()
+        isOpen.value = true
+    },
     close
 })
 </script>
 
 <style scoped>
-.soft-popover-wrapper {
-    position: relative;
-    display: inline-block;
-}
-
-.soft-popover-trigger {
-    cursor: pointer;
-    display: inline-block;
-}
-
+/* ... (styles) */
 .soft-popover {
     position: absolute;
-    z-index: 2000;
+    /* z-index removed here, handled by style binding */
     min-width: 150px;
     background: #ffffff;
     border-radius: 12px;
+/* ... */
     box-shadow: 
         0 4px 6px -1px rgba(0, 0, 0, 0.1), 
         0 2px 4px -1px rgba(0, 0, 0, 0.06),

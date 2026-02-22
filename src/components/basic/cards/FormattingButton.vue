@@ -3,7 +3,7 @@
     <div :class='`formatting-button${popoverOpen ? " open":""}`' @click='onClick' @mousedown='onMousedown'>
         <font-awesome-icon v-if='props.icon.startsWith("fa-")' :icon='props.icon'/>
         <div v-if='!props.icon.startsWith("fa-")' class='formatting-button-icon' v-html='props.icon'></div>
-        <div v-if='popoverOpen' class='formatting-button-popover'>
+        <div v-if='popoverOpen' class='formatting-button-popover' :style='{ zIndex: zIndex }'>
             <formatting-button v-for='tool in props.subItems' :icon='tool.icon' @action='tool.action'></formatting-button>
         </div>
     </div>
@@ -36,7 +36,7 @@
     border-radius: 10px;
     box-shadow: 1px 2px 5px #CCC;
     padding: 5px;
-    z-index: 40;
+    /* z-index removed, handled dynamically */
     display: grid;
     grid-template-columns: repeat(auto-fit, 30px);
     max-width: 120px;
@@ -45,8 +45,11 @@
 
 <script setup>
 import FormattingButton from './FormattingButton.vue'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import useLockedSelection from '../../../composables/ui/useLockedSelection'
+import useZIndex from '@/composables/ui/useZIndex'
+
+const { nextZIndex } = useZIndex()
 
 const props = defineProps(['hintText', 'icon', 'subItems'])
 const emit = defineEmits(['action'])
@@ -55,6 +58,7 @@ const lockedSelection = useLockedSelection()
 
 
 const popoverOpen = ref(false)
+const zIndex = ref(nextZIndex())
 
 function onMousedown(e) {
     lockedSelection.lockWindowSelection()
@@ -65,6 +69,9 @@ function onClick(e) {
     e.preventDefault()
 
     if (props.subItems) {
+        if (!popoverOpen.value) {
+            zIndex.value = nextZIndex()
+        }
         popoverOpen.value = !popoverOpen.value
         return
     }
