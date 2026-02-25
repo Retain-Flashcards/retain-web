@@ -31,6 +31,35 @@
                                 </el-select-v2>
                             </LoadableStateProvider>
                         </div>
+                        
+                    </template>
+                    
+                    <template #center>
+                        <div v-show="focusText !== null && isProSubscriber" 
+                             class="focus-pill"
+                             @click="editFocus"
+                             style="display: inline-flex; align-items: center; background-color: var(--el-color-primary-light-9); padding: 4px 16px; border-radius: 20px; border: 1px solid var(--el-color-primary-light-5); cursor: pointer; transition: all 0.2s ease;">
+                            
+                            <span style="font-size: 14px; font-weight: bold; color: var(--el-color-primary); margin-right: 6px; white-space: nowrap;">Focus:</span>
+                            
+                            <span v-if="!isEditingFocus" style="font-size: 14px; color: var(--el-text-color-regular); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
+                                {{ focusText || 'None' }}
+                            </span>
+                            <i v-if="!isEditingFocus" class="fa-solid fa-pen" style="font-size: 10px; margin-left: 8px; color: var(--el-color-primary); opacity: 0.6;"></i>
+                            
+                            <el-input 
+                                v-else
+                                ref="focusInput"
+                                v-model="editFocusText" 
+                                size="small"
+                                @blur="saveFocus"
+                                @keyup.enter="saveFocus"
+                                @keyup.stop
+                                @keydown.stop
+                                placeholder="Enter study focus..."
+                                style="width: 150px;"
+                            />
+                        </div>
                     </template>
 
                     <template #actions>
@@ -144,6 +173,7 @@ import { setThemeColor } from '../utils'
 import useLoadable from '../composables/ui/useLoadable'
 import { useKeyUpBinding } from '../composables/keybindings'
 import useNotificationService from '../composables/ui/useNotificationService'
+import useRevenueCat from '../composables/api/useRevenueCat'
 
 
 const route = useRoute()
@@ -153,12 +183,69 @@ const notificationService = useNotificationService()
 
 const {
     fetchNextCard,
-    studyCard
+    studyCard,
+    embedFocusQuery
 } = useCards(route.params.deckId)
 const {
     fetchData,
     loadTags
 } = useDeck(route.params.deckId)
+
+const {
+    isProSubscriber
+} = useRevenueCat()
+
+// Study focus: embed once on mount, reuse for every fetchNextCard call
+const focusText = ref(route.query.focus || null)
+const focusEmbedding = ref(null)
+
+// Editable Focus State
+const isEditingFocus = ref(false)
+const editFocusText = ref('')
+const focusInput = ref(null)
+
+const editFocus = () => {
+    editFocusText.value = focusText.value || ''
+    isEditingFocus.value = true
+    setTimeout(() => {
+        if (focusInput.value) focusInput.value.focus()
+    }, 50)
+}
+
+const saveFocus = async () => {
+    isEditingFocus.value = false
+    const newFocus = editFocusText.value.trim() || null
+    
+    // If it hasn't changed, don't do anything
+    if (newFocus === focusText.value) return
+    
+    // Update the ref
+    focusText.value = newFocus
+    
+    // Update the URL without reloading the page
+    const query = { ...route.query }
+    if (newFocus) query.focus = newFocus
+    else delete query.focus
+    router.replace({ query })
+    
+    // Re-embed and load the next card
+    if (newFocus) {
+        try {
+            focusEmbedding.value = await embedFocusQuery(newFocus)
+        } catch (e) {
+            console.error('Failed to update embedding for new focus:', e)
+            notificationService.error('Failed to update focus embedding')
+            focusEmbedding.value = null
+        }
+    } else {
+        focusEmbedding.value = null
+    }
+
+    // Load a new card matching the new focus
+    currentCardLoadable.load()
+}
+
+
 
 
 
@@ -209,7 +296,7 @@ const tagOptionsLoadable = useLoadable(async () => {
 const currentCardLoadable = useLoadable(async () => {
     flipped.value = false
 
-    const result = await fetchNextCard(selectedTags.value)
+    const result = await fetchNextCard(selectedTags.value, focusEmbedding.value)
 
     //If we didn't get a card, we're done!
     if (!result.card) {
@@ -243,7 +330,10 @@ const currentCardLoadable = useLoadable(async () => {
 const studyCardLoadable = useLoadable(async (_, category) => {
     const currentCard = currentCardLoadable.value
     if (!currentCard) return
-    await studyCard(currentCard, category)
+    
+    // In focus mode, we bury sibling cards so they don't show up immediately
+    const shouldBuryRelated = Boolean(focusText)
+    await studyCard(currentCard, category, shouldBuryRelated)
 
     currentCardLoadable.load()
 }, { onError: () => notificationService.error('A problem occurred while updating the card') })
@@ -276,6 +366,16 @@ function editCard() {
 onMounted(async () => {
     await deckLoadable.load()
     tagOptionsLoadable.load()
+
+    // If focus text is provided, embed it before loading cards
+    if (focusText.value) {
+        try {
+            focusEmbedding.value = await embedFocusQuery(focusText.value)
+        } catch (e) {
+            console.warn('Failed to embed focus query, falling back to normal study:', e)
+        }
+    }
+
     currentCardLoadable.load()
 })
 

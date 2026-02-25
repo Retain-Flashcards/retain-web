@@ -15,6 +15,11 @@ export default function useAuthUser() {
         const { data: { user: currentUser } } = await supabase.auth.getUser()
         user.value = currentUser
     }
+
+    const getAuthToken = async () => {
+        const { data: { session } } = await supabase.auth.getSession()
+        return session?.access_token
+    }
     
     const loginEmailPassword = async (email, password, captchaToken) => {
         // v2: signIn → signInWithPassword, captcha in options
@@ -79,6 +84,7 @@ export default function useAuthUser() {
         getUser,
         registerUser,
         logInWithGoogle,
-        reloadAuth
+        reloadAuth,
+        getAuthToken
     }
 }

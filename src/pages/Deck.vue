@@ -30,47 +30,118 @@
             <!--Deck Content-->
             <div class='main-content'>
 
-                <section-layout>
-                    <template #header>
-                        <h2>Due Now</h2>
-                    </template>
+                <!-- Top Layout: Study Button (Left) & Stats (Right) -->
+                <div class="deck-top-layout">
+                    <!-- Left Column: Due Now + Study -->
+                    <div class="deck-left-column">
+                        <div style="padding-top: 30px; margin-bottom: 12px;">
+                            <h2 style="margin-top: 0px; margin-bottom: 12px;">Due Now</h2>
 
-                    <template #actions>
-                        <el-select-v2 v-model='tags.selected' 
-                            placeholder='Filter by Tags...' 
-                            style='width: 200px;'
-                            multiple
-                            filterable
-                            :options='tags.options'
-                            :props='{label: "name", value: "id"}'
-                            tag-type='danger'
-                            @change='(selected) => { reloadDeckCount()}'>
-                        </el-select-v2>
-                        <brand-button icon='fa-gear' type='primary' :plain='true' @click='openSettingsDialog'>Study Settings</brand-button>
-                    </template>
-                </section-layout>
+                            <!-- Filter row: Study Focus + Tags + Settings gear -->
+                            <div class="filter-row">
+                                <premium-content>
+                                    <div class="study-focus-row">
+                                        <SoftInput 
+                                            v-model="studyFocusText" 
+                                            placeholder="Focus on a topic, e.g. 'amino acid structures'" 
+                                            style="flex: 1;"
+                                            @keyup.enter="beginStudy"
+                                        />
+                                    </div>
+                                    <template #nonSubscriber>
+                                        <div class="study-focus-row study-focus-row--locked" @click="beginStudyFocusPremium">
+                                            <div class="study-focus-locked-input">
+                                                <span>Focus on a topic, e.g. 'amino acid structures'</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </premium-content>
 
-                <!--Main Study Button-->
-                <study-button :newCount='deck.newCount' :reviewCount='deck.reviewCount' @beginStudy='beginStudy'></study-button>
+                                <el-select-v2 v-model='tags.selected' 
+                                    placeholder='Filter by Tags...' 
+                                    style='flex: 0 0 auto; width: 180px;'
+                                    multiple
+                                    filterable
+                                    :options='tags.options'
+                                    :props='{label: "name", value: "id"}'
+                                    tag-type='danger'
+                                    @change='(selected) => { reloadDeckCount()}'>
+                                </el-select-v2>
 
-                <!--Voice Study (Premium Beta)-->
-                <div class='voice-study-banner'>
-                    <div class='voice-study-banner__left'>
-                        <font-awesome-icon :icon="['fas', 'microphone']" class='voice-study-banner__icon' />
-                        <div>
-                            <div style='display: flex; align-items: center; gap: 8px;'>
-                                <span class='voice-study-banner__title'>Voice Study</span>
+                                <brand-button icon='fa-gear' type='primary' :plain='true' @click='openSettingsDialog' style='flex-shrink: 0;'></brand-button>
+                            </div>
+                        </div>
+
+                        <!-- Study Button -->
+                        <study-button :newCount='deck.newCount' :reviewCount='deck.reviewCount' @beginStudy='beginStudy'></study-button>
+
+                        <!-- Voice Study -->
+                        <div class="study-divider">
+                            <span class="study-divider__line"></span>
+                            <span class="study-divider__text">or</span>
+                            <span class="study-divider__line"></span>
+                        </div>
+
+                        <div class="voice-study-section">
+                            <div class="voice-study-section__header">
+                                <font-awesome-icon :icon="['fas', 'microphone']" class="voice-study-section__icon" />
+                                <span class="voice-study-section__title">Voice Study</span>
                                 <el-tag type='warning' size='small' round>Beta</el-tag>
                             </div>
-                            <p class='voice-study-banner__subtitle'>Try our new AI-powered voice study experience</p>
+                            <p class="voice-study-section__subtitle">AI-powered voice review experience</p>
+                            <premium-content>
+                                <brand-button type='primary' @click='beginAudioStudy'>Begin Session</brand-button>
+                                <template #nonSubscriber>
+                                    <brand-button type='primary' @click='beginAudioStudy'><premium-marker /> Upgrade</brand-button>
+                                </template>
+                            </premium-content>
                         </div>
                     </div>
-                    <premium-content>
-                        <brand-button type='primary' @click='beginAudioStudy'>Begin Session</brand-button>
-                        <template #nonSubscriber>
-                            <brand-button type='primary' @click='beginAudioStudy'><premium-marker /> Upgrade</brand-button>
-                        </template>
-                    </premium-content>
+
+                    <!-- Right Column: Stats -->
+                    <div class="deck-right-column">
+                        <div style="padding-top: 30px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                <h2 style="margin: 0;">Stats</h2>
+                            </div>
+
+                            <premium-content>
+                                <!-- Pro user: fully visible stats -->
+                                <div class="stats-content">
+                                    <div class="stats-section">
+                                        <h4 class="stats-section__title">Upcoming Reviews</h4>
+                                        <DueReviewsGraph :loadable="dueReviewsLoadable" />
+                                    </div>
+                                    <div class="stats-section">
+                                        <h4 class="stats-section__title">Daily Activity</h4>
+                                        <DailyActivityChart :loadable="dailyActivityLoadable" />
+                                    </div>
+                                </div>
+
+                                <template #nonSubscriber>
+                                    <!-- Free user: blurred placeholder charts -->
+                                    <div class="stats-blurred-wrapper">
+                                        <div class="stats-content stats-content--blurred">
+                                            <div class="stats-section">
+                                                <h4 class="stats-section__title">Upcoming Reviews</h4>
+                                                <DueReviewsGraph :loadable="placeholderDueReviewsLoadable" />
+                                            </div>
+                                            <div class="stats-section">
+                                                <h4 class="stats-section__title">Daily Activity</h4>
+                                                <DailyActivityChart :loadable="placeholderDailyActivityLoadable" />
+                                            </div>
+                                        </div>
+                                        <div class="stats-unlock-overlay">
+                                            <brand-button type="primary" :plain="true" size="small" @click="unlockStats">
+                                                <font-awesome-icon :icon="['fas', 'lock']" style="margin-right: 4px;" />
+                                                Unlock with Pro
+                                            </brand-button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </premium-content>
+                        </div>
+                    </div>
                 </div>
 
                 <!--Cram Sessions-->
@@ -168,6 +239,8 @@
                     </el-collapse-item>
                     -->
                 </el-collapse>
+
+
 
                 <div class='due-container' style='margin-top: 0px; margin-bottom: 50px;'></div>
 
@@ -314,7 +387,10 @@ import SoftFormItem from '../components/basic/soft-ui/SoftFormItem.vue'
 import SoftInput from '../components/basic/soft-ui/SoftInput.vue'
 import AppSpinner from '../components/basic/AppSpinner.vue'
 import PremiumContent from '../components/PremiumContent.vue'
+import DueReviewsGraph from '../components/DueReviewsGraph.vue'
+import ProPill from '../components/basic/ProPill.vue'
 import PremiumMarker from '../components/basic/PremiumMarker.vue'
+import DailyActivityChart from '../components/DailyActivityChart.vue'
 
 //Composables
 import useDeck from '../composables/api/useDeck.js'
@@ -327,8 +403,10 @@ import useModal from '../composables/ui/useModal.js'
 import useCardEditor from '../composables/ui/useCardEditor.js'
 import useNotificationService from '../composables/ui/useNotificationService.js'
 import usePremiumFeature from '../composables/api/usePremiumFeature.js'
+import useRevenueCat from '../composables/api/useRevenueCat.js'
 const notificationService = useNotificationService()
 const premiumFeature = usePremiumFeature()
+const { isProSubscriber } = useRevenueCat()
 const {
     fetchData,
     getQuizzes,
@@ -337,7 +415,9 @@ const {
     loadTags,
     getStudySettings,
     setDeckStudySettings,
-    setTodayStudySettings
+    setTodayStudySettings,
+    getDueReviewCounts,
+    getDailyActivityCounts
 } = useDeck(route.params.deckId)
 
 const {
@@ -360,6 +440,8 @@ const tableState = ref({
     noteCount: 0
 })
 
+const studyFocusText = ref('')
+
 //Modals
 const settingsModal = useModal({
     newLimitContent: 20,
@@ -367,6 +449,36 @@ const settingsModal = useModal({
     currentMode: 'defaults',
     previousMode: null
 })
+
+//Due Reviews Graph Data (loaded only for pro users)
+const dueReviewsLoadable = useLoadable(async () => {
+    return await getDueReviewCounts()
+})
+
+//Daily Activity Graph Data (loaded only for pro users)
+const dailyActivityLoadable = useLoadable(async () => {
+    return await getDailyActivityCounts()
+})
+
+// Placeholder loadables with static fake data for free-user blurred preview
+const placeholderDueReviewsLoadable = useLoadable(() => {}, {
+    initialValue: Array.from({ length: 10 }, (_, i) => ({
+        date: '', label: i === 4 ? 'Today' : '', weekday: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun','Mon','Tue','Wed'][i],
+        monthDay: `${Math.floor(Math.random()*12)+1}/${Math.floor(Math.random()*28)+1}`,
+        count: [3, 8, 1, 5, 12, 4, 7, 2, 6, 9][i], isFuture: i > 4
+    }))
+})
+placeholderDueReviewsLoadable.currentState.value.status = 'data'
+
+const placeholderDailyActivityLoadable = useLoadable(() => {}, {
+    initialValue: Array.from({ length: 10 }, (_, i) => ({
+        date: '', label: i === 9 ? 'Today' : '', weekday: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun','Mon','Tue','Wed'][i],
+        monthDay: `${Math.floor(Math.random()*12)+1}/${Math.floor(Math.random()*28)+1}`,
+        newSeen: [5, 3, 8, 2, 6, 4, 7, 3, 5, 1][i],
+        reviewSeen: [12, 8, 15, 6, 10, 9, 14, 7, 11, 4][i]
+    }))
+})
+placeholderDailyActivityLoadable.currentState.value.status = 'data'
 
 //Switch dynamically based on mode
 function handleSwitchSettingsMode() {
@@ -502,11 +614,23 @@ function openQuiz(quizName) {
     const quizPath = getQuizPath(quizName)
     router.push({ name: 'Quiz', params: { deckId: route.params.deckId, quizPath: quizPath } })
 } 
-function beginStudy() { router.push({ name: 'Study Deck', params: { deckId: route.params.deckId }, query: { tags: tags.value.selected } }) }
+function beginStudy() {
+    const query = { tags: tags.value.selected }
+    if (studyFocusText.value) {
+        query.focus = studyFocusText.value
+    }
+    router.push({ name: 'Study Deck', params: { deckId: route.params.deckId }, query })
+}
 function beginAudioStudy() {
     premiumFeature.execute(() => {
         router.push({ name: 'Audio Study', params: { deckId: route.params.deckId } })
     }, () => {})
+}
+function beginStudyFocusPremium() {
+    premiumFeature.execute(() => beginStudy(), () => {})
+}
+function unlockStats() {
+    premiumFeature.execute(() => {}, () => {})
 }
 function createNotes() { router.push({ name: 'Create Cards', params: { deckId: route.params.deckId } }) }
 function aiCardBuilder() { router.push({ name: 'AI Card Builder', params: { deckId: route.params.deckId } }) }
@@ -567,6 +691,14 @@ onMounted(() => {
         tags.value.options = tagOptions
     })
 })
+
+// Load stats reactively when pro status resolves
+watch(isProSubscriber, (isPro) => {
+    if (isPro) {
+        dueReviewsLoadable.load()
+        dailyActivityLoadable.load()
+    }
+}, { immediate: true })
 
 </script>
 
@@ -651,38 +783,163 @@ h2 {
     background-color: #EEE;
 }
 
-/* ── Voice Study Banner ───────────────────────────────────────── */
-.voice-study-banner {
+/* ── Deck Top Layout ─────────────────────────────────────────── */
+.deck-top-layout {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    border: 2px solid #eee;
-    border-radius: 12px;
+    gap: 30px;
     margin-bottom: 30px;
 }
 
-.voice-study-banner__left {
+.deck-left-column {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+}
+
+.deck-right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* ── Filter Row ──────────────────────────────────────────────── */
+.filter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+/* ── Study Focus Row ─────────────────────────────────────────── */
+.study-focus-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+}
+
+.study-focus-row--locked {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.study-focus-row--locked:hover {
+    opacity: 0.8;
+}
+
+.study-focus-locked-input {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border-radius: 7px;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
+    color: #aaa;
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.study-focus-lock-icon {
+    font-size: 12px;
+    color: #bbb;
+}
+
+/* ── Study Divider ───────────────────────────────────────────── */
+.study-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.study-divider__line {
+    flex: 1;
+    height: 1px;
+    background: #e0e0e0;
+}
+
+.study-divider__text {
+    font-size: 13px;
+    color: #aaa;
+    font-weight: 500;
+    text-transform: lowercase;
+}
+
+/* ── Voice Study Section (compact, horizontal) ───────────────── */
+.voice-study-section {
     display: flex;
     align-items: center;
     gap: 14px;
+    padding: 14px 20px;
+    border: 1.5px solid #eee;
+    border-radius: 12px;
+    background: #fff;
 }
 
-.voice-study-banner__icon {
-    font-size: 22px;
+.voice-study-section__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.voice-study-section__icon {
+    font-size: 18px;
     color: var(--el-color-primary);
 }
 
-.voice-study-banner__title {
-    font-size: 16px;
+.voice-study-section__title {
+    font-size: 15px;
     font-weight: 600;
     color: #333;
 }
 
-.voice-study-banner__subtitle {
+.voice-study-section__subtitle {
     font-size: 13px;
     color: #888;
-    margin: 2px 0 0;
+    margin: 0;
+    flex: 1;
+}
+
+/* ── Stats Panel ─────────────────────────────────────────────── */
+.stats-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.stats-content--blurred {
+    filter: blur(3px);
+    pointer-events: none;
+    user-select: none;
+}
+
+.stats-section__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #606266;
+    margin: 0 0 4px 0;
+}
+
+.stats-blurred-wrapper {
+    position: relative;
+}
+
+.stats-unlock-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    z-index: 1;
 }
 </style>
 

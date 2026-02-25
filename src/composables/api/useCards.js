@@ -4,14 +4,27 @@ import useAuthUser from './UseAuthUser'
 import Card from '../../model/objects/Card'
 
 const { supabase, makeSupabaseFetch } = useSupabase()
-const { getUser } = useAuthUser()
+const { getUser, getAuthToken } = useAuthUser()
 
 
 const learningSteps = [1, 10]
 
 export default function useCards(deckId) {
 
-    const fetchNextCard = async (filterTags) => {
+    async function embedFocusQuery(text) {
+        const EMBED_SERVICE_URL = import.meta.env.VITE_EMBED_SERVICE_URL || 'http://localhost:8000'
+        const token = await getAuthToken()
+        const response = await fetch(`${EMBED_SERVICE_URL}/embed-query`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ query: text })
+        })
+        if (!response.ok) throw new Error('Failed to embed focus query')
+        const result = await response.json()
+        return result.embedding
+    }
+
+    const fetchNextCard = async (filterTags, focusEmbedding = null) => {
 
         //Card placeholder
         let card = null
@@ -50,22 +63,42 @@ export default function useCards(deckId) {
             if (learningCard && learningCard.length > 0) card = new Card(learningCard[0])
 
             if (!card) {
-                //Now, attempt to pull a random review card
-                let reviewCardQuery = supabase.from('randomized_reviews').select('*').eq('deck_id', deckId)
-                if (filterTags && filterTags.length > 0) reviewCardQuery = reviewCardQuery.overlaps('tags', filterTags)
-                const { data: reviewCard, error: reviewCardError } = await reviewCardQuery.limit(1)
-                if (reviewCard && reviewCard.length > 0) card = new Card(reviewCard[0])
+                if (focusEmbedding) {
+                    // Focused study: pull review cards sorted by embedding similarity
+                    const { data: reviewCard, error: reviewCardError } = await supabase.rpc('match_review_cards', {
+                        query_embedding: focusEmbedding,
+                        target_deck_id: deckId,
+                        match_count: 1
+                    })
+                    if (reviewCard && reviewCard.length > 0) card = new Card(reviewCard[0])
+                } else {
+                    // Normal study: pull a random review card
+                    let reviewCardQuery = supabase.from('randomized_reviews').select('*').eq('deck_id', deckId)
+                    if (filterTags && filterTags.length > 0) reviewCardQuery = reviewCardQuery.overlaps('tags', filterTags)
+                    const { data: reviewCard, error: reviewCardError } = await reviewCardQuery.limit(1)
+                    if (reviewCard && reviewCard.length > 0) card = new Card(reviewCard[0])
+                }
             }
         }
 
         //If no review card has been found, we check for a new card
         //Also, 60% of the time we prioritize new cards over reviews
         if (!card || Math.random() >= 0.4) {
-            let newCardQuery = supabase.from('new_card_schedule').select('*').eq('deck_id', deckId)
-            if (filterTags && filterTags.length > 0) newCardQuery = newCardQuery.overlaps('tags', filterTags)
-            const { data: newCard, error: newCardError } = await newCardQuery.order('created_at', { ascending: true }).limit(1)
-            if (newCard.length > 0) {
-                card = new Card(newCard[0])
+            if (focusEmbedding) {
+                // Focused study: pull new cards sorted by embedding similarity
+                const { data: newCard, error: newCardError } = await supabase.rpc('match_new_cards', {
+                    query_embedding: focusEmbedding,
+                    target_deck_id: deckId,
+                    match_count: 1
+                })
+                if (newCard && newCard.length > 0) card = new Card(newCard[0])
+            } else {
+                let newCardQuery = supabase.from('new_card_schedule').select('*').eq('deck_id', deckId)
+                if (filterTags && filterTags.length > 0) newCardQuery = newCardQuery.overlaps('tags', filterTags)
+                const { data: newCard, error: newCardError } = await newCardQuery.order('created_at', { ascending: true }).limit(1)
+                if (newCard.length > 0) {
+                    card = new Card(newCard[0])
+                }
             }
         }
 
@@ -171,41 +204,22 @@ export default function useCards(deckId) {
         }
     }
 
-    const studyCard = async (card, category) => {
+    const studyCard = async (card, category, shouldBuryRelated = false) => {
         const now = new Date()
 
-        // Build base update object
-        const baseUpdate = {
-            card_id: card.id,
-            uid: getUser().id,
-            ease_factor: DEFAULT_EASE_FACTOR,
-            note_id: card.noteId
-        }
+        // Call the Supabase RPC to handle both the review and burying sibling cards
+        const { data: result, error } = await supabase.rpc('submit_card_review', {
+            p_card_id: card.id,
+            p_category: category,
+            p_local_timestamp: now.toISOString(),
+            p_should_bury_related: shouldBuryRelated
+        })
 
-        // Calculate scheduling based on learning vs review phase
-        const isLearning = card.learning !== false
-        const schedulingUpdate = isLearning
-            ? calculateLearningUpdate(card, category)
-            : calculateReviewUpdate(card, category)
-
-        // Merge updates and add timestamps
-        const cardUpdate = {
-            ...baseUpdate,
-            ...schedulingUpdate,
-            last_reviewed: now,
-            precise_last_reviewed: now,
-            last_review_timestamp: now,
-            current_interval: Math.round(schedulingUpdate.current_interval ?? 0)
-        }
-
-        //Now, send the card
-        const { data: newCard, error } = await supabase.from('card_reviews').upsert(cardUpdate)
-
-        if (error) throw new Error('Could not update card review')
+        if (error) throw new Error('Could not update card review: ' + error.message)
         
         return {
             status: 'success',
-            card: newCard
+            card: result
         }
     }   
 
@@ -250,6 +264,7 @@ export default function useCards(deckId) {
         fetchNextCard,
         studyCard,
         createCards,
-        generateCards
+        generateCards,
+        embedFocusQuery
     }
 }

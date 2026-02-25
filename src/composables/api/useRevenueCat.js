@@ -1,4 +1,5 @@
-import {  Purchases } from '@revenuecat/purchases-js'
+import { ref } from 'vue'
+import { Purchases } from '@revenuecat/purchases-js'
 import useAuthUser from './UseAuthUser'
 import useSupabase from './UseSupabase'
 
@@ -13,23 +14,55 @@ Purchases.configure({
     appUserId: currentUser ? currentUser : Purchases.generateRevenueCatAnonymousAppUserId()
 })
 
-setAuthStateChangedListener((event, session) => {
-    if (session.user.id) {
-        Purchases.getSharedInstance().changeUser(session.user.id)
+// ── Cached pro status (module-level, shared across all consumers) ──
+const _isProSubscriber = ref(null) // null = not yet checked
+
+// A single in-flight refresh promise to prevent concurrent checks
+let _refreshPromise = null
+
+async function _refreshProStatus() {
+    // If already refreshing, return the existing promise
+    if (_refreshPromise) return _refreshPromise
+
+    _refreshPromise = (async () => {
+        try {
+            _isProSubscriber.value = await Purchases.getSharedInstance().isEntitledTo('retain-pro')
+        } catch (e) {
+            console.warn('RevenueCat: failed to check entitlement', e)
+            _isProSubscriber.value = false
+        } finally {
+            _refreshPromise = null
+        }
+    })()
+
+    return _refreshPromise
+}
+
+// Kick off the very first check immediately at module load
+const _initialReady = _refreshProStatus()
+
+// Refresh when auth state changes (fires immediately on setup with current session)
+setAuthStateChangedListener(async (event, session) => {
+    if (session?.user?.id) {
+        await Purchases.getSharedInstance().changeUser(session.user.id)
     } else {
-        Purchases.getSharedInstance().changeUser(null)
+        await Purchases.getSharedInstance().changeUser(null)
     }
+    _refreshProStatus()
 })
 
 export default function useRevenueCat() {
-    
+
     const getProOffering = async () => {
         const offerings = await Purchases.getSharedInstance().getOfferings()
         return offerings.current
     }
 
+    /** Returns cached value, or waits for initial check to complete */
     const userIsProSubscriber = async () => {
-        return await Purchases.getSharedInstance().isEntitledTo('retain-pro')
+        if (_isProSubscriber.value !== null) return _isProSubscriber.value
+        await _initialReady
+        return _isProSubscriber.value
     }
 
     const presentPaywall = async (ref) => {
@@ -42,8 +75,9 @@ export default function useRevenueCat() {
     return {
         getProOffering,
         userIsProSubscriber,
-        presentPaywall
+        presentPaywall,
+        refreshProStatus: _refreshProStatus,
+        isProSubscriber: _isProSubscriber,   // reactive ref for template use
+        proStatusReady: _initialReady        // promise that resolves when first check is done
     }
-
 }
-    

@@ -3,12 +3,22 @@
         
         <!-- Header Section -->
         <div class="section-header" v-if="$slots.header || $slots.actions">
+            <!-- Left Header -->
             <div class="header-title">
                 <slot name="header"></slot>
             </div>
             
+            <!-- Flex Gap Filler -->
             <div class="flex-spacer"></div>
             
+            <!-- Absolute Center -->
+            <div class="absolute-center">
+                <div style="pointer-events: auto;">
+                    <slot name="center"></slot>
+                </div>
+            </div>
+            
+            <!-- Right Actions -->
             <div class="header-actions">
                 <slot name="actions"></slot>
             </div>
@@ -40,6 +50,7 @@ defineProps({
     /* Standard padding for headers */
     padding-top: 30px; 
     box-sizing: border-box;
+    position: relative;
 }
 
 .header-title h1, 
@@ -56,6 +67,17 @@ defineProps({
     display: flex;
     align-items: center;
     gap: 15px;
+}
+
+.absolute-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none; /* Let clicks pass through to background */
+    z-index: 10;
 }
 
 .section-content {
@@ -86,6 +108,14 @@ defineProps({
     .header-actions {
         width: 100%;
         justify-content: flex-end;
+    }
+    
+    .absolute-center {
+        position: static;
+        left: unset;
+        transform: none;
+        width: 100%;
+        margin-top: 10px;
     }
 }
 </style>

@@ -156,6 +156,100 @@ export default function useDeck(deckId) {
         return data
     }
 
+    const getDueReviewCounts = async () => {
+        // Calculate the boundaries (3 days ago to 3 days from now)
+        const today = new Date()
+        today.setUTCHours(0, 0, 0, 0)
+        
+        const startDate = new Date(today)
+        startDate.setUTCDate(today.getUTCDate() - 4)
+        
+        const endDate = new Date(today)
+        endDate.setUTCDate(today.getUTCDate() + 5)
+        endDate.setUTCHours(23, 59, 59, 999)
+
+        // Generate the 10 date buckets
+        const buckets = []
+        for (let i = -4; i <= 5; i++) {
+            const date = new Date(today)
+            date.setUTCDate(today.getUTCDate() + i)
+            const bucketDateStr = date.toISOString().split('T')[0]
+            buckets.push({
+                date: bucketDateStr,
+                label: i === 0 ? 'Today' : '',
+                weekday: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                monthDay: `${date.getMonth()+1}/${date.getDate()}`,
+                count: 0,
+                isFuture: i > 0
+            })
+        }
+
+        // Fetch counts via RPC to offload aggregation to the database
+        const { data, error } = await supabase.rpc('get_due_review_counts_timeline', {
+            given_deck_id: deckId,
+            start_date: startDate.toISOString(),
+            end_date: endDate.toISOString()
+        })
+
+        if (error) throw new Error('Could not fetch due review counts: ' + error.message)
+
+        // Assign counts to buckets
+        data.forEach(row => {
+            const bucketDate = new Date(row.due_date).toISOString().split('T')[0]
+            const bucket = buckets.find(b => b.date === bucketDate)
+            if (bucket) {
+                bucket.count = parseInt(row.review_count, 10) || 0
+            }
+        })
+
+        return buckets
+    }
+
+    const getDailyActivityCounts = async () => {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        const startDate = new Date(today)
+        startDate.setDate(today.getDate() - 9)
+
+        // Generate 10 date buckets (last 9 days + today) using local time
+        const buckets = []
+        for (let i = -9; i <= 0; i++) {
+            const date = new Date(today)
+            date.setDate(today.getDate() + i)
+            buckets.push({
+                date: standardDateString(date),
+                label: i === 0 ? 'Today' : '',
+                weekday: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                monthDay: `${date.getMonth() + 1}/${date.getDate()}`,
+                newSeen: 0,
+                reviewSeen: 0
+            })
+        }
+
+        const { data, error } = await supabase
+            .from('daily_review_counters')
+            .select('day, new_seen, review_seen')
+            .eq('deck', deckId)
+            .eq('uid', getCurrentUserId())
+            .gte('day', buckets[0].date)
+            .lte('day', buckets[buckets.length - 1].date)
+            .order('day', { ascending: true })
+
+        if (error) throw new Error('Could not fetch daily activity: ' + error.message)
+
+        // Assign data to buckets
+        data.forEach(row => {
+            const bucket = buckets.find(b => b.date === row.day)
+            if (bucket) {
+                bucket.newSeen = row.new_seen || 0
+                bucket.reviewSeen = row.review_seen || 0
+            }
+        })
+
+        return buckets
+    }
+
     return {
         fetchData,
         loadTags,
@@ -170,7 +264,9 @@ export default function useDeck(deckId) {
         listCramSessions,
         getStudySettings,
         setTodayStudySettings,
-        setDeckStudySettings
+        setDeckStudySettings,
+        getDueReviewCounts,
+        getDailyActivityCounts
     }
 
 }

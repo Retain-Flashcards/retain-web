@@ -1,31 +1,18 @@
 <template>
-<LoadableProvider :loadable='userIsProSubscriberLoadable'>
-    <template #default='{ data }'>
-        <slot v-if='data' />
-        <slot v-else name='nonSubscriber' />
+    <!-- While loading: render nothing (avoids flash of wrong content) -->
+    <template v-if="isProSubscriber === null">
+        <!-- intentionally empty until status resolves -->
     </template>
-    <template #error>
-        <slot name='nonSubscriber' />
-    </template>
-    <template #loading>
-        <slot name='nonSubscriber' />
-    </template>
-</LoadableProvider>
+    <!-- Pro user -->
+    <slot v-else-if="isProSubscriber" />
+    <!-- Free user -->
+    <slot v-else name="nonSubscriber" />
 </template>
 
 <script setup>
-import LoadableProvider from './basic/providers/LoadableProvider.vue'
-
 import useRevenueCat from '../composables/api/useRevenueCat'
-import useLoadable from '../composables/ui/useLoadable';
 
-const { userIsProSubscriber } = useRevenueCat()
-
-const userIsProSubscriberLoadable = useLoadable(async () => {
-    const result = await userIsProSubscriber()
-    return result
-}, { autoload: true })
-
+const { isProSubscriber } = useRevenueCat()
 </script>
 
 <style scoped>

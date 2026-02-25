@@ -13,7 +13,9 @@ import SoftDialog from './basic/soft-ui/SoftDialog.vue'
 import Paywall from './Paywall.vue'
 
 import useModal from '../composables/ui/useModal'
+import useRevenueCat from '../composables/api/useRevenueCat'
 
+const { refreshProStatus } = useRevenueCat()
 const paywallModal = useModal({ executeAfter: () => {}, onDismiss: () => {} })
 
 function openPaywall(withPostFn, withDismissFn) {
@@ -24,6 +26,7 @@ function openPaywall(withPostFn, withDismissFn) {
 
 function paywallSuccess() {
     paywallModal.close()
+    refreshProStatus()
     paywallModal.state.executeAfter()
 }
 

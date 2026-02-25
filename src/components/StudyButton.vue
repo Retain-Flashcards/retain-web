@@ -1,12 +1,12 @@
 <template>
-<div class='study-container'>
-    <el-result v-if='reviewCount == 0 && newCount == 0' icon="success" title="Done for the Day!" subTitle="No Reviews Due" style='flex: 2;'>
+<div class='study-container' style='height: 100%;'>
+    <el-result v-if='reviewCount == 0 && newCount == 0' icon="success" title="Done for the Day!" subTitle="No Reviews Due" style='flex: 2; height: 100%; border: #EEE solid 3px; border-radius: 20px;'>
         <template slot="extra">
             <brand-button type="primary">Back</brand-button>
         </template>
     </el-result>
-    <div v-else class='due-container' style='flex: 2;'>
-        <div style='display: flex; flex-direction: row;'>
+    <div v-else class='due-container' style='flex: 2; height: 100%;'>
+        <div style='display: flex; flex-direction: row; height: 100%;'>
             <div class='stats' style='flex: 2;'>
                 <div class='stats-container'>
                     <div class='flex-spacer'></div>
@@ -49,9 +49,11 @@ function back() {
 .stats {
     position: relative;
     border: #EEE solid 3px;
-    margin-bottom: 50px;
     border-radius: 20px;
     overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 } 
 
 .stats-container {
@@ -60,6 +62,7 @@ function back() {
     align-items: center;
     justify-content: center;
     padding: 20px;
+    flex: 1;
 }
 
 .study-container {

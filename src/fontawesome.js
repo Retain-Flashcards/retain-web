@@ -30,7 +30,8 @@ import {
     faPause,
     faPlay,
     faStop,
-    faExclamationTriangle
+    faExclamationTriangle,
+    faLock
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
@@ -41,7 +42,7 @@ import {
     faFile
 } from '@fortawesome/free-regular-svg-icons'
 
-library.add(faClose, faFile, faPencil, faTrashCan, faEllipsisV, faStar, faFileArrowUp, faBold, faSquareCaretLeft, faSquareCaretRight, faPaperPlane, faArrowRight, faAlarmClock, faWandMagicSparkles, faGear, faStopwatch, faItalic, faStrikethrough, faHeading, faUnderline, faListUl, faListOl, faLink, faImage, faSuperscript, faSubscript, faAdd, faPlusMinus, faRefresh, faMicrophone, faPause, faPlay, faStop, faExclamationTriangle)
+library.add(faClose, faFile, faPencil, faTrashCan, faEllipsisV, faStar, faFileArrowUp, faBold, faSquareCaretLeft, faSquareCaretRight, faPaperPlane, faArrowRight, faAlarmClock, faWandMagicSparkles, faGear, faStopwatch, faItalic, faStrikethrough, faHeading, faUnderline, faListUl, faListOl, faLink, faImage, faSuperscript, faSubscript, faAdd, faPlusMinus, faRefresh, faMicrophone, faPause, faPlay, faStop, faExclamationTriangle, faLock)
 
 export default function registerFaIcons(app) {
     app.component('font-awesome-icon', FontAwesomeIcon)
