@@ -171,14 +171,14 @@ const shareDeckLoadable = useLoadable(async () => {
 
     notificationService.success('Your deck has been shared!')
 }, {
-    onError: (error) => notificationService.error(error)
+    onError: (error) => notificationService.error('An error occurred while sharing the deck')
 })
 
 const pinDeckLoadable = useLoadable(async (prevValue, deckId, pinned) => {
     await setPinned(deckId, pinned)
     homeScreenDecksLoadable.load()
 }, {
-    onError: (error) => notificationService.error(error)
+    onError: (error) => notificationService.error('An error occurred while pinning the deck')
 })
 
 const editDeckModal = useModal(undefined)

@@ -60,9 +60,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
   const users = unwrapSupabaseResult( await supabaseAdmin.from('users').select('id').eq('email', email.toLowerCase()) )
   if (users.length == 0) throw new Error('Invalid email')
 
-  const { id } = users[0]
-
-  console.log(deckId)
+  const { id } = users[0] 
 
   const { data, error } = await supabase.from('shared_decks').upsert({
     uid: id,
