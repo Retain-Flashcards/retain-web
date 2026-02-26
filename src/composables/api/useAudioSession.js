@@ -11,6 +11,7 @@ export default function useAudioSession() {
   const sessionId = ref(null)
   const statusMessage = ref('')
   const cardEvents = ref([])          // { id, type, card, difficulty, timestamp }
+  const usageData = ref(null)
   const error = ref(null)
 
   // ── Internals (not exposed) ─────────────────────────────────────
@@ -237,6 +238,10 @@ export default function useAudioSession() {
         handleToolResult(msg)
         break
 
+      case 'usage_update':
+        usageData.value = msg
+        break
+
       default:
         console.warn('[useAudioSession] Unknown message type:', msg.type)
     }
@@ -420,6 +425,7 @@ export default function useAudioSession() {
     statusMessage: readonly(statusMessage),
     cardEvents: readonly(cardEvents),
     error: readonly(error),
+    usageData: readonly(usageData),
 
     // Actions
     connect,

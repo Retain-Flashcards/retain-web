@@ -124,6 +124,14 @@
               </button>
             </div>
           </Transition>
+
+          <div v-if='usageData' class="audio-study__usage">
+            <p>Usage this month:</p>
+            <div class='audio-study__usage-progress'>
+              <div class='audio-study__usage-progress-bar' :style="{ height: '100%', background: 'var(--el-color-primary)', width: `${(usageData.minutes_used / usageData.total_minute_budget) * 100}%` }" />
+            </div>
+            <p><b>{{ usageData.minutes_used }} / {{ usageData.total_minute_budget }}</b> mins (next refresh <b>{{ new Date(usageData.next_refresh_date).toLocaleDateString() }}</b>)</p>
+          </div>
         </div>
 
         <!-- Card review notification toasts -->
@@ -231,6 +239,7 @@ const {
   statusMessage,
   cardEvents,
   error,
+  usageData,
   connect,
   disconnect,
   pause,
@@ -669,6 +678,33 @@ const cardPreviewText = (evt) => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.audio-study__usage {
+  color: #888;
+  font-size: 13px;
+  text-align: center;
+  min-width: 350px;
+  border: solid #EEE 2px;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.audio-study__usage-progress {
+  width: 100%;
+  height: 7px;
+  background-color: #EEE;
+  border-radius: 7px;
+  overflow: hidden;
+  margin: 10px 0px;
+}
+
+.audio-study__usage-progress-bar {
+  height: 100%;
+  background-color: var(--el-color-primary);
+  border-radius: 7px;
+  overflow: hidden;
+  transition: width 0.3s ease;
 }
 
 .audio-study__text-btn {

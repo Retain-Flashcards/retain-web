@@ -28,14 +28,14 @@
                             <!-- Stacked bars: new on top, review on bottom -->
                             <div class="stacked-bar" :style="{ height: getBarHeight(bucket, data) }">
                                 <div 
-                                    class="bar-segment bar-new" 
-                                    :style="{ flex: bucket.newSeen }"
-                                    v-if="bucket.newSeen > 0"
-                                ></div>
-                                <div 
                                     class="bar-segment bar-review" 
                                     :style="{ flex: bucket.reviewSeen }"
                                     v-if="bucket.reviewSeen > 0"
+                                ></div>
+                                <div 
+                                    class="bar-segment bar-new" 
+                                    :style="{ flex: bucket.newSeen }"
+                                    v-if="bucket.newSeen > 0"
                                 ></div>
                             </div>
                         </div>
