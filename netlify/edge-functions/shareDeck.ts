@@ -52,6 +52,10 @@ export default async (req: Request, context: Context): Promise<Response> => {
   if (!user) throw new Error('Must be logged in')
 
   const { email, deckId, role } = await req.json()
+
+  //Restrict Editor sharing to pro users
+  const { data: requestingUser } = await supabase.from('users').select('plan').eq('id', user.id).single()
+  if (role == 'Editor' && (!requestingUser['plan'] || requestingUser['plan'] != 'retain-pro')) throw new Error('Adding deck collaborators requires a Pro subscription')
   
   const users = unwrapSupabaseResult( await supabaseAdmin.from('users').select('id').eq('email', email.toLowerCase()) )
   if (users.length == 0) throw new Error('Invalid email')

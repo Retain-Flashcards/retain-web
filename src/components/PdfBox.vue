@@ -101,7 +101,7 @@ function clickFileUpload() {
     fileInput.value.click()
 }
 
-useKeyDownBinding('Escape', cancelCrop)
+useKeyDownBinding('escape', cancelCrop)
 
 const fileList = ref([])
 const pdfUrl = ref('')

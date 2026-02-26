@@ -125,14 +125,16 @@ defineExpose({
 </script>
 
 <style scoped>
-/* ... (styles) */
+.soft-popover-wrapper {
+    position: relative;
+}
+
+
 .soft-popover {
     position: absolute;
-    /* z-index removed here, handled by style binding */
     min-width: 150px;
     background: #ffffff;
     border-radius: 12px;
-/* ... */
     box-shadow: 
         0 4px 6px -1px rgba(0, 0, 0, 0.1), 
         0 2px 4px -1px rgba(0, 0, 0, 0.06),

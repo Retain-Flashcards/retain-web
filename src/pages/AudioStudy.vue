@@ -307,7 +307,10 @@ const ring3Style = computed(() => {
 // ── Waveform canvas animation ───────────────────────────────────
 const drawWaveform = () => {
   const canvas = waveCanvas.value
-  if (!canvas) return
+  if (!canvas) {
+    animationId = requestAnimationFrame(drawWaveform)
+    return
+  }
 
   const ctx = canvas.getContext('2d')
   const w = canvas.width
@@ -654,6 +657,7 @@ const cardPreviewText = (evt) => {
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
