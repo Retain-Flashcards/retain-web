@@ -1,7 +1,7 @@
 <template>
     <div class='navbar-container'>
         <div class='header-link' style='display: flex; align-items: center;height: 100%;' @click='visitHome'>
-            <img style='margin-left: 20px;' src='../assets/RetainLogoColored.png' width='25' height='25'/>
+            <img style='margin-left: 20px;' src='../assets/new_logo.png' width='50' height='50'/>
             <h3 style='margin-left: 10px;'>Retain</h3>
         </div>
         <div class='flex-spacer'></div>
