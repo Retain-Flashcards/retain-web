@@ -1,17 +1,16 @@
 <template>
-    <el-row id='therow' justify='center' align='middle' style='height: 100%'>
-        <el-col :span="4" />
-        <el-col :span="16" class='centered-container'>
-            <h1>Your Password has been Updated!</h1>
+    <SoftCard id='success-card'>
+        <div class='centered-container'>
+            <h2 style="margin-bottom: 15px;">Your Password has been Updated!</h2>
             <BrandButton type='primary' @click='goToHome'>Go to Home</BrandButton>
-        </el-col>
-        <el-col :span="4"/>
-    </el-row>
+        </div>
+    </SoftCard>
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router'
 import BrandButton from '../components/basic/BrandButton.vue'
+import { SoftCard } from '../components/basic/soft-ui'
 
 const router = useRouter()
 
@@ -20,9 +19,10 @@ function goToHome() {
 }
 </script>
 
-<style>
-html, body, #app {
-    height: 100%;
+<style scoped>
+#success-card {
+    text-align: center;
+    padding: 20px 10px;
 }
 
 .centered-container {

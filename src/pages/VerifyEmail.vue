@@ -1,7 +1,6 @@
 <template>
-    <el-row id='therow' justify='center' align='middle' style='height: 100%'>
-        <el-col :span="4" />
-        <el-col :span="16" class='centered-container'>
+    <SoftCard id='verify-card'>
+        <div class='centered-container'>
             <div v-if="verifyingToken" class="loading-state">
                 <app-spinner />
                 <p style="margin-top: 20px;">Verifying your email securely...</p>
@@ -18,15 +17,14 @@
 
             <div v-else class="success-state">
                 <font-awesome-icon icon='fa-circle-check' class='check-icon'></font-awesome-icon>
-                <h1>Email Verified!</h1>
-                <p id='paragraph'>Your email has been successfully verified.</p>
+                <h3 style="margin-top: 15px;">Email Verified!</h3>
+                <p id='paragraph' style="margin-top: 10px;">Your email has been successfully verified.</p>
                 <div style='display: flex; align-items: center; justify-content: center;'>
-                    <BrandButton type='primary' @click='goToHome'>Go to Home</BrandButton>
+                    <BrandButton type='primary' @click='goToHome' style="margin-bottom: 10px;">Go to Home</BrandButton>
                 </div>
             </div>
-        </el-col>
-        <el-col :span="4"/>
-    </el-row>
+        </div>
+    </SoftCard>
 </template>
 
 <script setup>
@@ -36,6 +34,7 @@ import BrandButton from '../components/basic/BrandButton.vue'
 import AppSpinner from '../components/basic/AppSpinner.vue'
 import useAuthUser from '../composables/api/UseAuthUser'
 import useNotificationService from '../composables/ui/useNotificationService'
+import { SoftCard } from '../components/basic/soft-ui'
 
 const router = useRouter()
 const notificationService = useNotificationService()
@@ -77,9 +76,10 @@ function goToHome() {
 }
 </script>
 
-<style>
-html, body, #app {
-    height: 100%;
+<style scoped>
+#verify-card {
+    text-align: center;
+    padding: 10px;
 }
 
 #paragraph {

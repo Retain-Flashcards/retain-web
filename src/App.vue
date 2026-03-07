@@ -18,11 +18,9 @@
                 <Navbar id='navbar'/>
                 <KeyBindingProvider>
                 <el-row align='middle' justify='center' style='flex: 1; height: 100%;'>
-                    <el-col :span='8'></el-col>
-                    <el-col :span='8'>                        
+                    <el-col :xs='22' :sm='14' :md='10' :lg='8' :xl='6'>                        
                             <router-view/>
                     </el-col>
-                    <el-col :span='8'></el-col>
                 </el-row>
                 </KeyBindingProvider>
             </div>
