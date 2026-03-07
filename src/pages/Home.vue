@@ -28,7 +28,7 @@
                             :title='deck.title' 
                             v-for='deck in data.pinnedDecks' 
                             :img-url='deck.coverImage' 
-                            :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' 
+                            :style='{ float: "left", width: "200px", height: "180px", marginRight: "30px", marginBottom: "30px" }' 
                             :review-count='deck.reviewCount' 
                             :new-count='deck.newCount'/>
                         
@@ -47,7 +47,7 @@
                             :title='deck.title' 
                             v-for='deck in data.otherDecks' 
                             :img-url='deck.coverImage' 
-                            :style='{ float: "left", width: "250px", height: "225px", marginRight: "30px", marginBottom: "30px" }' 
+                            :style='{ float: "left", width: "200px", height: "180px", marginRight: "30px", marginBottom: "30px" }' 
                             :review-count='deck.reviewCount' 
                             :new-count='deck.newCount'/>
                     </div>

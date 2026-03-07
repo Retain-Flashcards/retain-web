@@ -340,7 +340,7 @@ const drawWaveform = () => {
   for (let layer = 0; layer < 2; layer++) {
     const layerAmpMul = layer === 0 ? 1.0 : 0.6
     const layerOffset = layer === 0 ? 0 : Math.PI * 0.7
-    const layerAlpha = layer === 0 ? (0.5 + amp * 0.5) : (0.25 + amp * 0.25)
+    const layerAlpha = layer === 0 ? (1) : (0.25 + amp * 0.25)
 
     ctx.beginPath()
     for (let i = 0; i <= numPoints; i++) {

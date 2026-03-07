@@ -112,7 +112,7 @@ const handleMoreCommand = (command) => {
         margin-right: 5px;
         margin-bottom: 10px;
         color: white;
-        font-size: 23px;
+        font-size: 20px;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
@@ -140,6 +140,7 @@ const handleMoreCommand = (command) => {
         flex-direction: column;
         align-items: center;
         flex: 1;
+        font-size: 15px;
     }
 
     .review {
@@ -155,7 +156,7 @@ const handleMoreCommand = (command) => {
     }
 
     h1 {
-        font-size: 40px;
+        font-size: 25px;
         margin-top: 0px;
         margin-bottom: 0px;
     }
