@@ -57,6 +57,7 @@ provide('softForm', {
     labelWidth: props.labelWidth,
     disabled: props.disabled,
     showMessage: props.showMessage,
+    fieldErrors,
     registerField: (fieldName, fieldRef) => {
         fieldRefs[fieldName] = fieldRef
     },

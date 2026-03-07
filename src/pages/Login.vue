@@ -14,9 +14,10 @@
         </SoftFormItem>
 
         <SoftFormItem>
-            <BrandButton type='primary' @click='onFormSubmit' :loading='loginLoadable.isLoading'>Log In</BrandButton>
+            <BrandButton style='width: 100%;' type='primary' @click='onFormSubmit' :loading='loginLoadable.isLoading'>Log In</BrandButton>
         </SoftFormItem>
         <p>Don't have an account? <el-link @click='goToRegister' type='primary'>Sign up</el-link></p>
+        <p style='margin-top: 10px;'><el-link @click='goToForgotPassword' type='primary'>Forgot Password?</el-link></p>
     </SoftForm>
 </SoftCard>
 </template>
@@ -61,6 +62,10 @@ function onFormSubmit() {
 
 function goToRegister() {
     router.push({ name: 'Register' })
+}
+
+function goToForgotPassword() {
+    router.push({ name: 'Forgot Password' })
 }
 
 onMounted(() => {

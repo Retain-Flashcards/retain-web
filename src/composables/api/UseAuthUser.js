@@ -20,7 +20,7 @@ export default function useAuthUser() {
         const { data: { session } } = await supabase.auth.getSession()
         return session?.access_token
     }
-    
+
     const loginEmailPassword = async (email, password, captchaToken) => {
         // v2: signIn → signInWithPassword, captcha in options
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -49,7 +49,35 @@ export default function useAuthUser() {
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
-            options: { captchaToken }
+            options: { captchaToken, emailRedirectTo: `${import.meta.env.VITE_EMAIL_REDIRECT_HOST}/verify-email` }
+        })
+        if (error) throw error
+        return data
+    }
+
+    const resendVerificationEmail = async (email, captchaToken) => {
+        const { data, error } = await supabase.auth.resend({
+            type: 'signup',
+            email,
+            options: { captchaToken, emailRedirectTo: `${import.meta.env.VITE_EMAIL_REDIRECT_HOST}/verify-email` }
+        })
+        if (error) throw error
+        return data
+    }
+
+    const resetPasswordForEmail = async (email, captchaToken) => {
+        const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+            captchaToken,
+            redirectTo: `${import.meta.env.VITE_EMAIL_REDIRECT_HOST}/reset-password`,
+        })
+        if (error) throw error
+        return data
+    }
+
+    const verifyOtp = async (tokenHash, type) => {
+        const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type
         })
         if (error) throw error
         return data
@@ -83,6 +111,9 @@ export default function useAuthUser() {
         setAuthStateChangedListener,
         getUser,
         registerUser,
+        resendVerificationEmail,
+        resetPasswordForEmail,
+        verifyOtp,
         logInWithGoogle,
         reloadAuth,
         getAuthToken

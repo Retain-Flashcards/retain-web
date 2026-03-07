@@ -1,7 +1,7 @@
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import {
-    faBold, 
+    faBold,
     faItalic,
     faStrikethrough,
     faHeading,
@@ -31,7 +31,10 @@ import {
     faPlay,
     faStop,
     faExclamationTriangle,
-    faLock
+    faLock,
+    faCircleCheck,
+    faCircleXmark,
+    faArrowRightFromBracket
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
@@ -39,10 +42,11 @@ import {
     faSquareCaretLeft,
     faSquareCaretRight,
     faTrashCan,
-    faFile
+    faFile,
+    faCircleQuestion
 } from '@fortawesome/free-regular-svg-icons'
 
-library.add(faClose, faFile, faPencil, faTrashCan, faEllipsisV, faStar, faFileArrowUp, faBold, faSquareCaretLeft, faSquareCaretRight, faPaperPlane, faArrowRight, faAlarmClock, faWandMagicSparkles, faGear, faStopwatch, faItalic, faStrikethrough, faHeading, faUnderline, faListUl, faListOl, faLink, faImage, faSuperscript, faSubscript, faAdd, faPlusMinus, faRefresh, faMicrophone, faPause, faPlay, faStop, faExclamationTriangle, faLock)
+library.add(faClose, faCircleQuestion, faArrowRightFromBracket, faCircleXmark, faCircleCheck, faFile, faPencil, faTrashCan, faEllipsisV, faStar, faFileArrowUp, faBold, faSquareCaretLeft, faSquareCaretRight, faPaperPlane, faArrowRight, faAlarmClock, faWandMagicSparkles, faGear, faStopwatch, faItalic, faStrikethrough, faHeading, faUnderline, faListUl, faListOl, faLink, faImage, faSuperscript, faSubscript, faAdd, faPlusMinus, faRefresh, faMicrophone, faPause, faPlay, faStop, faExclamationTriangle, faLock)
 
 export default function registerFaIcons(app) {
     app.component('font-awesome-icon', FontAwesomeIcon)

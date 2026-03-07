@@ -5,12 +5,16 @@
             <h3 style='margin-left: 10px;'>Retain</h3>
         </div>
         <div class='flex-spacer'></div>
-        <el-button v-if='authenticated' type='danger' style='margin-right: 25px;' :underline='false' @click.prevent='handleLogOut' plain>Log Out</el-button>
+        <brand-button size='small' icon='fa-regular fa-circle-question' type='info' :plain='true' style='margin-right: 15px;' @click='emailSupport'>Email Support</brand-button>
+        <BrandButton v-if='authenticated' size='small' icon='fa-arrow-right-from-bracket' type='error' style='margin-right: 25px;' @click='handleLogOut' :plain='true'>Log Out</BrandButton>
     </div>
 </template>
 
 <script>
+import BrandButton from './basic/BrandButton.vue'
+
 import useAuthUser from '../composables/api/UseAuthUser'
+import { WindPower } from '@element-plus/icons-vue'
 
 const { logout } = useAuthUser()
 
@@ -24,7 +28,13 @@ export default {
             this.$router.push({
                 name: 'Home'
             })
+        },
+        emailSupport(e) {
+            window.location.href = 'mailto:info@retaincards.com'
         }
+    },
+    components: {
+        BrandButton
     }
 }
 

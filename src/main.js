@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { createRouter, createWebHistory} from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 //Composables
 import useAuthUser from './composables/api/UseAuthUser'
@@ -11,6 +11,8 @@ import Login from './pages/Login.vue'
 import Register from './pages/Register.vue'
 import PasswordUpdateSuccess from './pages/PasswordUpdateSuccess.vue'
 import VerifyEmail from './pages/VerifyEmail.vue'
+import ForgotPassword from './pages/ForgotPassword.vue'
+import ResetPassword from './pages/ResetPassword.vue'
 import Deck from './pages/Deck.vue'
 import CardBuilder from './pages/CardBuilder.vue'
 import GoogleLogin from './pages/GoogleLogin.vue'
@@ -51,22 +53,24 @@ const { userIsLoggedIn, setAuthStateChangedListener } = useAuthUser()
 
 //Vue Router routes
 const routes = [
-    { name: 'Home', path: '/', component: Home },
+    { name: 'Home', path: '/', component: Home, meta: { requiresAuth: true } },
     { name: 'Login', path: '/login', component: Login },
     { name: 'Google Login', path: '/google', component: GoogleLogin },
     { name: 'Register', path: '/register', component: Register },
-    { name: 'Verify Email', path: '/verify', component: VerifyEmail },
+    { name: 'Verify Email', path: '/verify-email', component: VerifyEmail },
+    { name: 'Forgot Password', path: '/forgot-password', component: ForgotPassword },
+    { name: 'Reset Password', path: '/reset-password', component: ResetPassword },
     { name: 'Password Updated Successfully', path: '/passwordupdated', component: PasswordUpdateSuccess },
-    { name: 'View Deck', path: '/deck/:deckId', component: Deck },
-    { name: 'Create Cards', path: '/deck/:deckId/cards/add', component: CardBuilder },
-    { name: 'Edit Card', path: '/deck/:deckId/cards/:noteId/edit', component: CardBuilder},
-    { name: 'Study Deck', path: '/deck/:deckId/study', component: StudyWrapper },
-    /*{ name: 'QuizBuilder', path: '/deck/:deckId/quiz', component: QuizBuilder },*/
-   /* { name: 'Quiz', path: '/deck/:deckId/quiz/:quizPath', component: Quiz}, */
-    { name: 'Cram Builder', path: '/deck/:deckId/cram', component: CramBuilder },
-    { name: 'Cram', path: '/deck/:deckId/cram/:cramId', component: Cram },
-    { name: 'Audio Study', path: '/deck/:deckId/audio-study', component: AudioStudy },
-    /*{ name: 'AI Card Builder', path: '/deck/:deckId/cards/add-ai', component: AiCardBuilder }*/
+    { name: 'View Deck', path: '/deck/:deckId', component: Deck, meta: { requiresAuth: true } },
+    { name: 'Create Cards', path: '/deck/:deckId/cards/add', component: CardBuilder, meta: { requiresAuth: true } },
+    { name: 'Edit Card', path: '/deck/:deckId/cards/:noteId/edit', component: CardBuilder, meta: { requiresAuth: true } },
+    { name: 'Study Deck', path: '/deck/:deckId/study', component: StudyWrapper, meta: { requiresAuth: true } },
+    /*{ name: 'QuizBuilder', path: '/deck/:deckId/quiz', component: QuizBuilder, meta: { requiresAuth: true } },*/
+    /* { name: 'Quiz', path: '/deck/:deckId/quiz/:quizPath', component: Quiz, meta: { requiresAuth: true } }, */
+    { name: 'Cram Builder', path: '/deck/:deckId/cram', component: CramBuilder, meta: { requiresAuth: true } },
+    { name: 'Cram', path: '/deck/:deckId/cram/:cramId', component: Cram, meta: { requiresAuth: true } },
+    { name: 'Audio Study', path: '/deck/:deckId/audio-study', component: AudioStudy, meta: { requiresAuth: true } },
+    /*{ name: 'AI Card Builder', path: '/deck/:deckId/cards/add-ai', component: AiCardBuilder, meta: { requiresAuth: true } }*/
 ]
 
 const router = createRouter({
@@ -74,15 +78,16 @@ const router = createRouter({
     routes
 })
 
-//Authentication nav guard
-router.beforeEach((to) => {
-    if (!userIsLoggedIn() && to.meta.requiresAuth && to.path != '/verify') return { path: '/login' }
-    else if (userIsLoggedIn() && (to.path == '/login') ) return { path: '/' }
-})
+import useSupabase from './composables/api/UseSupabase'
 
-//Keep authentication up-to-date
-setAuthStateChangedListener((event, session) => {
-    if (event == 'SIGNED_OUT') router.go('/login')
+//Authentication nav guard
+router.beforeEach(async (to) => {
+    const { supabase } = useSupabase()
+    const { data: { session } } = await supabase.auth.getSession()
+    const isLoggedIn = !!session?.user
+
+    if (!isLoggedIn && to.meta.requiresAuth && to.path != '/verify-email') return { path: '/login' }
+    else if (isLoggedIn && (to.path == '/login')) return { path: '/' }
 })
 
 //App creation

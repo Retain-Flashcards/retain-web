@@ -46,7 +46,7 @@ setAuthStateChangedListener(async (event, session) => {
     if (session?.user?.id) {
         await Purchases.getSharedInstance().changeUser(session.user.id)
     } else {
-        await Purchases.getSharedInstance().changeUser(null)
+        await Purchases.getSharedInstance().changeUser(Purchases.generateRevenueCatAnonymousAppUserId())
     }
     _refreshProStatus()
 })

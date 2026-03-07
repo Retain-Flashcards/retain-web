@@ -34,6 +34,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import useAuthUser from './composables/api/UseAuthUser'
+import useSupabase from './composables/api/UseSupabase'
+import { useRouter } from 'vue-router'
 import useGlobalLoader from './composables/ui/UseGlobalLoader'
 import Navbar from './components/Navbar.vue'
 import KeyBindingProvider from './components/basic/providers/KeyBindingProvider.vue'
@@ -51,6 +53,8 @@ const { userIsLoggedIn, user, setAuthStateChangedListener } = useAuthUser()
 
 const { globalLoader } = useGlobalLoader()
 
+const router = useRouter()
+
 const reloading = ref(true)
 
 const errorPage = ref(false)
@@ -60,20 +64,24 @@ const handleGoogleCredentials = (response) => {
 }
 
 const isAuthenticated = computed(() => {
-    reloading.value = false
-    return user.value
+    const authPages = ['Login', 'Register', 'Forgot Password', 'Reset Password', 'Verify Email', 'Password Updated Successfully', 'Google Login']
+    return user.value && !authPages.includes(router.currentRoute.value?.name)
 })
 
 setAuthStateChangedListener((event, session) => {
-    if (event == 'SIGNED_OUT') {
-        router.push('/login')
-    }
-    else if (session?.user) {
+    if (event === 'SIGNED_OUT') {
+        if (router.currentRoute.value.meta.requiresAuth) {
+            router.push('/login')
+        }
+    } else if (session?.user) {
         reloading.value = false
     }
 })
 
-const handleMounted = () => {
+const handleMounted = async () => {
+    const { supabase } = useSupabase()
+    await supabase.auth.getSession()
+    reloading.value = false
 }
 
 onMounted(handleMounted)
