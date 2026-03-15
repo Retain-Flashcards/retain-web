@@ -256,6 +256,19 @@
 
                             <template #actions>
                                 <!--Regular Card Builder-->
+                                <soft-popover placement="bottom-start" @select="handleSelect" >
+                                    <template #trigger>
+                                        <brand-button icon='fa-download' type='primary' :plain='true'>
+                                            Use our Anki Import Utility
+                                        </brand-button> 
+                                    </template>
+
+                                    <soft-popover-item value="macOS" icon='fa-brands fa-apple' @click='downloadMacOS'>Download for macOS</soft-popover-item>
+                                    <!--Windows Support coming soon-->
+                                    <!--<soft-popover-item value="windows" icon='fa-brands fa-windows' @click='downloadWindows'>Download for Windows</soft-popover-item>-->
+                                </soft-popover>
+                                
+                                <!--Regular Card Builder-->
                                 <brand-button icon='fa-add' type='primary' @click='createNotes'>
                                     Create Cards
                                 </brand-button> 
@@ -391,6 +404,8 @@ import DueReviewsGraph from '../components/DueReviewsGraph.vue'
 import ProPill from '../components/basic/ProPill.vue'
 import PremiumMarker from '../components/basic/PremiumMarker.vue'
 import DailyActivityChart from '../components/DailyActivityChart.vue'
+import SoftPopover from '../components/basic/soft-ui/SoftPopover.vue'
+import SoftPopoverItem from '../components/basic/soft-ui/SoftPopoverItem.vue'
 
 //Composables
 import useDeck from '../composables/api/useDeck.js'
@@ -676,6 +691,14 @@ function _resetNote(index, noteId) {
         }
         reloadDeckCount()
     })
+}
+
+function downloadMacOS() {
+    window.open(import.meta.env.VITE_IMPORT_UTILITY_MACOS_URL)
+}
+
+function downloadWindows() {
+    console.log('Coming Soon')
 }
 
 

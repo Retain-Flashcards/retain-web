@@ -34,7 +34,8 @@ import {
     faLock,
     faCircleCheck,
     faCircleXmark,
-    faArrowRightFromBracket
+    faArrowRightFromBracket,
+    faDownload
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
@@ -46,7 +47,12 @@ import {
     faCircleQuestion
 } from '@fortawesome/free-regular-svg-icons'
 
-library.add(faClose, faCircleQuestion, faArrowRightFromBracket, faCircleXmark, faCircleCheck, faFile, faPencil, faTrashCan, faEllipsisV, faStar, faFileArrowUp, faBold, faSquareCaretLeft, faSquareCaretRight, faPaperPlane, faArrowRight, faAlarmClock, faWandMagicSparkles, faGear, faStopwatch, faItalic, faStrikethrough, faHeading, faUnderline, faListUl, faListOl, faLink, faImage, faSuperscript, faSubscript, faAdd, faPlusMinus, faRefresh, faMicrophone, faPause, faPlay, faStop, faExclamationTriangle, faLock)
+import {
+    faApple,
+    faWindows
+} from '@fortawesome/free-brands-svg-icons'
+
+library.add(faDownload, faWindows, faApple, faClose, faCircleQuestion, faArrowRightFromBracket, faCircleXmark, faCircleCheck, faFile, faPencil, faTrashCan, faEllipsisV, faStar, faFileArrowUp, faBold, faSquareCaretLeft, faSquareCaretRight, faPaperPlane, faArrowRight, faAlarmClock, faWandMagicSparkles, faGear, faStopwatch, faItalic, faStrikethrough, faHeading, faUnderline, faListUl, faListOl, faLink, faImage, faSuperscript, faSubscript, faAdd, faPlusMinus, faRefresh, faMicrophone, faPause, faPlay, faStop, faExclamationTriangle, faLock)
 
 export default function registerFaIcons(app) {
     app.component('font-awesome-icon', FontAwesomeIcon)

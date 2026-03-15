@@ -29,7 +29,7 @@ export default function useCardEditor(initialContent = '', displayOnly = false) 
         let newString = contentString.replaceAll(clozeRegexp, (_, n, text, hint) => {
             const colorClass = n > 0 ? CLOZE_COLORS[n - 1] : 'clz-red'
             const key = generateKey()
-            
+
             let processedText = text
             let processedHint = hint ?? ''
 
@@ -39,7 +39,7 @@ export default function useCardEditor(initialContent = '', displayOnly = false) 
                     return str.replaceAll(/\$\$(.+?)\$\$/g, (_, math) => {
                         try {
                             return katex.renderToString(math, { throwOnError: false })
-                        } catch(e) { return math }
+                        } catch (e) { return math }
                     })
                 }
 
@@ -57,24 +57,26 @@ export default function useCardEditor(initialContent = '', displayOnly = false) 
                     let str = katex.renderToString(text, { throwOnError: false })
                     str = str.slice(0, 5) + ` data-source-str='${text}'` + str.slice(5)
                     return str
-                } catch(e) {
+                } catch (e) {
                     return text
                 }
             })
         }
 
         // Newlines
-        newString = newString.replaceAll(/\n/g, '<br>')
+        //newString = newString.replaceAll(/\n/g, '<br>')
 
         // Markdown images
         newString = newString.replaceAll(/!\[(.+?)\]\((.+?)\)/g, (_, alt, src) => {
             return `<img src='${src}' alt='${alt}'>`
         })
 
-        return DOMPurify.sanitize(newString, {
+        newString = DOMPurify.sanitize(newString, {
             ADD_TAGS: ['cloze-indicator'],
             ADD_ATTR: ['n', 'color-class', 'item-key', 'hint', 'display-only', 'contenteditable', 'text']
         })
+
+        return newString
     }
 
     function updateNextClozeN(parentEl) {
